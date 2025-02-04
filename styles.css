@@ -1,0 +1,287 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background-color: #f5f5f5;
+}
+
+/* Шапка */
+header {
+    width: 100%;
+    background-color: white;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Верхняя панель */
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15%;
+    background-color: #f8f8f8;
+    font-size: 14px;
+}
+
+.top-bar a {
+    text-decoration: none;
+    color: #666;
+    margin-right: 15px;
+}
+
+.right-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.right-info i {
+    color: #c00;
+    margin-right: 5px;
+}
+
+.search-icon {
+    cursor: pointer;
+}
+
+/* Навигация */
+.nav-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 15%;
+}
+
+.logo {
+    font-size: 22px;
+    font-weight: bold;
+    color: #c00;
+    display: flex;
+    align-items: center;
+}
+
+.logo-icon {
+    font-size: 20px;
+    margin-right: 5px;
+}
+
+nav ul {
+    list-style: none;
+    display: flex;
+    gap: 20px;
+}
+
+nav ul li {
+    display: inline;
+}
+
+nav ul li a {
+    text-decoration: none;
+    color: black;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.header-buttons {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+/* Кнопка звонка */
+.call-button {
+    background-color: #c00;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+/* Мини-корзина */
+.cart {
+    position: relative;
+    cursor: pointer;
+}
+
+.cart i {
+    font-size: 22px;
+    color: black;
+}
+
+.cart-count {
+    position: absolute;
+    top: -5px;
+    right: -10px;
+    background: red;
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 3px 7px;
+    border-radius: 50%;
+}
+
+/* Каталог товаров */
+.catalog-title {
+    text-align: center;
+    margin: 40px 0;
+    font-size: 28px;
+}
+
+.catalog {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 20px;
+    padding: 0 10%;
+    align-items: stretch; /* Выровнять высоту карточек */
+}
+
+.main-content {
+    margin-left: 250px; /* Отступ справа от бокового меню */
+}
+
+.product {
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 250px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.product img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+.product .product-info {
+    flex-grow: 1; /* Растягивает текстовый блок, чтобы карточки были одинаковыми */
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Выравнивание по центру */
+}
+
+.product h3 {
+    font-size: 18px;
+    margin: 10px 0;
+    min-height: 50px; /* Одинаковая высота для всех названий */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+/* Кнопка открытия */
+.catalog-toggle {
+    position: fixed;
+    left: 20px;
+    top: 90px;
+    background: #e74c3c;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: 0.3s;
+}
+
+.catalog-toggle:hover {
+    background: #c0392b;
+}
+
+/* Скрытый по умолчанию каталог */
+.sidebar {
+    width: 220px;
+    position: fixed;
+    left: -250px; /* Прячем за левый край */
+    top: 80px;
+    height: auto;
+    background: #f9f9f9;
+    padding: 20px;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    transition: left 0.3s ease-in-out;
+}
+
+/* Когда каталог открыт, двигаем его на экран */
+.sidebar.active {
+    left: 0; /* Показываем панель */
+}
+
+/* Кнопка закрытия каталога, теперь вне каталога и справа */
+.close-sidebar {
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 5px;
+    position: fixed; /* Позиционируем кнопку относительно окна */
+    top: 80px; /* Выставляем на уровне каталога */
+    left: 230px; /* Размещаем кнопку сразу справа от каталога */
+    z-index: 100; /* Размещаем кнопку поверх других элементов */
+    display: none; /* Скрываем кнопку по умолчанию */
+}
+
+/* Показываем кнопку при открытии каталога */
+.sidebar.active + .close-sidebar {
+    display: block; /* Показываем кнопку при открытии каталога */
+}
+
+/* Стили ссылок в каталоге */
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+}
+
+.sidebar ul li {
+    margin-bottom: 10px;
+}
+
+.sidebar ul li a {
+    text-decoration: none;
+    color: #333;
+    font-size: 16px;
+    display: block;
+    padding: 12px;
+    background: #fff;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: 500;
+    transition: 0.3s;
+}
+
+.sidebar ul li a:hover {
+    background: #e74c3c;
+    color: #fff;
+    transform: scale(1.05);
+}
+
+/* Кнопка в корзину */
+.add-to-cart {
+    background-color: #c00;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.add-to-cart:hover {
+    background-color: #a00;
+}
