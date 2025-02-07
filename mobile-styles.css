@@ -1,0 +1,82 @@
+/* Стили по умолчанию для десктопной версии */
+
+/* Ширина контейнера и отступы */
+.container {
+    width: 80%;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Заголовки */
+h1, h2 {
+    font-size: 2em;
+    margin-bottom: 15px;
+}
+
+/* Стили для мобильных версий */
+@media (max-width: 768px) {
+    /* Для мобильных устройств шириной до 768px */
+    
+    /* Изменяем контейнер на более узкий */
+    .container {
+        width: 90%;
+        padding: 10px;
+    }
+
+    /* Уменьшаем размер заголовков */
+    h1, h2 {
+        font-size: 1.5em;
+    }
+
+    /* Меняем стиль навигации на мобильный */
+    nav ul {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+    }
+
+    nav ul li {
+        padding: 10px 0;
+        text-align: center;
+    }
+
+    /* Добавляем граничную линию для навигации */
+    nav ul li a {
+        text-decoration: none;
+        color: #333;
+        font-weight: bold;
+    }
+
+    /* Убираем ненужные боковые отступы для блоков */
+    .sidebar {
+        display: none;  /* скрываем сайдбар */
+    }
+
+    /* Увеличиваем кнопки */
+    button {
+        padding: 15px;
+        font-size: 1.2em;
+    }
+
+    /* Изменяем изображение */
+    img {
+        max-width: 100%;
+        height: auto;
+    }
+}
+
+.hamburger-menu {
+    display: block;
+    cursor: pointer;
+    font-size: 30px;
+}
+
+nav ul {
+    display: none;  /* Скрыто по умолчанию */
+}
+
+nav.active ul {
+    display: block;  /* Показываем меню, если класс "active" активен */
+}
