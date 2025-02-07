@@ -2,8 +2,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const button = document.querySelector(".catalog-toggle");
     const sidebar = document.getElementById("sidebar");
     const closeButton = document.querySelector(".close-sidebar");
-
-    // Проверка на существование элементов, перед тем как добавить обработчики
     if (button && sidebar) {
         button.addEventListener("click", function () {
             sidebar.classList.toggle("active");

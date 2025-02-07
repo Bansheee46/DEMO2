@@ -2,10 +2,17 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
     <title>Каталог товаров</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <script>
+        window.onload = function() {
+            if (/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)) {
+                window.location.href = "mobile.html"; // Редирект на мобильную версию
+            }
+        };
+    </script>
 </head>
 <body>
     <div class="sidebar">
@@ -211,8 +218,6 @@
                 <li><a href="#">Бытовая техника</a></li>
             </ul>
         </div>
-        
-        <!-- Кнопка закрытия (перемещена сюда, вне каталога) -->
         <button class="close-sidebar">Закрыть</button>
     </ul>
 </div>

@@ -9,14 +9,12 @@ body {
     background-color: #f5f5f5;
 }
 
-/* Шапка */
 header {
     width: 100%;
     background-color: white;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-/* Верхняя панель */
 .top-bar {
     display: flex;
     justify-content: space-between;
@@ -47,7 +45,6 @@ header {
     cursor: pointer;
 }
 
-/* Навигация */
 .nav-bar {
     display: flex;
     justify-content: space-between;
@@ -91,7 +88,6 @@ nav ul li a {
     gap: 20px;
 }
 
-/* Кнопка звонка */
 .call-button {
     background-color: #c00;
     color: white;
@@ -103,7 +99,6 @@ nav ul li a {
     border-radius: 5px;
 }
 
-/* Мини-корзина */
 .cart {
     position: relative;
     cursor: pointer;
@@ -126,7 +121,7 @@ nav ul li a {
     border-radius: 50%;
 }
 
-/* Каталог товаров */
+
 .catalog-title {
     text-align: center;
     margin: 40px 0;
@@ -139,11 +134,11 @@ nav ul li a {
     flex-wrap: wrap;
     gap: 20px;
     padding: 0 10%;
-    align-items: stretch; /* Выровнять высоту карточек */
+    align-items: stretch; 
 }
 
 .main-content {
-    margin-left: 250px; /* Отступ справа от бокового меню */
+    margin-left: 250px; 
 }
 
 .product {
@@ -166,23 +161,22 @@ nav ul li a {
 }
 
 .product .product-info {
-    flex-grow: 1; /* Растягивает текстовый блок, чтобы карточки были одинаковыми */
+    flex-grow: 1; 
     display: flex;
     flex-direction: column;
-    justify-content: center; /* Выравнивание по центру */
+    justify-content: center; 
 }
 
 .product h3 {
     font-size: 18px;
     margin: 10px 0;
-    min-height: 50px; /* Одинаковая высота для всех названий */
+    min-height: 50px; 
     display: flex;
     align-items: center;
     justify-content: center;
     text-align: center;
 }
 
-/* Кнопка открытия */
 .catalog-toggle {
     position: fixed;
     left: 20px;
@@ -201,11 +195,10 @@ nav ul li a {
     background: #c0392b;
 }
 
-/* Скрытый по умолчанию каталог */
 .sidebar {
     width: 220px;
     position: fixed;
-    left: -250px; /* Прячем за левый край */
+    left: -250px; 
     top: 80px;
     height: auto;
     background: #f9f9f9;
@@ -215,12 +208,10 @@ nav ul li a {
     transition: left 0.3s ease-in-out;
 }
 
-/* Когда каталог открыт, двигаем его на экран */
 .sidebar.active {
-    left: 0; /* Показываем панель */
+    left: 0; 
 }
 
-/* Кнопка закрытия каталога, теперь вне каталога и справа */
 .close-sidebar {
     background-color: #e74c3c;
     color: white;
@@ -229,16 +220,15 @@ nav ul li a {
     font-size: 16px;
     cursor: pointer;
     border-radius: 5px;
-    position: fixed; /* Позиционируем кнопку относительно окна */
-    top: 80px; /* Выставляем на уровне каталога */
-    left: 230px; /* Размещаем кнопку сразу справа от каталога */
-    z-index: 100; /* Размещаем кнопку поверх других элементов */
-    display: none; /* Скрываем кнопку по умолчанию */
+    position: fixed; 
+    top: 80px; 
+    left: 230px; 
+    z-index: 100; 
+    display: none; 
 }
 
-/* Показываем кнопку при открытии каталога */
 .sidebar.active + .close-sidebar {
-    display: block; /* Показываем кнопку при открытии каталога */
+    display: block; 
 }
 
 /* Стили ссылок в каталоге */
@@ -284,4 +274,75 @@ nav ul li a {
 
 .add-to-cart:hover {
     background-color: #a00;
+}
+@media (max-width: 768px) {
+    .top-bar {
+        flex-direction: column;
+        padding: 10px;
+    }
+
+    .nav-bar {
+        flex-direction: column;
+        padding: 10px;
+    }
+
+    .logo {
+        font-size: 18px;
+        justify-content: center;
+    }
+
+    .nav-bar ul {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .product {
+        width: 100%;
+        margin-bottom: 20px;
+    }
+
+    .cart {
+        font-size: 18px;
+    }
+
+    .catalog-toggle {
+        left: 10px;
+        top: 50px;
+    }
+
+    .sidebar {
+        width: 200px;
+    }
+
+    .close-sidebar {
+        display: block;
+    }
+}
+@media (max-width: 480px) {
+    .top-bar {
+        font-size: 12px;
+        padding: 5px;
+    }
+
+    .catalog-title {
+        font-size: 20px;
+        margin: 20px 0;
+    }
+
+    .product {
+        width: 100%;
+        padding: 10px;
+    }
+
+    .product img {
+        height: 150px;
+    }
+
+    .product h3 {
+        font-size: 16px;
+    }
+
+    .cart {
+        font-size: 16px;
+    }
 }
