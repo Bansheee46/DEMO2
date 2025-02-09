@@ -1,0 +1,65 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+.h {
+    background-color: rgba(0, 0, 0, 0.8); /* Полупрозрачный фон */
+    height: 60px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Равномерное распределение элементов */
+    padding: 0 20px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+}
+
+.d {
+    width: 16px;
+    height: 16px;
+    background-color: red;
+    border-radius: 50%;
+}
+
+.b {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+/* Иконки в шапке */
+.b i {
+    font-size: 28px;
+    color: white;
+    cursor: pointer;
+}
+
+/* Стили для бургера */
+.burger-menu {
+    font-size: 28px;
+    color: white;
+    cursor: pointer;
+    display: block; /* Всегда отображается */
+}
+
+/* Скрытое меню для мобилок */
+@media (max-width: 768px) {
+    .b {
+        display: none;
+    }
+
+    .b.active {
+        display: flex;
+        flex-direction: column;
+        position: absolute;
+        top: 60px;
+        right: 10px;
+        background: rgba(0, 0, 0, 0.9);
+        padding: 10px;
+        border-radius: 10px;
+    }
+}
