@@ -20,3 +20,10 @@ document.addEventListener("DOMContentLoaded", function () {
         console.error("Кнопка закрытия или панель не найдены в DOM.");
     }
 });
+document.addEventListener('DOMContentLoaded', function() {
+    if (/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)) {
+      window.location.replace("https://testee2e.netlify.app/mobile.html");
+    }
+  });
+  
+  

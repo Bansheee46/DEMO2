@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+    <meta http-equiv="refresh" content="0;url=mobile.html">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+    <title>Каталог товаров</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <script>
+        window.onload = function() {
+          if (/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)) {
+            window.location.replace("https://testee2e.netlify.app/mobile.html");
+          }
+        }
+      </script> 
+      <script>
+        if (/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)) {
+          window.location.href = 'mobile.html';
+        } else {
+          window.location.href = 'index.html'; // Или какой-то другой путь для десктопной версии
+        }
+      </script>
+</head>
+<body>
+    <div class="sidebar">
+        <h3>Каталог</h3>
+        <ul>
+            <li><a href="#">Электроника</a></li>
+            <li><a href="#">Игрушки</a></li>
+            <li><a href="#">Аксессуары</a></li>
+            <li><a href="#">Одежда</a></li>
+            <li><a href="#">Бытовая техника</a></li>
+        </ul>
+    </div>
+<header>
+    <div class="top-bar">
+        <div class="left-links">
+            <a href="#">Компания</a>
+            <a href="#">Вопрос-ответ</a>
+            <a href="#">Контакты</a>
+        </div>
+        <div class="right-info">
+            <span><i class="fas fa-map-marker-alt"></i> Москва Бизнес-центр </span>
+            <span><i class="fas fa-phone"></i> +7 900 000-00-00</span>
+            <span class="search-icon"><i class="fas fa-search"></i></span>
+        </div>
+    </div>
+    <div class="nav-bar">
+        <div class="logo">  
+            <span class="logo-icon">🔴</span> <span class="logo-text">Your name</span>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="#">Меню</a></li>
+                <li><a href="#">Услуги</a></li>
+                <li><a href="#">Проекты</a></li>
+                <li><a href="#">Информация</a></li>
+            </ul>
+        </nav>
+        <div class="header-buttons">
+            <button class="call-button">Заказать звонок</button>
+            <div class="cart">
+                <i class="fas fa-shopping-cart"></i>
+                <span class="cart-count">2</span>
+            </div>
+        </div>
+    </div>
+</header>
+
+<main>
+    <h1 class="catalog-title">Каталог товаров - электроника</h1>
+    <div class="catalog">
+        <div class="product">
+            <img src="https://illan-gifts.ru/api/images/naushniki-jbl-jr300-sinie-skladnye-488367.jpeg" alt="Товар 1">
+            <h3>Наушники Wireless</h3>
+            <p class="price">4 990 ₽</p>
+            <button class="add-to-cart">В корзину</button>
+        </div>
+        <div class="product">
+            <img src="https://avatars.mds.yandex.net/get-mpic/5234463/img_id2819387384900565932.jpeg/orig" alt="Товар 2">
+            <h3>Смарт-часы X</h3>
+            <p class="price">9 990 ₽</p>
+            <button class="add-to-cart">В корзину</button>
+        </div>
+        <div class="product">
+            <img src="https://avatars.mds.yandex.net/i?id=16ef61d4342030c97b8f9425389cfa01584686c6-8497871-images-thumbs&n=13" alt="Товар 3">
+            <h3>Беспроводная колонка</h3>
+            <p class="price">6 490 ₽</p>
+            <button class="add-to-cart">В корзину</button>
+        </div>
+        <div class="product">
+            <img src="https://avatars.mds.yandex.net/get-mpic/5277894/img_id5035057075377151185.jpeg/orig" alt="Товар 4">
+            <h3>Геймпад Pro</h3>
+            <p class="price">3 990 ₽</p>
+            <button class="add-to-cart">В корзину</button>
+        </div>
+        <div class="product">
+            <img src="https://illan-gifts.ru/api/images/naushniki-jbl-jr300-sinie-skladnye-488367.jpeg" alt="Товар 1">
+            <h3>Наушники Wireless</h3>
+            <p class="price">4 990 ₽</p>
+            <button class="add-to-cart">В корзину</button>
+        </div>
+        <div class="product">
+            <img src="https://avatars.mds.yandex.net/get-mpic/5234463/img_id2819387384900565932.jpeg/orig" alt="Товар 2">
+            <h3>Смарт-часы X</h3>
+            <p class="price">9 990 ₽</p>
+            <button class="add-to-cart">В корзину</button>
+        </div>
+        <div class="product">
+            <img src="https://avatars.mds.yandex.net/i?id=16ef61d4342030c97b8f9425389cfa01584686c6-8497871-images-thumbs&n=13" alt="Товар 3">
+            <h3>Беспроводная колонка</h3>
+            <p class="price">6 490 ₽</p>
+            <button class="add-to-cart">В корзину</button>
+        </div>
+        <div class="product">
+            <img src="https://avatars.mds.yandex.net/get-mpic/5277894/img_id5035057075377151185.jpeg/orig" alt="Товар 4">
+            <h3>Геймпад Pro</h3>
+            <p class="price">3 990 ₽</p>
+            <button class="add-to-cart">В корзину</button>
+        </div>
+        <div class="product">
+            <img src="https://illan-gifts.ru/api/images/naushniki-jbl-jr300-sinie-skladnye-488367.jpeg" alt="Товар 1">
+            <h3>Наушники Wireless</h3>
+            <p class="price">4 990 ₽</p>
+            <button class="add-to-cart">В корзину</button>
+        </div>
+        <div class="product">
+            <img src="https://avatars.mds.yandex.net/get-mpic/5234463/img_id2819387384900565932.jpeg/orig" alt="Товар 2">
+            <h3>Смарт-часы X</h3>
+            <p class="price">9 990 ₽</p>
+            <button class="add-to-cart">В корзину</button>
+        </div>
+        <div class="product">
+            <img src="https://avatars.mds.yandex.net/i?id=16ef61d4342030c97b8f9425389cfa01584686c6-8497871-images-thumbs&n=13" alt="Товар 3">
+            <h3>Беспроводная колонка</h3>
+            <p class="price">6 490 ₽</p>
+            <button class="add-to-cart">В корзину</button>
+        </div>
+        <div class="product">
+            <img src="https://avatars.mds.yandex.net/get-mpic/5277894/img_id5035057075377151185.jpeg/orig" alt="Товар 4">
+            <h3>Геймпад Pro</h3>
+            <p class="price">3 990 ₽</p>
+            <button class="add-to-cart">В корзину</button>
+        </div>
+        <div class="product">
+            <img src="https://illan-gifts.ru/api/images/naushniki-jbl-jr300-sinie-skladnye-488367.jpeg" alt="Товар 1">
+            <h3>Наушники Wireless</h3>
+            <p class="price">4 990 ₽</p>
+            <button class="add-to-cart">В корзину</button>
+        </div>
+        <div class="product">
+            <img src="https://avatars.mds.yandex.net/get-mpic/5234463/img_id2819387384900565932.jpeg/orig" alt="Товар 2">
+            <h3>Смарт-часы X</h3>
+            <p class="price">9 990 ₽</p>
+            <button class="add-to-cart">В корзину</button>
+        </div>
+        <div class="product">
+            <img src="https://avatars.mds.yandex.net/i?id=16ef61d4342030c97b8f9425389cfa01584686c6-8497871-images-thumbs&n=13" alt="Товар 3">
+            <h3>Беспроводная колонка</h3>
+            <p class="price">6 490 ₽</p>
+            <button class="add-to-cart">В корзину</button>
+        </div>
+        <div class="product">
+            <img src="https://avatars.mds.yandex.net/get-mpic/5277894/img_id5035057075377151185.jpeg/orig" alt="Товар 4">
+            <h3>Геймпад Pro</h3>
+            <p class="price">3 990 ₽</p>
+            <button class="add-to-cart">В корзину</button>
+        </div>
+        <div class="product">
+            <img src="https://illan-gifts.ru/api/images/naushniki-jbl-jr300-sinie-skladnye-488367.jpeg" alt="Товар 1">
+            <h3>Наушники Wireless</h3>
+            <p class="price">4 990 ₽</p>
+            <button class="add-to-cart">В корзину</button>
+        </div>
+        <div class="product">
+            <img src="https://avatars.mds.yandex.net/get-mpic/5234463/img_id2819387384900565932.jpeg/orig" alt="Товар 2">
+            <h3>Смарт-часы X</h3>
+            <p class="price">9 990 ₽</p>
+            <button class="add-to-cart">В корзину</button>
+        </div>
+        <div class="product">
+            <img src="https://avatars.mds.yandex.net/i?id=16ef61d4342030c97b8f9425389cfa01584686c6-8497871-images-thumbs&n=13" alt="Товар 3">
+            <h3>Беспроводная колонка</h3>
+            <p class="price">6 490 ₽</p>
+            <button class="add-to-cart">В корзину</button>
+        </div>
+        <div class="product">
+            <img src="https://avatars.mds.yandex.net/get-mpic/5277894/img_id5035057075377151185.jpeg/orig" alt="Товар 4">
+            <h3>Геймпад Pro</h3>
+            <p class="price">3 990 ₽</p>
+            <button class="add-to-cart">В корзину</button>
+        </div>
+        <div class="product">
+            <img src="https://illan-gifts.ru/api/images/naushniki-jbl-jr300-sinie-skladnye-488367.jpeg" alt="Товар 1">
+            <h3>Наушники Wireless</h3>
+            <p class="price">4 990 ₽</p>
+            <button class="add-to-cart">В корзину</button>
+        </div>
+        <div class="product">
+            <img src="https://avatars.mds.yandex.net/get-mpic/5234463/img_id2819387384900565932.jpeg/orig" alt="Товар 2">
+            <h3>Смарт-часы X</h3>
+            <p class="price">9 990 ₽</p>
+            <button class="add-to-cart">В корзину</button>
+        </div>
+        <div class="product">
+            <img src="https://avatars.mds.yandex.net/i?id=16ef61d4342030c97b8f9425389cfa01584686c6-8497871-images-thumbs&n=13" alt="Товар 3">
+            <h3>Беспроводная колонка</h3>
+            <p class="price">6 490 ₽</p>
+            <button class="add-to-cart">В корзину</button>
+        </div>
+        <div class="product">
+            <img src="https://avatars.mds.yandex.net/get-mpic/5277894/img_id5035057075377151185.jpeg/orig" alt="Товар 4">
+            <h3>Геймпад Pro</h3>
+            <p class="price">3 990 ₽</p>
+            <button class="add-to-cart">В корзину</button>
+        </div>
+        <button class="catalog-toggle">Каталог</button>
+        <div class="sidebar" id="sidebar">
+            <ul>
+                <li><a href="#">Электроника</a></li>
+                <li><a href="#">Игрушки</a></li>
+                <li><a href="#">Аксессуары</a></li>
+                <li><a href="#">Одежда</a></li>
+                <li><a href="#">Бытовая техника</a></li>
+            </ul>
+        </div>
+        <button class="close-sidebar">Закрыть</button>
+    </ul>
+</div>
+        </div>
+    </div>
+</main>
+<script src="script.js"></script>
+</body>
+</html>

@@ -346,3 +346,9 @@ nav ul li a {
         font-size: 16px;
     }
 }
+
+body {
+    display: none;
+  }
+  
+  
