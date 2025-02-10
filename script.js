@@ -2,6 +2,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const button = document.querySelector(".catalog-toggle");
     const sidebar = document.getElementById("sidebar");
     const closeButton = document.querySelector(".close-sidebar");
+
     if (button && sidebar) {
         button.addEventListener("click", function () {
             sidebar.classList.toggle("active");
@@ -20,10 +21,3 @@ document.addEventListener("DOMContentLoaded", function () {
         console.error("Кнопка закрытия или панель не найдены в DOM.");
     }
 });
-document.addEventListener('DOMContentLoaded', function() {
-    if (/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)) {
-      window.location.replace("https://testee2e.netlify.app/mobile.html");
-    }
-  });
-  
-  
