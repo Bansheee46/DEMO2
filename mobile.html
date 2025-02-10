@@ -11,15 +11,6 @@
     
     <!-- Подключаем скрипты -->
     <script src="mobile.js" defer></script>
-
-    <!-- Перенаправление только если на десктопе -->
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            if (!/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)) {
-                window.location.href = "index.html";
-            }
-        });
-    </script>
 </head>
 <body>
     <div class="h">
