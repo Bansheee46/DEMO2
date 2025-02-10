@@ -26,3 +26,10 @@ document.addEventListener("DOMContentLoaded", function () {
     // остальной код
 });
 
+document.addEventListener("DOMContentLoaded", function () {
+    console.log("DOMContentLoaded сработал");
+    const testDiv = document.createElement("div");
+    testDiv.innerText = "Тестирование рендеринга!";
+    document.body.appendChild(testDiv);
+});
+
