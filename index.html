@@ -2,10 +2,26 @@
 <html lang="ru">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+    <meta http-equiv="refresh" content="0;url=mobile.html">
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
     <title>Каталог товаров</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <script>
+        window.onload = function() {
+          if (/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)) {
+            window.location.replace("https://testee2e.netlify.app/mobile.html");
+          }
+        }
+      </script> 
+      <script>
+        if (/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)) {
+          window.location.href = 'mobile.html';
+        } else {
+          window.location.href = 'index.html'; // Или какой-то другой путь для десктопной версии
+        }
+      </script>
 </head>
 <body>
     <div class="sidebar">
@@ -213,6 +229,9 @@
         <button class="close-sidebar">Закрыть</button>
     </ul>
 </div>
+        </div>
+    </div>
 </main>
+<script src="script.js"></script>
 </body>
 </html>
