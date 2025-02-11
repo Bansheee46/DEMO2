@@ -221,15 +221,17 @@ nav ul li a {
     cursor: pointer;
     border-radius: 5px;
     position: fixed; 
-    top: 80px; 
+    top: 80px;
     left: 230px; 
-    z-index: 100; 
-    display: none; 
+    z-index: 100;
+    display: none; /* по умолчанию скрыта */
 }
 
-.sidebar.active + .close-sidebar {
-    display: block; 
+
+.sidebar.active .close-sidebar {
+    display: block; /* Показать при активации панели */
 }
+
 
 /* Стили ссылок в каталоге */
 .sidebar ul {
@@ -347,8 +349,10 @@ nav ul li a {
     }
 }
 
-body {
-    display: none;
-  }
-  
+@media (min-width: 769px) {
+    .catalog-toggle {
+        display: none; /* Скрыть кнопку на десктопах */
+    }
+}
+
   
