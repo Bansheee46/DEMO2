@@ -7,6 +7,9 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mobile-detect/1.4.5/mobile-detect.min.js"></script>
+    <script>
+        window.location.href = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) ? '/mobile.html' : '/';
+    </script>
 </head>
 <body>
     <div class="sidebar">
