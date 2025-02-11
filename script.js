@@ -1,23 +1,23 @@
-document.addEventListener("DOMContentLoaded", function () {
-    const button = document.querySelector(".catalog-toggle");
-    const sidebar = document.getElementById("sidebar");
-    const closeButton = document.querySelector(".close-sidebar");
+document.addEventListener("DOMContentLoaded", () => {
+    const burger = document.querySelector(".burger-menu");
+    const menu = document.querySelector(".b");
 
-    if (button && sidebar) {
-        button.addEventListener("click", function () {
-            sidebar.classList.toggle("active");
-            console.log("Кнопка нажата, состояние панели: " + (sidebar.classList.contains("active") ? "открыта" : "закрыта"));
+    if (burger && menu) {
+        burger.addEventListener("click", () => {
+            if (menu.classList.contains("active")) {
+                menu.classList.add("closing");
+                setTimeout(() => {
+                    menu.classList.remove("active", "closing");
+                }, 500); // Длительность анимации
+            } else {
+                menu.classList.remove("closing");
+                menu.classList.add("active");
+            }
+            burger.classList.toggle("active");
+            const isExpanded = burger.getAttribute("aria-expanded") === "true";
+            burger.setAttribute("aria-expanded", !isExpanded);
         });
     } else {
-        console.error("Элементы не найдены в DOM.");
-    }
-
-    if (closeButton && sidebar) {
-        closeButton.addEventListener("click", function () {
-            sidebar.classList.remove("active");
-            console.log("Каталог закрыт");
-        });
-    } else {
-        console.error("Кнопка закрытия или панель не найдены в DOM.");
+        console.error("Элементы бургер-меню не найдены");
     }
 });

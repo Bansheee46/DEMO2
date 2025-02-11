@@ -4,7 +4,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (burger && menu) {
         burger.addEventListener("click", () => {
-            menu.classList.toggle("active");
+            if (menu.classList.contains("active")) {
+                menu.classList.add("closing");
+                setTimeout(() => {
+                    menu.classList.remove("active", "closing");
+                }, 500); // Длительность анимации
+            } else {
+                menu.classList.remove("closing");
+                menu.classList.add("active");
+            }
+            burger.classList.toggle("active");
+            const isExpanded = burger.getAttribute("aria-expanded") === "true";
+            burger.setAttribute("aria-expanded", !isExpanded);
         });
     } else {
         console.error("Элементы бургер-меню не найдены");

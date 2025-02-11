@@ -12,14 +12,17 @@
 </head>
 <body>
     <div class="h">
-        <div class="d"></div> <!-- Красная точка -->
-        
-        <div class="b">
-            <i class="fas fa-search"></i>
-            <i class="fas fa-shopping-bag"></i>
+        <div class="d" aria-hidden="true"></div> <!-- Красная точка -->
+
+        <div class="b" aria-label="Меню">
+            <i class="fas fa-search" aria-hidden="true"></i>
+            <i class="fas fa-shopping-bag" aria-hidden="true"></i>
         </div>
 
-        <i class="fas fa-bars burger-menu"></i> <!-- Бургер-меню -->
-    </div>    
+        <div class="burger-menu" aria-label="Открыть меню" aria-expanded="false">
+            <span class="line"></span>
+            <span class="line"></span>
+        </div> <!-- Бургер-меню -->
+    </div>
 </body>
 </html>

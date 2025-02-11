@@ -27,23 +27,51 @@
 
 .b {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 20px;
+    gap: 15px;
+    opacity: 0;
+    transform: translateY(-20px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    background: rgba(0, 0, 0, 0.9);
+    padding: 15px;
+    border-radius: 15px;
+    position: absolute;
+    top: 70px;
+    right: 20px;
+    width: auto;
 }
 
 /* Иконки в шапке */
 .b i {
-    font-size: 28px;
+    font-size: 24px;
     color: white;
     cursor: pointer;
 }
 
 /* Стили для бургера */
 .burger-menu {
-    font-size: 28px;
-    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 30px;
+    height: 24px;
     cursor: pointer;
-    display: block; /* Всегда отображается */
+}
+
+.burger-menu .line {
+    width: 100%;
+    height: 4px;
+    background-color: white;
+    transition: all 0.3s ease;
+}
+
+.burger-menu.active .line:first-child {
+    transform: rotate(45deg) translate(7px, 7px);
+}
+
+.burger-menu.active .line:last-child {
+    transform: rotate(-45deg) translate(7px, -7px);
 }
 
 /* Скрытое меню для мобилок */
@@ -54,12 +82,34 @@
 
     .b.active {
         display: flex;
-        flex-direction: column;
-        position: absolute;
-        top: 60px;
-        right: 10px;
-        background: rgba(0, 0, 0, 0.9);
-        padding: 10px;
-        border-radius: 10px;
+        opacity: 1;
+        transform: translateY(0);
+        animation: fadeIn 0.5s ease-in-out forwards;
+    }
+
+    .b.active.closing {
+        animation: fadeOut 0.5s ease-in-out forwards;
+    }
+}
+
+@keyframes fadeIn {
+    0% {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeOut {
+    0% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-20px);
     }
 }
