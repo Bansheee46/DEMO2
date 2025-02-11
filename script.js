@@ -21,3 +21,11 @@ document.addEventListener("DOMContentLoaded", function () {
         console.error("Кнопка закрытия или панель не найдены в DOM.");
     }
 });
+
+document.addEventListener("DOMContentLoaded", function() {
+    const md = new MobileDetect(window.navigator.userAgent);
+    if (md.mobile()) {
+      window.location.href = "/mobile.html";  // Редирект на мобильную версию
+    }
+  });
+  
