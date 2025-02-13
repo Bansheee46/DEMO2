@@ -10,40 +10,53 @@
   <link rel="stylesheet" href="mobile-styles.css">
 </head>
 <body>
-  <!-- Шапка сайта -->
-  <header class="header">
-    <div class="header__logo">
-      <span class="dot"></span>
-    </div>
-    <nav class="header__nav" id="mobileMenu">
-      <ul class="nav__list">
-        <li class="nav__item"><a href="#" class="nav__link">Главная</a></li>
-        <li class="nav__item"><a href="#" class="nav__link">Категории</a></li>
-        <li class="nav__item"><a href="#" class="nav__link">О нас</a></li>
-      </ul>
-    </nav>
-    <div class="header__actions">
-      <button class="header__action" aria-label="Поиск">
-        <i class="fas fa-search"></i>
-      </button>
-      <button class="header__action" aria-label="Корзина">
-        <i class="fas fa-shopping-bag"></i>
-      </button>
-    </div>
-    <button class="burger-menu" aria-expanded="false" aria-controls="mobileMenu">
-      <span class="burger-menu__line"></span>
-      <span class="burger-menu__line"></span>
-      <span class="burger-menu__line"></span>
-    </button>
-  </header>
-
+    <header class="header">
+        <div class="header__logo">
+          <span class="dot"></span>
+        </div>
+        <nav class="header__nav" id="mobileMenu">
+            <ul class="nav__list">
+              <li class="nav__item">
+                <a href="#" class="nav__link">
+                  <i class="fas fa-info-circle nav__icon"></i>
+                  О нас
+                </a>
+              </li>
+              <li class="nav__item">
+                <a href="#" class="nav__link">
+                  <i class="fas fa-phone nav__icon"></i>
+                  Контакты
+                </a>
+              </li>
+              <li class="nav__item">
+                <a href="#" class="nav__link">
+                  <i class="fas fa-question-circle nav__icon"></i>
+                  FAQ
+                </a>
+              </li>
+            </ul>
+          </nav>
+        <div class="header__actions">
+          <button class="header__action" aria-label="Поиск">
+            <i class="fas fa-search"></i>
+          </button>
+          <button class="header__action" aria-label="Корзина">
+            <i class="fas fa-shopping-bag"></i>
+          </button>
+        </div>
+        <button class="burger-menu" aria-expanded="false" aria-controls="mobileMenu">
+          <span class="burger-menu__line"></span>
+          <span class="burger-menu__line"></span>
+          <span class="burger-menu__line"></span>
+        </button>
+      </header>
   <!-- Карусель -->
   <section class="carousel">
     <button class="carousel__control carousel__control--prev" aria-label="Предыдущий слайд">
       <i class="fas fa-chevron-left"></i>
     </button>
     <div class="carousel__track">
-      <div class="carousel__item">
+      <div class="carousel__item active">
         <div class="carousel__box">
           <div class="carousel__img">
             <img src="images/electronics.png" alt="Электроника">

@@ -12,8 +12,9 @@
     line-height: 1.6;
   }
   
-  /* Шапка */
-  .header {
+  
+/* Шапка */
+.header {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -33,16 +34,20 @@
     height: 16px;
     background-color: red;
     border-radius: 50%;
+    display: inline-block;
   }
   
-  .header__nav {
+/* Меню */
+.header__nav {
     display: none; /* Скрыто по умолчанию */
     position: absolute;
-    top: 60px;
+    top: 60px; /* Под шапкой */
     left: 0;
     background-color: rgba(0, 0, 0, 0.8);
     width: 100%;
     z-index: 999;
+    padding: 20px;
+    box-sizing: border-box;
   }
   
   .header__nav.active {
@@ -51,17 +56,32 @@
   
   .nav__list {
     list-style: none;
-    padding: 10px;
+    padding: 0;
+    margin: 0;
   }
   
   .nav__item {
-    margin: 10px 0;
+    margin: 15px 0; /* Увеличенные отступы между пунктами */
   }
   
   .nav__link {
     color: white;
     text-decoration: none;
     font-size: 18px;
+    display: flex;
+    align-items: center; /* Выравнивание текста и иконки */
+    padding: 10px;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+  }
+  
+  .nav__link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  .nav__icon {
+    margin-right: 10px; /* Отступ между иконкой и текстом */
+    font-size: 20px; /* Размер иконки */
   }
   
   .header__actions {
@@ -86,6 +106,10 @@
     flex-direction: column;
     gap: 4px;
     cursor: pointer;
+    z-index: 1000; /* Выше меню */
+    background: none;
+    border: none;
+    padding: 0;
   }
   
   .burger-menu__line {
@@ -106,9 +130,8 @@
   .burger-menu.active .burger-menu__line:nth-child(3) {
     transform: rotate(-45deg) translateY(-8px);
   }
-  
   /* Карусель */
-  .carousel {
+.carousel {
     position: relative;
     width: 100%;
     max-width: 360px;
@@ -118,13 +141,22 @@
   
   .carousel__track {
     display: flex;
-    gap: 10px;
     transition: transform 0.5s ease-in-out;
+    padding: 0 20px; /* Отступы для эффекта стека */
+    gap: 10px; /* Расстояние между элементами */
   }
   
   .carousel__item {
     flex: 0 0 auto;
     text-align: center;
+    transform: scale(0.8); /* Уменьшаем неактивные элементы */
+    opacity: 0.6; /* Прозрачность для неактивных элементов */
+    transition: transform 0.5s, opacity 0.5s;
+  }
+  
+  .carousel__item.active {
+    transform: scale(1); /* Активный элемент в центре */
+    opacity: 1; /* Полная видимость */
   }
   
   .carousel__box {
@@ -184,7 +216,6 @@
     color: #ccc;
   }
   
-  /* Раздел "Электроника" */
   .section {
     text-align: center;
     margin: 20px auto;
@@ -194,9 +225,9 @@
     font-size: 24px;
     font-weight: 700;
     background: linear-gradient(45deg, #fff, #ccc);
-    -webkit-background-clip: text; /* Для WebKit-браузеров */
-    background-clip: text; /* Стандартное свойство */
-    -webkit-text-fill-color: transparent; /* Прозрачный текст */
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
     position: relative;
   }
   
