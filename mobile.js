@@ -91,3 +91,14 @@ document.addEventListener("DOMContentLoaded", () => {
       console.error("Ошибка: Не все элементы карусели найдены в DOM.");
     }
   });
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const cards = document.querySelectorAll(".product-card");
+  
+    cards.forEach((card, index) => {
+      setTimeout(() => {
+        card.style.opacity = "1";
+        card.style.transform = "translateY(0)";
+      }, index * 200); // Задержка для каждой карточки
+    });
+  });

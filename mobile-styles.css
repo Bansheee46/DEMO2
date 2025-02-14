@@ -13,137 +13,111 @@
   }
   
   
-/* Шапка */
-.header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background-color: rgba(0, 0, 0, 0.8);
-    height: 60px;
-    padding: 0 20px;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    z-index: 1000;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  * Меню */
+  .header__nav {
+      display: none; /* Скрыто по умолчанию */
+      position: absolute;
+      top: 60px; /* Под шапкой */
+      left: 0;
+      background-color: rgba(0, 0, 0, 0.8);
+      width: 100%;
+      z-index: 999;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    
+    .header__nav.active {
+      display: block;
+    }
+    
+    .nav__list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    
+    .nav__item {
+      margin: 15px 0; /* Увеличенные отступы между пунктами */
+    }
+    
+    .nav__link {
+      color: white;
+      text-decoration: none;
+      font-size: 18px;
+      display: flex;
+      align-items: center; /* Выравнивание текста и иконки */
+      padding: 10px;
+      border-radius: 5px;
+      transition: background-color 0.3s ease;
+    }
+    
+    .nav__link:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .nav__icon {
+      margin-right: 10px; /* Отступ между иконкой и текстом */
+      font-size: 20px; /* Размер иконки */
   }
+    
+    .header__nav {
+      display: none; /* Скрыто по умолчанию */
+      position: absolute;
+      top: 60px;
+      left: 0;
+      background-color: rgba(0, 0, 0, 0.8);
+      width: 100%;
+      z-index: 999;
+      padding: 20px;
+    }
+    
+    .header__nav.active {
+      display: block;
+    }
+    
+    .nav__list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    
+    .nav__item {
+      margin: 15px 0;
+    }
+    
+    .nav__link {
+      color: white;
+      text-decoration: none;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      padding: 10px;
+      border-radius: 5px;
+      transition: background-color 0.3s ease;
+    }
+    
+    .nav__link:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .nav__icon {
+      margin-right: 10px;
+      font-size: 20px;
+    }
   
-  .header__logo .dot {
-    width: 16px;
-    height: 16px;
-    background-color: red;
-    border-radius: 50%;
-    display: inline-block;
-  }
-  
-/* Меню */
-.header__nav {
-    display: none; /* Скрыто по умолчанию */
-    position: absolute;
-    top: 60px; /* Под шапкой */
-    left: 0;
-    background-color: rgba(0, 0, 0, 0.8);
-    width: 100%;
-    z-index: 999;
-    padding: 20px;
-    box-sizing: border-box;
-  }
-  
-  .header__nav.active {
-    display: block;
-  }
-  
-  .nav__list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-  
-  .nav__item {
-    margin: 15px 0; /* Увеличенные отступы между пунктами */
-  }
-  
-  .nav__link {
-    color: white;
-    text-decoration: none;
-    font-size: 18px;
-    display: flex;
-    align-items: center; /* Выравнивание текста и иконки */
-    padding: 10px;
-    border-radius: 5px;
-    transition: background-color 0.3s ease;
-  }
-  
-  .nav__link:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-  }
-  
-  .nav__icon {
-    margin-right: 10px; /* Отступ между иконкой и текстом */
-    font-size: 20px; /* Размер иконки */
-  }
-  
-  .header__actions {
-    display: flex;
-    gap: 10px;
-  }
-  
-  .header__action {
-    background: none;
-    border: none;
-    color: white;
-    font-size: 24px;
-    cursor: pointer;
-  }
-  
-  .header__action:hover {
-    color: #ccc;
-  }
-  
-  .burger-menu {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    cursor: pointer;
-    z-index: 1000; /* Выше меню */
-    background: none;
-    border: none;
-    padding: 0;
-  }
-  
-  .burger-menu__line {
-    width: 30px;
-    height: 4px;
-    background-color: white;
-    transition: all 0.3s ease;
-  }
-  
-  .burger-menu.active .burger-menu__line:nth-child(1) {
-    transform: rotate(45deg) translateY(8px);
-  }
-  
-  .burger-menu.active .burger-menu__line:nth-child(2) {
-    opacity: 0;
-  }
-  
-  .burger-menu.active .burger-menu__line:nth-child(3) {
-    transform: rotate(-45deg) translateY(-8px);
-  }
   /* Карусель */
 .carousel {
     position: relative;
-    width: 100%;
-    max-width: 360px;
-    margin: 80px auto 20px;
+    width: 100%; /* Занимает всю ширину экрана */
     overflow: hidden;
+    padding: 20px 0; /* Отступы сверху и снизу */
   }
   
   .carousel__track {
     display: flex;
     transition: transform 0.5s ease-in-out;
-    padding: 0 20px; /* Отступы для эффекта стека */
     gap: 10px; /* Расстояние между элементами */
+    padding: 0 20px; /* Отступы по бокам */
   }
   
   .carousel__item {
@@ -205,33 +179,58 @@
   }
   
   .carousel__control--prev {
-    left: 5px;
+    left: 10px;
   }
   
   .carousel__control--next {
-    right: 5px;
+    right: 10px;
   }
   
   .carousel__control:hover {
     color: #ccc;
   }
   
-  .section {
+/* Секция с заголовком */
+.section {
     text-align: center;
     margin: 20px auto;
   }
   
   .section__heading {
     font-size: 24px;
-    font-weight: 700;
-    background: linear-gradient(45deg, #fff, #ccc);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+    font-weight: bold;
     position: relative;
   }
   
-  .section__heading .underline {
+  .text-3d {
+    display: inline-block;
+    font-size: 48px; /* Размер текста */
+    font-weight: bold;
+    color: #fff; /* Основной цвет текста */
+    letter-spacing: 4px; /* Расстояние между буквами */
+    text-transform: uppercase; /* Заглавные буквы */
+    position: relative;
+    text-shadow:
+      2px 2px 0 #ccc, /* Первый слой тени */
+      4px 4px 0 #bbb, /* Второй слой тени */
+      6px 6px 0 #aaa, /* Третий слой тени */
+      8px 8px 0 #999; /* Четвертый слой тени */
+
+      .text-3d {
+        background: linear-gradient(45deg, #ff6f61, #ff9472);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        transition: transform 0.3s ease;
+      }
+      
+      .text-3d:hover {
+        transform: scale(1.1); /* Увеличение текста при наведении */
+      }
+  }
+  
+  /* Анимация подчеркивания */
+  .underline {
     position: absolute;
     left: 50%;
     bottom: -5px;
@@ -263,3 +262,111 @@
       height: 120px;
     }
   }
+
+/* Секция товаров */
+.products {
+    padding: 20px;
+    background-color: #f5f5f5;
+  }
+  
+  .products__heading {
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #333;
+  }
+  
+  .products__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* Адаптивная сетка */
+    gap: 20px;
+  }
+  
+  /* Карточка товара */
+  .product-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: 15px; /* Закругленные углы */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .product-card:hover {
+    transform: translateY(-10px); /* Плавное поднятие при наведении */
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* Увеличенная тень */
+  }
+  
+  .product-card__image {
+    position: relative;
+    height: 200px; /* Фиксированная высота карточки */
+    overflow: hidden;
+  }
+  
+  .product-card__image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Изображение заполняет контейнер */
+    transition: transform 0.3s ease;
+  }
+  
+  .product-card:hover .product-card__image img {
+    transform: scale(1.1); /* Эффект увеличения изображения */
+  }
+  
+  /* Оверлей с текстом */
+  .product-card__overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+    padding: 15px;
+    color: white;
+    text-align: center;
+    transition: background 0.3s ease;
+  }
+  
+  .product-card:hover .product-card__overlay {
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.6));
+  }
+  
+  .product-card__title {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+  
+  .product-card__description {
+    font-size: 14px;
+    margin-bottom: 10px;
+    opacity: 0.8;
+  }
+  
+  .product-card__price {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+  
+  .product-card__button {
+    background-color: #ff6f61;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .product-card__button:hover {
+    background-color: #ff4d4d; /* Темнее при наведении */
+  }
+  
+
+  .product-card {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+  }             
