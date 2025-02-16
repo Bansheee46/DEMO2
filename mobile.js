@@ -10,7 +10,6 @@ document.addEventListener("DOMContentLoaded", () => {
         mobileNav.classList.toggle("active");
         burgerMenu.classList.toggle("active");
   
-        // Закрытие меню при клике вне его области
         if (!isExpanded) {
           document.addEventListener("click", closeMenuOnClickOutside);
         } else {
@@ -42,7 +41,10 @@ document.addEventListener("DOMContentLoaded", () => {
         const itemWidth = items[0].clientWidth + 10; // Ширина элемента + gap
         const offset = (carousel.clientWidth - itemWidth) / 2; // Центрирование активного элемента
   
-        track.style.transform = `translateX(${-index * itemWidth + offset}px)`;
+        // Проверяем, что ширина элементов больше 0
+        if (itemWidth > 0) {
+          track.style.transform = `translateX(${-index * itemWidth + offset}px)`;
+        }
   
         items.forEach((item, i) => {
           item.classList.toggle("active", i === index);
@@ -85,14 +87,43 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       });
   
-      // Центрируем первый элемент при загрузке
-      updateCarousel();
+      // Инициализация карусели при загрузке
+      function initializeCarousel() {
+        // Ждём, пока все изображения загрузятся
+        const images = track.querySelectorAll("img");
+        let loadedImages = 0;
+  
+        images.forEach((img) => {
+          if (img.complete) {
+            loadedImages++;
+          } else {
+            img.addEventListener("load", () => {
+              loadedImages++;
+              if (loadedImages === images.length) {
+                updateCarousel();
+              }
+            });
+          }
+        });
+  
+        // Если изображений нет или они уже загружены
+        if (images.length === 0 || loadedImages === images.length) {
+          updateCarousel();
+        }
+      }
+  
+      // Инициализация при загрузке страницы
+      window.addEventListener("load", initializeCarousel);
+  
+      // Обновление карусели при изменении размера окна
+      window.addEventListener("resize", () => {
+        updateCarousel();
+      });
     } else {
       console.error("Ошибка: Не все элементы карусели найдены в DOM.");
     }
-  });
-
-  document.addEventListener("DOMContentLoaded", () => {
+  
+    // Анимации карточек товаров
     const cards = document.querySelectorAll(".product-card");
   
     cards.forEach((card, index) => {
