@@ -355,4 +355,120 @@ nav ul li a {
     }
 }
 
+/* Footer */
+.footer {
+    background-color: #222; /* Темный фон */
+    color: white;
+    padding: 40px 20px 20px; /* Отступы сверху и снизу */
+  }
+  
+  .footer__container {
+    display: flex;
+    flex-wrap: wrap; /* Размещение блоков в несколько строк на маленьких экранах */
+    justify-content: space-between;
+    max-width: 1200px; /* Максимальная ширина контейнера */
+    margin: 0 auto; /* Центрирование */
+  }
+  
+  .footer__contacts,
+  .footer__links,
+  .footer__social {
+    flex: 1 1 300px; /* Ширина блоков */
+    margin-bottom: 20px; /* Отступ между блоками */
+  }
+  
+  .footer__title {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 15px;
+  }
+  
+  .footer__text {
+    font-size: 14px;
+    margin-bottom: 10px;
+  }
+  
+  .footer__text a {
+    color: #ff6f61; /* Цвет ссылок */
+    text-decoration: none;
+    transition: color 0.3s ease;
+  }
+  
+  .footer__text a:hover {
+    color: #ff4d4d; /* Цвет при наведении */
+  }
+  
+  .footer__list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .footer__link {
+    font-size: 14px;
+    color: white;
+    text-decoration: none;
+    margin-bottom: 10px;
+    display: block;
+    transition: color 0.3s ease;
+  }
+  
+  .footer__link:hover {
+    color: #ff6f61;
+  }
+  
+  .footer__social-icons {
+    display: flex;
+    gap: 15px; /* Расстояние между иконками */
+  }
+  
+  .footer__icon {
+    color: white;
+    font-size: 20px;
+    transition: color 0.3s ease;
+  }
+  
+  .footer__icon:hover {
+    color: #ff6f61;
+  }
+  
+  /* Нижняя строка с копирайтом */
+.footer__bottom {
+    text-align: center;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2); /* Линия разделения */
+  }
+  
+  .footer__copyright {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 10px;
+  }
+  
+  .footer__made-by {
+    font-size: 14px;
+    color: white;
+  }
+  
+  .gradient-text {
+    background: linear-gradient(90deg, #ff6f61, #ff4d4d, #ff6f61);
+    background-size: 200% 100%; /* Размер градиента */
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: gradient-animation 3s infinite; /* Анимация переливания */
+  }
+  
+  /* Анимация переливания */
+  @keyframes gradient-animation {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
   
