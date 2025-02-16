@@ -146,11 +146,13 @@
   /*      Карусель      */
   /* ================== */
   
-  .carousel {
+  /* Карусель */
+.carousel {
     position: relative;
-    width: 100%; /* Занимает всю ширину экрана */
+    width: 100%;
     overflow: hidden;
-    padding: 20px 0; /* Отступы сверху и снизу */
+    padding: 80px 0 20px; /* Отступ сверху = высота шапки + немного места */
+    margin-top: 60px; /* Дополнительный отступ под шапкой */
   }
   
   .carousel__track {
@@ -182,16 +184,34 @@
     height: 150px;
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
+  }
+  
+  .carousel__img {
+    flex: 1 1 70%; /* Изображение занимает 70% высоты */
+    overflow: hidden;
   }
   
   .carousel__img img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: cover; /* Изображение заполняет контейнер */
   }
-
+  
+  .carousel__text {
+    flex: 0 0 30%; /* Текст занимает 30% высоты */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px;
+    font-size: 14px;
+    color: #333;
+    text-align: center;
+    background-color: #f9f9f9; /* Фон для текста */
+  }
+  
   /* Стили для стрелок */
-.carousel__control {
+  .carousel__control {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
