@@ -21,22 +21,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // Баннер
   const banner = document.getElementById('banner');
   const bannerToggle = document.querySelector('.banner__toggle');
-  let isCollapsed = false;
 
   if (banner && bannerToggle) {
-    // Обработка прокрутки
-    window.addEventListener('scroll', () => {
-      const bannerRect = banner.getBoundingClientRect();
-      if (bannerRect.bottom < 50 && !isCollapsed) { // Когда баннер уходит под шапку
-        banner.classList.add('collapsed');
-        bannerToggle.classList.add('active');
-        isCollapsed = true;
-      } else if (window.scrollY < 50 && isCollapsed) { // Когда возвращаемся вверх
-        banner.classList.remove('collapsed');
-        bannerToggle.classList.remove('active');
-        isCollapsed = false;
-      }
-    });
+    // Изначально баннер свёрнут
+    let isCollapsed = true;
 
     // Клик по стрелке
     bannerToggle.addEventListener('click', () => {
@@ -115,14 +103,4 @@ document.addEventListener('DOMContentLoaded', () => {
     card.style.transition = 'opacity 0.4s, transform 0.4s';
     observer.observe(card);
   });
-
-  // Кнопка каталога
-  const catalogToggle = document.querySelector('.catalog-toggle-mobile');
-  if (catalogToggle && mobileNav) {
-    catalogToggle.addEventListener('click', () => {
-      const isHidden = mobileNav.getAttribute('aria-hidden') === 'true';
-      mobileNav.setAttribute('aria-hidden', !isHidden);
-      burgerMenu.setAttribute('aria-expanded', isHidden);
-    });
-  }
 });

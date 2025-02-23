@@ -131,26 +131,6 @@ body {
   transform: rotate(-45deg) translate(5px, -5px);
 }
 
-/* Кнопка каталога */
-.catalog-toggle-mobile {
-  position: fixed;
-  top: 60px;
-  left: 10px;
-  background-color: #ff6f61;
-  border: none;
-  color: #fff;
-  font-size: 18px;
-  padding: 8px;
-  border-radius: 4px;
-  cursor: pointer;
-  z-index: 999;
-  transition: background-color 0.3s;
-}
-
-.catalog-toggle-mobile:hover {
-  background-color: #ff4d4d;
-}
-
 /* Баннер */
 .banner {
   position: sticky;
@@ -159,13 +139,18 @@ body {
   color: #fff;
   padding: 10px;
   z-index: 900;
-  transition: height 0.3s ease;
   overflow: hidden;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .banner.collapsed {
-  height: 40px; /* Высота только заголовка */
+  height: 40px;
+  animation: collapseBanner 0.3s ease forwards;
+}
+
+.banner:not(.collapsed) {
+  height: 140px;
+  animation: expandBanner 0.3s ease forwards;
 }
 
 .banner__header {
@@ -221,6 +206,17 @@ body {
 .banner__button:hover {
   background-color: #ff4d4d;
   color: #fff;
+}
+
+/* Анимации для баннера */
+@keyframes expandBanner {
+  from { height: 40px; }
+  to { height: 140px; }
+}
+
+@keyframes collapseBanner {
+  from { height: 140px; }
+  to { height: 40px; }
 }
 
 /* Карусель */
