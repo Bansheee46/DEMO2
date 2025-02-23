@@ -28,11 +28,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentIndex = 0;
 
     const updateCarousel = () => {
-      const itemWidth = items[0].offsetWidth + 15; // Ширина + gap
+      const itemWidth = items[0].offsetWidth + 10; // Ширина + gap
       const containerWidth = track.parentElement.offsetWidth;
-      const totalWidth = itemWidth * items.length;
-      const maxOffset = Math.max(0, (totalWidth - containerWidth) / 2);
-      const offset = Math.min(maxOffset, (containerWidth - itemWidth) / 2);
+      const offset = (containerWidth - itemWidth) / 2;
       track.style.transform = `translateX(${-currentIndex * itemWidth + offset}px)`;
       items.forEach((item, i) => item.toggleAttribute('data-active', i === currentIndex));
     };
@@ -52,8 +50,8 @@ document.addEventListener('DOMContentLoaded', () => {
     track.addEventListener('touchstart', (e) => (startX = e.touches[0].clientX));
     track.addEventListener('touchend', (e) => {
       const endX = e.changedTouches[0].clientX;
-      if (startX - endX > 50) nextButton.click();
-      if (endX - startX > 50) prevButton.click();
+      if (startX - endX > 30) nextButton.click();
+      if (endX - startX > 30) prevButton.click();
     });
 
     window.addEventListener('load', updateCarousel);
@@ -74,13 +72,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
     },
-    { threshold: 0.1 }
+    { threshold: 0.2 }
   );
 
   cards.forEach((card) => {
     card.style.opacity = '0';
-    card.style.transform = 'translateY(20px)';
-    card.style.transition = 'opacity 0.5s, transform 0.5s';
+    card.style.transform = 'translateY(15px)';
+    card.style.transition = 'opacity 0.4s, transform 0.4s';
     observer.observe(card);
   });
 
