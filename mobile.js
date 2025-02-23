@@ -18,6 +18,40 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Баннер
+  const banner = document.getElementById('banner');
+  const bannerToggle = document.querySelector('.banner__toggle');
+  let isCollapsed = false;
+
+  if (banner && bannerToggle) {
+    // Обработка прокрутки
+    window.addEventListener('scroll', () => {
+      const bannerRect = banner.getBoundingClientRect();
+      if (bannerRect.bottom < 50 && !isCollapsed) { // Когда баннер уходит под шапку
+        banner.classList.add('collapsed');
+        bannerToggle.classList.add('active');
+        isCollapsed = true;
+      } else if (window.scrollY < 50 && isCollapsed) { // Когда возвращаемся вверх
+        banner.classList.remove('collapsed');
+        bannerToggle.classList.remove('active');
+        isCollapsed = false;
+      }
+    });
+
+    // Клик по стрелке
+    bannerToggle.addEventListener('click', () => {
+      if (isCollapsed) {
+        banner.classList.remove('collapsed');
+        bannerToggle.classList.remove('active');
+        isCollapsed = false;
+      } else {
+        banner.classList.add('collapsed');
+        bannerToggle.classList.add('active');
+        isCollapsed = true;
+      }
+    });
+  }
+
   // Карусель
   const track = document.querySelector('.carousel__track');
   const items = document.querySelectorAll('.carousel__item');
@@ -77,7 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   cards.forEach((card) => {
     card.style.opacity = '0';
-    card.style.transform = 'translateY(15px)';
+    card.style.transform = 'translateY(10px)';
     card.style.transition = 'opacity 0.4s, transform 0.4s';
     observer.observe(card);
   });
