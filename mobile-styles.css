@@ -422,16 +422,45 @@ body {
 }
 
 .footer__copyright {
-  font-size: 12px;
+  font-size: 14px;
   color: rgba(255, 255, 255, 0.7);
 }
 
 .footer__made-by {
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .gradient-text {
   background: linear-gradient(90deg, #ff6f61, #ff4d4d);
   -webkit-background-clip: text;
   color: transparent;
+}
+
+/* Медиазапросы */
+@media (max-width: 768px) {
+  .carousel__item {
+    flex: 0 0 120px;
+  }
+
+  .carousel__box {
+    height: 150px;
+  }
+
+  .products__grid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .products__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .product-card img {
+    height: 250px;
+  }
+
+  .header__nav {
+    width: 100%;
+  }
 }
