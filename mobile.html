@@ -15,25 +15,19 @@
     </div>
     <nav class="header__nav" id="mobileMenu" aria-hidden="true">
       <div class="nav__glass">
+        <div class="nav__logo">
+          <span class="dot"></span>
+        </div>
+        <button class="nav__close" aria-label="Закрыть меню">×</button>
+        <div class="nav__lines">
+          <div class="nav__line" data-target="nav__item-1"></div>
+          <div class="nav__line" data-target="nav__item-2"></div>
+          <div class="nav__line" data-target="nav__item-3"></div>
+        </div>
         <ul class="nav__list">
-          <li class="nav__item">
-            <a href="#" class="nav__link">
-              <i class="fas fa-info-circle nav__icon"></i>
-              <span class="nav__text">О нас</span>
-            </a>
-          </li>
-          <li class="nav__item">
-            <a href="#" class="nav__link">
-              <i class="fas fa-phone nav__icon"></i>
-              <span class="nav__text">Контакты</span>
-            </a>
-          </li>
-          <li class="nav__item">
-            <a href="#" class="nav__link">
-              <i class="fas fa-question-circle nav__icon"></i>
-              <span class="nav__text">FAQ</span>
-            </a>
-          </li>
+          <li class="nav__item" id="nav__item-1"><a href="#" class="nav__link" tabindex="-1">О нас</a></li>
+          <li class="nav__item" id="nav__item-2"><a href="#" class="nav__link" tabindex="-1">Контакты</a></li>
+          <li class="nav__item" id="nav__item-3"><a href="#" class="nav__link" tabindex="-1">FAQ</a></li>
         </ul>
       </div>
     </nav>
@@ -47,7 +41,7 @@
       <span class="burger-menu__line"></span>
     </button>
   </header>
-
+  
   <!-- Баннер -->
   <section class="banner collapsed" id="banner">
     <div class="banner__header">

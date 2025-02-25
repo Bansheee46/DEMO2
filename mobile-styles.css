@@ -66,70 +66,159 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 111, 97, 0.05));
-  backdrop-filter: blur(12px); /* Увеличил блюр для эффекта */
-  border-radius: 0; /* Убрал закругление, так как полноэкранное */
-  padding: 60px 20px 20px; /* Отступ сверху для шапки */
+  background: transparent;
+  padding: 60px 20px 20px;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  transform-origin: top right;
-  animation: menuReveal 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  opacity: 0;
+  transition: opacity 0.5s ease, background 0.5s ease, box-shadow 0.5s ease;
 }
 
-.header__nav[aria-hidden="true"] .nav__glass {
-  animation: menuHide 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+.nav__glass.active {
+  opacity: 1;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.9), #ff6f61) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.nav__logo {
+  position: absolute;
+  top: 20px;
+  left: -50px;
+  opacity: 0;
+  transition: left 0.5s ease, opacity 0.5s ease, transform 0.5s ease;
+}
+
+.nav__logo .dot {
+  display: inline-block;
+  width: 40px;
+  height: 40px;
+  background-color: #ff6f61;
+  border-radius: 50%;
+  box-shadow: 0 0 15px rgba(255, 111, 97, 0.5);
+}
+
+.nav__logo.active {
+  left: 20px;
+  opacity: 1;
+  transform: rotate(360deg);
+}
+
+.nav__close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: #fff; /* Белый цвет для контраста */
+  font-size: 30px; /* Крупный крестик */
+  font-weight: 700;
+  cursor: pointer;
+  padding: 15px; /* Заметные отступы */
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.5s ease, color 0.3s ease, transform 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 0 15px rgba(255, 111, 97, 0.5); /* Круглое свечение (одинаковые радиусы) */
+}
+
+.nav__close.active {
+  opacity: 1;
+}
+
+.nav__close:hover {
+  color: #ff6f61; /* Цвет сайта при наведении */
+  transform: scale(1.1);
+  background: rgba(255, 255, 255, 0.2); /* Лёгкий фон при наведении */
+  box-shadow: 0 0 20px rgba(255, 111, 97, 0.7); /* Увеличенное круглое свечение */
+}
+
+.nav__lines {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.nav__lines.active {
+  opacity: 1;
+}
+
+.nav__line {
+  position: absolute;
+  height: 2px;
+  background: linear-gradient(to right, rgba(255, 111, 97, 0), #ff6f61);
+  transform-origin: left;
+  width: 0;
+  opacity: 0;
+  transition: width 0.5s ease, opacity 0.5s ease;
+}
+
+.nav__line.active {
+  width: calc(100% - 100px) !important;
+  opacity: 0.7;
 }
 
 .nav__list {
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 25px; /* Больше пространства для полноэкранного вида */
+  gap: 40px;
   width: 100%;
+  margin-left: 40px;
+  margin-top: 80px;
+  position: relative;
+  z-index: 2;
+  opacity: 0;
+  transform: translateX(-20px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
 }
 
-.nav__item {
-  margin: 0;
+.nav__list.active {
+  opacity: 1;
+  transform: translateX(0) !important;
 }
 
+/* Исправленный стиль для текста */
 .nav__link {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  color: #fff;
+  color: #fff !important; /* Белый цвет текста с приоритетом */
+  font-size: 28px !important; /* Крупный текст с приоритетом */
+  font-weight: 700 !important; /* Жирный текст с приоритетом */
   text-decoration: none;
-  font-size: 22px; /* Увеличил шрифт для полноэкранного меню */
-  font-weight: 600;
-  padding: 15px 20px;
-  border-radius: 15px;
-  background: rgba(255, 255, 255, 0.05);
+  padding: 15px 0;
   transition: all 0.3s ease;
+  position: relative;
+  z-index: 2;
 }
 
 .nav__link:hover {
-  background: rgba(255, 111, 97, 0.3);
-  transform: scale(1.05);
+  color: #fff !important;
+  background: rgba(255, 255, 255, 0.1);
+  transform: scale(1.1);
 }
 
-.nav__icon {
-  font-size: 28px; /* Крупные иконки */
-  color: #ff6f61;
-  transition: transform 0.3s ease, color 0.3s ease;
+/* Положение линий для каждого пункта */
+#nav__item-1 { top: 0; }
+#nav__item-2 { top: calc(40px + 1 * 70px); }
+#nav__item-3 { top: calc(40px + 2 * 70px); }
+
+.nav__line[data-target="nav__item-1"] {
+  top: calc(20px + 40px / 2);
+  left: 60px;
 }
 
-.nav__link:hover .nav__icon {
-  transform: rotate(15deg);
-  color: #fff;
+.nav__line[data-target="nav__item-2"] {
+  top: calc(20px + 40px / 2 + 110px);
+  left: 60px;
 }
 
-.nav__text {
-  opacity: 0.9;
-  transition: opacity 0.3s ease;
-}
-
-.nav__link:hover .nav__text {
-  opacity: 1;
+.nav__line[data-target="nav__item-3"] {
+  top: calc(20px + 40px / 2 + 220px);
+  left: 60px;
 }
 
 .header__actions {
@@ -183,29 +272,6 @@ body {
   transform: translateY(-7px) rotate(-45deg);
   width: 24px;
   background: #ff6f61;
-}
-
-/* Анимации для меню */
-@keyframes menuReveal {
-  0% {
-    transform: scale(0);
-    opacity: 0;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-@keyframes menuHide {
-  0% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  100% {
-    transform: scale(0);
-    opacity: 0;
-  }
 }
 
 /* Баннер */
