@@ -23,10 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const bannerToggle = document.querySelector('.banner__toggle');
 
   if (banner && bannerToggle) {
-    // Изначально баннер свёрнут
     let isCollapsed = true;
-
-    // Клик по стрелке
     bannerToggle.addEventListener('click', () => {
       if (isCollapsed) {
         banner.classList.remove('collapsed');
@@ -50,7 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentIndex = 0;
 
     const updateCarousel = () => {
-      const itemWidth = items[0].offsetWidth + 10; // Ширина + gap
+      const itemWidth = items[0].offsetWidth + 10;
       const containerWidth = track.parentElement.offsetWidth;
       const offset = (containerWidth - itemWidth) / 2;
       track.style.transform = `translateX(${-currentIndex * itemWidth + offset}px)`;
@@ -67,7 +64,6 @@ document.addEventListener('DOMContentLoaded', () => {
       updateCarousel();
     });
 
-    // Свайп
     let startX;
     track.addEventListener('touchstart', (e) => (startX = e.touches[0].clientX));
     track.addEventListener('touchend', (e) => {
@@ -102,5 +98,28 @@ document.addEventListener('DOMContentLoaded', () => {
     card.style.transform = 'translateY(10px)';
     card.style.transition = 'opacity 0.4s, transform 0.4s';
     observer.observe(card);
+  });
+
+  // Анимация иконок в островке по клику
+  const contactLinks = document.querySelectorAll('.floating-contact__link');
+
+  contactLinks.forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      const href = link.getAttribute('href');
+
+      contactLinks.forEach(otherLink => {
+        if (otherLink !== link) {
+          otherLink.classList.remove('active');
+        }
+      });
+
+      link.classList.add('active');
+
+      setTimeout(() => {
+        link.classList.remove('active');
+        window.location.href = href;
+      }, 600);
+    });
   });
 });

@@ -1,10 +1,11 @@
-/* Общие стили */
+/* Обнуление стилей */
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
+/* Базовые стили для body */
 body {
   font-family: 'Arial', sans-serif;
   background-color: #f5f5f5;
@@ -16,16 +17,16 @@ body {
   margin: 0 auto;
 }
 
-/* Шапка */
+/* Шапка сайта */
 .header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background-color: rgba(0, 0, 0, 0.9);
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.9);
   height: 50px;
   padding: 0 10px;
   z-index: 1000;
@@ -321,8 +322,8 @@ body {
   border-radius: 10px;
   overflow: hidden;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-  transition: transform 0.3s, box-shadow 0.3s;
   border: 1px solid #eee;
+  transition: transform 0.3s, box-shadow 0.3s;
 }
 
 .product-card:hover {
@@ -459,4 +460,145 @@ body {
   background: linear-gradient(90deg, #ff6f61, #ff4d4d);
   -webkit-background-clip: text;
   color: transparent;
+}
+
+.footer__consultation {
+  margin-top: 10px;
+  font-size: 13px;
+}
+
+.footer__consultation p {
+  margin-bottom: 8px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.footer__contact-options {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+.footer__contact-link {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #ff6f61;
+  text-decoration: none;
+  font-size: 13px;
+  transition: color 0.3s;
+}
+
+.footer__contact-link:hover {
+  color: #ff4d4d;
+}
+
+.footer__contact-link i {
+  font-size: 16px;
+}
+
+/* Фиксированный островок */
+.floating-contact {
+  position: fixed;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.9);
+  padding: 5px 15px;
+  border-radius: 20px;
+  display: flex;
+  gap: 20px;
+  z-index: 1000;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.floating-contact__link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #fff;
+  font-size: 20px;
+  text-decoration: none;
+  padding: 5px;
+  border-radius: 15px;
+  background: transparent;
+  width: 30px; /* Начальная ширина */
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1), 
+              padding 0.6s cubic-bezier(0.4, 0, 0.2, 1), 
+              background 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: expandAndCollapse 2.5s ease-in-out forwards; /* Начальная анимация */
+}
+
+.floating-contact__link.active {
+  width: 120px;
+  padding: 5px 12px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.floating-contact__text {
+  font-size: 14px;
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), 
+              width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: textFade 2.5s ease-in-out forwards; /* Начальная анимация текста */
+}
+
+.floating-contact__link.active .floating-contact__text {
+  opacity: 1;
+  width: 80px;
+}
+
+/* Направление текста для "Позвонить" влево */
+.floating-contact__link:first-child {
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+}
+
+.floating-contact__link:hover {
+  color: #ff6f61;
+}
+
+/* Анимации при загрузке */
+@keyframes expandAndCollapse {
+  0% {
+    width: 30px;
+    padding: 5px;
+    background: transparent;
+  }
+  40% {
+    width: 120px;
+    padding: 5px 12px;
+    background: rgba(255, 255, 255, 0.1);
+  }
+  60% {
+    width: 120px;
+    padding: 5px 12px;
+    background: rgba(255, 255, 255, 0.1);
+  }
+  100% {
+    width: 30px;
+    padding: 5px;
+    background: transparent;
+  }
+}
+
+@keyframes textFade {
+  0% {
+    opacity: 0;
+    width: 0;
+  }
+  40% {
+    opacity: 1;
+    width: 80px;
+  }
+  60% {
+    opacity: 1;
+    width: 80px;
+  }
+  100% {
+    opacity: 0;
+    width: 0;
+  }
 }
