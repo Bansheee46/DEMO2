@@ -43,47 +43,93 @@ body {
 
 .header__nav {
   position: fixed;
-  top: 50px;
-  left: -100%;
+  top: 0;
+  left: 0;
   width: 100%;
   max-width: 480px;
-  height: calc(100% - 50px);
-  background-color: rgba(0, 0, 0, 0.95);
-  padding: 15px;
-  transition: left 0.3s ease;
+  height: 100%;
+  background: transparent;
   z-index: 999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
 }
 
 .header__nav[aria-hidden="false"] {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.nav__glass {
+  position: absolute;
+  top: 0;
   left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 111, 97, 0.05));
+  backdrop-filter: blur(12px); /* Увеличил блюр для эффекта */
+  border-radius: 0; /* Убрал закругление, так как полноэкранное */
+  padding: 60px 20px 20px; /* Отступ сверху для шапки */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform-origin: top right;
+  animation: menuReveal 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.header__nav[aria-hidden="true"] .nav__glass {
+  animation: menuHide 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 .nav__list {
   list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 25px; /* Больше пространства для полноэкранного вида */
+  width: 100%;
 }
 
 .nav__item {
-  margin: 10px 0;
+  margin: 0;
 }
 
 .nav__link {
   display: flex;
   align-items: center;
+  gap: 15px;
   color: #fff;
   text-decoration: none;
-  font-size: 16px;
-  padding: 8px;
-  border-radius: 4px;
-  transition: background-color 0.3s;
+  font-size: 22px; /* Увеличил шрифт для полноэкранного меню */
+  font-weight: 600;
+  padding: 15px 20px;
+  border-radius: 15px;
+  background: rgba(255, 255, 255, 0.05);
+  transition: all 0.3s ease;
 }
 
 .nav__link:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 111, 97, 0.3);
+  transform: scale(1.05);
 }
 
 .nav__icon {
-  margin-right: 10px;
-  font-size: 18px;
+  font-size: 28px; /* Крупные иконки */
+  color: #ff6f61;
+  transition: transform 0.3s ease, color 0.3s ease;
+}
+
+.nav__link:hover .nav__icon {
+  transform: rotate(15deg);
+  color: #fff;
+}
+
+.nav__text {
+  opacity: 0.9;
+  transition: opacity 0.3s ease;
+}
+
+.nav__link:hover .nav__text {
+  opacity: 1;
 }
 
 .header__actions {
@@ -107,21 +153,26 @@ body {
 .burger-menu {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 5px;
   background: none;
   border: none;
   cursor: pointer;
+  padding: 5px;
 }
 
 .burger-menu__line {
-  width: 24px;
+  width: 22px;
   height: 2px;
-  background-color: #fff;
-  transition: all 0.3s ease;
+  background: linear-gradient(90deg, #fff, #ff6f61);
+  border-radius: 5px;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .burger-menu[aria-expanded="true"] .burger-menu__line:nth-child(1) {
-  transform: rotate(45deg) translate(4px, 4px);
+  transform: translateY(7px) rotate(45deg);
+  width: 24px;
+  background: #ff6f61;
 }
 
 .burger-menu[aria-expanded="true"] .burger-menu__line:nth-child(2) {
@@ -129,7 +180,32 @@ body {
 }
 
 .burger-menu[aria-expanded="true"] .burger-menu__line:nth-child(3) {
-  transform: rotate(-45deg) translate(5px, -5px);
+  transform: translateY(-7px) rotate(-45deg);
+  width: 24px;
+  background: #ff6f61;
+}
+
+/* Анимации для меню */
+@keyframes menuReveal {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes menuHide {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0);
+    opacity: 0;
+  }
 }
 
 /* Баннер */
@@ -521,11 +597,11 @@ body {
   padding: 5px;
   border-radius: 15px;
   background: transparent;
-  width: 30px; /* Начальная ширина */
+  width: 30px;
   transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1), 
               padding 0.6s cubic-bezier(0.4, 0, 0.2, 1), 
               background 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-  animation: expandAndCollapse 2.5s ease-in-out forwards; /* Начальная анимация */
+  animation: expandAndCollapse 2.5s ease-in-out forwards;
 }
 
 .floating-contact__link.active {
@@ -542,7 +618,7 @@ body {
   white-space: nowrap;
   transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), 
               width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-  animation: textFade 2.5s ease-in-out forwards; /* Начальная анимация текста */
+  animation: textFade 2.5s ease-in-out forwards;
 }
 
 .floating-contact__link.active .floating-contact__text {
