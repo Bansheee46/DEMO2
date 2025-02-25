@@ -23,8 +23,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // Открытие меню
         animateMenuOpen();
       } else {
-        // Закрытие меню: убираем фокус с ссылок
-        navLinks.forEach(link => link.blur()); // Убираем фокус с ссылок
+        // Закрытие меню: убираем фокус и подчёркивание
+        navLinks.forEach(link => {
+          link.blur(); // Убираем фокус с ссылок
+          link.classList.remove('active'); // Убираем подчёркивание
+        });
         animateMenuClose();
       }
     });
@@ -33,17 +36,33 @@ document.addEventListener('DOMContentLoaded', () => {
     if (navClose) {
       navClose.addEventListener('click', () => {
         console.log('Close button clicked'); // Отладка
-        navLinks.forEach(link => link.blur()); // Убираем фокус
+        navLinks.forEach(link => {
+          link.blur(); // Убираем фокус
+          link.classList.remove('active'); // Убираем подчёркивание
+        });
         mobileNav.setAttribute('aria-hidden', 'true');
         burgerMenu.setAttribute('aria-expanded', 'false');
         animateMenuClose();
       });
     }
 
+    // Обработка клика по ссылкам для подчёркивания
+    navLinks.forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault(); // Предотвращаем переход по ссылке
+        console.log(`Clicked link: ${link.textContent}`); // Отладка
+        navLinks.forEach(l => l.classList.remove('active')); // Убираем подчёркивание с других ссылок
+        link.classList.add('active'); // Добавляем подчёркивание на текущую ссылку
+      });
+    });
+
     document.addEventListener('click', (e) => {
       if (!mobileNav.contains(e.target) && !burgerMenu.contains(e.target) && mobileNav.getAttribute('aria-hidden') === 'false') {
         console.log('Closing menu via click outside'); // Отладка
-        navLinks.forEach(link => link.blur()); // Убираем фокус перед закрытием
+        navLinks.forEach(link => {
+          link.blur(); // Убираем фокус перед закрытием
+          link.classList.remove('active'); // Убираем подчёркивание
+        });
         mobileNav.setAttribute('aria-hidden', 'true');
         burgerMenu.setAttribute('aria-expanded', 'false');
         animateMenuClose();
@@ -61,7 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
       navLogo.classList.add('active');
     });
 
-    // 2. Появляем градиент, фон и крестик после точки (0.5s)
+    // 2. Появляем белый фон, затем градиент после точки (0.5s + 1.5s)
     setTimeout(() => {
       console.log('Animating glass and close...'); // Отладка
       requestAnimationFrame(() => {
@@ -87,7 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
           console.log('Animating text...'); // Отладка
           requestAnimationFrame(() => navList.classList.add('active'));
         }, 200);
-      }, 100);
+      }, 1600); // Задержка 1.6s (0.5s + 1.1s) после появления градиента
     }, 500); // Задержка после выкатывания точки
   }
 
@@ -113,23 +132,61 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Баннер
+  // Баннер "Наши преимущества" (с динамической надписью, с плавной анимацией)
   const banner = document.getElementById('banner');
   const bannerToggle = document.querySelector('.banner__toggle');
 
   if (banner && bannerToggle) {
     let isCollapsed = true;
+
+    // Убедимся, что стрелка видна изначально в сложенном состоянии
+    bannerToggle.classList.add('active'); // Добавляем .active изначально для сложенного состояния
+
     bannerToggle.addEventListener('click', () => {
       if (isCollapsed) {
         banner.classList.remove('collapsed');
-        bannerToggle.classList.remove('active');
+        bannerToggle.classList.add('active');
         isCollapsed = false;
       } else {
         banner.classList.add('collapsed');
-        bannerToggle.classList.add('active');
+        bannerToggle.classList.remove('active');
         isCollapsed = true;
       }
     });
+
+    // Динамическая смена текста в заголовке баннера с плавной анимацией
+    const titleDynamics = document.querySelectorAll('.banner__title-dynamic');
+    let currentIndex = 0;
+
+    // Инициализация: показываем первый текст сразу
+    titleDynamics.forEach((title, index) => {
+      if (index === currentIndex) {
+        title.classList.add('active');
+      } else {
+        title.classList.add('hidden');
+      }
+    });
+
+    function changeTitle() {
+      const currentTitle = titleDynamics[currentIndex];
+      const nextIndex = (currentIndex + 1) % titleDynamics.length;
+      const nextTitle = titleDynamics[nextIndex];
+
+      currentTitle.classList.remove('active');
+      currentTitle.classList.add('hidden');
+
+      // Ждём завершения анимации (0.8s), чтобы показать следующий текст
+      setTimeout(() => {
+        nextTitle.classList.remove('hidden');
+        nextTitle.classList.add('active');
+        currentIndex = nextIndex;
+      }, 800); // Синхронизируем с длительностью transition в CSS
+    }
+
+    // Запускаем смену текста каждые 3 секунды с небольшой задержкой для старта
+    setTimeout(() => {
+      setInterval(changeTitle, 3000);
+    }, 100); // Задержка 0.1s для стабильного старта
   }
 
   // Карусель

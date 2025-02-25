@@ -41,195 +41,141 @@
       <span class="burger-menu__line"></span>
     </button>
   </header>
-  
-  <!-- Баннер -->
-  <section class="banner collapsed" id="banner">
-    <div class="banner__header">
-      <h2 class="banner__title">Наши преимущества</h2>
-      <button class="banner__toggle" aria-label="Развернуть баннер"><i class="fas fa-chevron-down"></i></button>
-    </div>
-    <div class="banner__content">
-      <ul class="banner__list">
-        <li>Быстрая доставка</li>
-        <li>Гарантия качества</li>
-        <li>Скидки до 50%</li>
-      </ul>
-      <a href="#" class="banner__button">Узнать больше</a>
-    </div>
-  </section>
 
-  <!-- Карусель -->
-  <section class="carousel">
-    <button class="carousel__control carousel__control--prev" aria-label="Предыдущий слайд"><i class="fas fa-chevron-left"></i></button>
-    <div class="carousel__track">
-      <div class="carousel__item" data-active>
-        <div class="carousel__box">
-          <img src="images/electronics.png" alt="Электроника" loading="lazy">
-          <span class="carousel__text">Электроника</span>
-        </div>
+  <main>
+    <!-- Баннер -->
+    <div class="banner collapsed" id="banner">
+      <div class="banner__header">
+        <h2 class="banner__title">
+          <span class="banner__title-dynamic active">Преимущества</span>
+          <span class="banner__title-dynamic">Скидки</span>
+          <span class="banner__title-dynamic">Акции</span>
+          <span class="banner__title-dynamic">Новинки</span>
+        </h2>
+        <button class="banner__toggle active" aria-label="Переключить баннер">
+          <i class="fas fa-chevron-down"></i>
+        </button>
       </div>
-      <div class="carousel__item">
-        <div class="carousel__box">
-          <img src="images/toys.png" alt="Игрушки" loading="lazy">
-          <span class="carousel__text">Игрушки</span>
-        </div>
-      </div>
-      <div class="carousel__item">
-        <div class="carousel__box">
-          <img src="images/accessories.png" alt="Аксессуары" loading="lazy">
-          <span class="carousel__text">Аксессуары</span>
-        </div>
-      </div>
-      <div class="carousel__item">
-        <div class="carousel__box">
-          <img src="images/clothes.png" alt="Одежда" loading="lazy">
-          <span class="carousel__text">Одежда</span>
-        </div>
-      </div>
-      <div class="carousel__item">
-        <div class="carousel__box">
-          <img src="images/appliances.png" alt="Бытовая техника" loading="lazy">
-          <span class="carousel__text">Бытовая техника</span>
-        </div>
+      <div class="banner__content">
+        <ul class="banner__list">
+          <li class="banner__item">Качество продукции</li>
+          <li class="banner__item">Быстрая доставка</li>
+          <li class="banner__item">Доступные цены</li>
+          <li class="banner__item">Отличный сервис</li>
+        </ul>
+        <a href="#" class="banner__button">Узнать больше</a>
       </div>
     </div>
-    <button class="carousel__control carousel__control--next" aria-label="Следующий слайд"><i class="fas fa-chevron-right"></i></button>
-  </section>
 
-  <!-- Секция товаров -->
-  <section class="products">
-    <h2 class="products__heading">Товары</h2>
-    <div class="products__grid" role="list">
-      <article class="product-card" role="listitem">
-        <img src="https://illan-gifts.ru/api/images/naushniki-jbl-jr300-sinie-skladnye-488367.jpeg" alt="Наушники Wireless" loading="lazy">
-        <div class="product-card__info">
-          <h3 class="product-card__title">Наушники Wireless</h3>
-          <p class="product-card__price"><span class="price-icon"><i class="fas fa-ruble-sign"></i></span> 4 990</p>
-          <button class="product-card__button"><i class="fas fa-cart-plus"></i> В корзину</button>
+    <!-- Карусель -->
+    <section class="carousel">
+      <button class="carousel__control carousel__control--prev" aria-label="Предыдущий слайд"><i class="fas fa-chevron-left"></i></button>
+      <div class="carousel__track">
+        <div class="carousel__item" data-active>
+          <div class="carousel__box">
+            <img src="images/electronics.png" alt="Электроника" loading="lazy">
+            <span class="carousel__text">Электроника</span>
+          </div>
         </div>
-      </article>
-      <article class="product-card" role="listitem">
-        <img src="https://avatars.mds.yandex.net/get-mpic/5234463/img_id2819387384900565932.jpeg/orig" alt="Смарт-часы X" loading="lazy">
-        <div class="product-card__info">
-          <h3 class="product-card__title">Смарт-часы X</h3>
-          <p class="product-card__price"><span class="price-icon"><i class="fas fa-ruble-sign"></i></span> 9 990</p>
-          <button class="product-card__button"><i class="fas fa-cart-plus"></i> В корзину</button>
+        <div class="carousel__item">
+          <div class="carousel__box">
+            <img src="images/toys.png" alt="Игрушки" loading="lazy">
+            <span class="carousel__text">Игрушки</span>
+          </div>
         </div>
-      </article>
-      <article class="product-card" role="listitem">
-        <img src="https://avatars.mds.yandex.net/i?id=16ef61d4342030c97b8f9425389cfa01584686c6-8497871-images-thumbs&n=13" alt="Беспроводная колонка" loading="lazy">
-        <div class="product-card__info">
-          <h3 class="product-card__title">Беспроводная колонка</h3>
-          <p class="product-card__price"><span class="price-icon"><i class="fas fa-ruble-sign"></i></span> 6 490</p>
-          <button class="product-card__button"><i class="fas fa-cart-plus"></i> В корзину</button>
+        <div class="carousel__item">
+          <div class="carousel__box">
+            <img src="images/accessories.png" alt="Аксессуары" loading="lazy">
+            <span class="carousel__text">Аксессуары</span>
+          </div>
         </div>
-      </article>
-      <article class="product-card" role="listitem">
-        <img src="https://avatars.mds.yandex.net/get-mpic/5277894/img_id5035057075377151185.jpeg/orig" alt="Геймпад Pro" loading="lazy">
-        <div class="product-card__info">
-          <h3 class="product-card__title">Геймпад Pro</h3>
-          <p class="product-card__price"><span class="price-icon"><i class="fas fa-ruble-sign"></i></span> 3 990</p>
-          <button class="product-card__button"><i class="fas fa-cart-plus"></i> В корзину</button>
+        <div class="carousel__item">
+          <div class="carousel__box">
+            <img src="images/clothes.png" alt="Одежда" loading="lazy">
+            <span class="carousel__text">Одежда</span>
+          </div>
         </div>
-      </article>
-      <article class="product-card" role="listitem">
-        <img src="https://illan-gifts.ru/api/images/naushniki-jbl-jr300-sinie-skladnye-488367.jpeg" alt="Наушники Wireless" loading="lazy">
-        <div class="product-card__info">
-          <h3 class="product-card__title">Наушники Wireless</h3>
-          <p class="product-card__price"><span class="price-icon"><i class="fas fa-ruble-sign"></i></span> 4 990</p>
-          <button class="product-card__button"><i class="fas fa-cart-plus"></i> В корзину</button>
+        <div class="carousel__item">
+          <div class="carousel__box">
+            <img src="images/appliances.png" alt="Бытовая техника" loading="lazy">
+            <span class="carousel__text">Бытовая техника</span>
+          </div>
         </div>
-      </article>
-      <article class="product-card" role="listitem">
-        <img src="https://avatars.mds.yandex.net/get-mpic/5234463/img_id2819387384900565932.jpeg/orig" alt="Смарт-часы X" loading="lazy">
-        <div class="product-card__info">
-          <h3 class="product-card__title">Смарт-часы X</h3>
-          <p class="product-card__price"><span class="price-icon"><i class="fas fa-ruble-sign"></i></span> 9 990</p>
-          <button class="product-card__button"><i class="fas fa-cart-plus"></i> В корзину</button>
-        </div>
-      </article>
-      <article class="product-card" role="listitem">
-        <img src="https://avatars.mds.yandex.net/i?id=16ef61d4342030c97b8f9425389cfa01584686c6-8497871-images-thumbs&n=13" alt="Беспроводная колонка" loading="lazy">
-        <div class="product-card__info">
-          <h3 class="product-card__title">Беспроводная колонка</h3>
-          <p class="product-card__price"><span class="price-icon"><i class="fas fa-ruble-sign"></i></span> 6 490</p>
-          <button class="product-card__button"><i class="fas fa-cart-plus"></i> В корзину</button>
-        </div>
-      </article>
-      <article class="product-card" role="listitem">
-        <img src="https://avatars.mds.yandex.net/get-mpic/5277894/img_id5035057075377151185.jpeg/orig" alt="Геймпад Pro" loading="lazy">
-        <div class="product-card__info">
-          <h3 class="product-card__title">Геймпад Pro</h3>
-          <p class="product-card__price"><span class="price-icon"><i class="fas fa-ruble-sign"></i></span> 3 990</p>
-          <button class="product-card__button"><i class="fas fa-cart-plus"></i> В корзину</button>
-        </div>
-      </article>
-      <article class="product-card" role="listitem">
-        <img src="https://illan-gifts.ru/api/images/naushniki-jbl-jr300-sinie-skladnye-488367.jpeg" alt="Наушники Wireless" loading="lazy">
-        <div class="product-card__info">
-          <h3 class="product-card__title">Наушники Wireless</h3>
-          <p class="product-card__price"><span class="price-icon"><i class="fas fa-ruble-sign"></i></span> 4 990</p>
-          <button class="product-card__button"><i class="fas fa-cart-plus"></i> В корзину</button>
-        </div>
-      </article>
-      <article class="product-card" role="listitem">
-        <img src="https://avatars.mds.yandex.net/get-mpic/5234463/img_id2819387384900565932.jpeg/orig" alt="Смарт-часы X" loading="lazy">
-        <div class="product-card__info">
-          <h3 class="product-card__title">Смарт-часы X</h3>
-          <p class="product-card__price"><span class="price-icon"><i class="fas fa-ruble-sign"></i></span> 9 990</p>
-          <button class="product-card__button"><i class="fas fa-cart-plus"></i> В корзину</button>
-        </div>
-      </article>
-      <article class="product-card" role="listitem">
-        <img src="https://avatars.mds.yandex.net/i?id=16ef61d4342030c97b8f9425389cfa01584686c6-8497871-images-thumbs&n=13" alt="Беспроводная колонка" loading="lazy">
-        <div class="product-card__info">
-          <h3 class="product-card__title">Беспроводная колонка</h3>
-          <p class="product-card__price"><span class="price-icon"><i class="fas fa-ruble-sign"></i></span> 6 490</p>
-          <button class="product-card__button"><i class="fas fa-cart-plus"></i> В корзину</button>
-        </div>
-      </article>
-      <article class="product-card" role="listitem">
-        <img src="https://avatars.mds.yandex.net/get-mpic/5277894/img_id5035057075377151185.jpeg/orig" alt="Геймпад Pro" loading="lazy">
-        <div class="product-card__info">
-          <h3 class="product-card__title">Геймпад Pro</h3>
-          <p class="product-card__price"><span class="price-icon"><i class="fas fa-ruble-sign"></i></span> 3 990</p>
-          <button class="product-card__button"><i class="fas fa-cart-plus"></i> В корзину</button>
-        </div>
-      </article>
-      <article class="product-card" role="listitem">
-        <img src="https://illan-gifts.ru/api/images/naushniki-jbl-jr300-sinie-skladnye-488367.jpeg" alt="Наушники Wireless" loading="lazy">
-        <div class="product-card__info">
-          <h3 class="product-card__title">Наушники Wireless</h3>
-          <p class="product-card__price"><span class="price-icon"><i class="fas fa-ruble-sign"></i></span> 4 990</p>
-          <button class="product-card__button"><i class="fas fa-cart-plus"></i> В корзину</button>
-        </div>
-      </article>
-      <article class="product-card" role="listitem">
-        <img src="https://avatars.mds.yandex.net/get-mpic/5234463/img_id2819387384900565932.jpeg/orig" alt="Смарт-часы X" loading="lazy">
-        <div class="product-card__info">
-          <h3 class="product-card__title">Смарт-часы X</h3>
-          <p class="product-card__price"><span class="price-icon"><i class="fas fa-ruble-sign"></i></span> 9 990</p>
-          <button class="product-card__button"><i class="fas fa-cart-plus"></i> В корзину</button>
-        </div>
-      </article>
-      <article class="product-card" role="listitem">
-        <img src="https://avatars.mds.yandex.net/i?id=16ef61d4342030c97b8f9425389cfa01584686c6-8497871-images-thumbs&n=13" alt="Беспроводная колонка" loading="lazy">
-        <div class="product-card__info">
-          <h3 class="product-card__title">Беспроводная колонка</h3>
-          <p class="product-card__price"><span class="price-icon"><i class="fas fa-ruble-sign"></i></span> 6 490</p>
-          <button class="product-card__button"><i class="fas fa-cart-plus"></i> В корзину</button>
-        </div>
-      </article>
-      <article class="product-card" role="listitem">
-        <img src="https://avatars.mds.yandex.net/get-mpic/5277894/img_id5035057075377151185.jpeg/orig" alt="Геймпад Pro" loading="lazy">
-        <div class="product-card__info">
-          <h3 class="product-card__title">Геймпад Pro</h3>
-          <p class="product-card__price"><span class="price-icon"><i class="fas fa-ruble-sign"></i></span> 3 990</p>
-          <button class="product-card__button"><i class="fas fa-cart-plus"></i> В корзину</button>
-        </div>
-      </article>
-    </div>
-  </section>
+      </div>
+      <button class="carousel__control carousel__control--next" aria-label="Следующий слайд"><i class="fas fa-chevron-right"></i></button>
+    </section>
+
+    <!-- Секция товаров -->
+    <section class="products">
+      <h2 class="products__heading">Товары-электроника</h2>
+      <div class="products__grid" role="list">
+        <article class="product-card" role="listitem">
+          <img src="https://avatars.mds.yandex.net/i?id=16c02de528eae0501192dc54a8435a018ff02154-9674922-images-thumbs&n=13" alt="Наушники Wireless" loading="lazy">
+          <div class="product-card__info">
+            <h3 class="product-card__title">Наушники Wireless</h3>
+            <p class="product-card__price"><span class="price-icon"><i class="fas fa-ruble-sign"></i></span> 4 990</p>
+            <button class="product-card__button"><i class="fas fa-cart-plus"></i> В корзину</button>
+          </div>
+        </article>
+        <article class="product-card" role="listitem">
+          <img src="https://avatars.mds.yandex.net/get-mpic/5234463/img_id2819387384900565932.jpeg/orig" alt="Смарт-часы X" loading="lazy">
+          <div class="product-card__info">
+            <h3 class="product-card__title">Смарт-часы X</h3>
+            <p class="product-card__price"><span class="price-icon"><i class="fas fa-ruble-sign"></i></span> 9 990</p>
+            <button class="product-card__button"><i class="fas fa-cart-plus"></i> В корзину</button>
+          </div>
+        </article>
+        <article class="product-card" role="listitem">
+          <img src="https://avatars.mds.yandex.net/i?id=16ef61d4342030c97b8f9425389cfa01584686c6-8497871-images-thumbs&n=13" alt="Беспроводная колонка" loading="lazy">
+          <div class="product-card__info">
+            <h3 class="product-card__title">Беспроводная колонка</h3>
+            <p class="product-card__price"><span class="price-icon"><i class="fas fa-ruble-sign"></i></span> 6 490</p>
+            <button class="product-card__button"><i class="fas fa-cart-plus"></i> В корзину</button>
+          </div>
+        </article>
+        <article class="product-card" role="listitem">
+          <img src="https://avatars.mds.yandex.net/get-mpic/5277894/img_id5035057075377151185.jpeg/orig" alt="Геймпад Pro" loading="lazy">
+          <div class="product-card__info">
+            <h3 class="product-card__title">Геймпад Pro</h3>
+            <p class="product-card__price"><span class="price-icon"><i class="fas fa-ruble-sign"></i></span> 3 990</p>
+            <button class="product-card__button"><i class="fas fa-cart-plus"></i> В корзину</button>
+          </div>
+        </article>
+        <article class="product-card" role="listitem">
+          <img src="https://avatars.mds.yandex.net/i?id=16c02de528eae0501192dc54a8435a018ff02154-9674922-images-thumbs&n=13" alt="Наушники Wireless" loading="lazy">
+          <div class="product-card__info">
+            <h3 class="product-card__title">Наушники Wireless</h3>
+            <p class="product-card__price"><span class="price-icon"><i class="fas fa-ruble-sign"></i></span> 4 990</p>
+            <button class="product-card__button"><i class="fas fa-cart-plus"></i> В корзину</button>
+          </div>
+        </article>
+        <article class="product-card" role="listitem">
+          <img src="https://avatars.mds.yandex.net/get-mpic/5234463/img_id2819387384900565932.jpeg/orig" alt="Смарт-часы X" loading="lazy">
+          <div class="product-card__info">
+            <h3 class="product-card__title">Смарт-часы X</h3>
+            <p class="product-card__price"><span class="price-icon"><i class="fas fa-ruble-sign"></i></span> 9 990</p>
+            <button class="product-card__button"><i class="fas fa-cart-plus"></i> В корзину</button>
+          </div>
+        </article>
+        <article class="product-card" role="listitem">
+          <img src="https://avatars.mds.yandex.net/i?id=16ef61d4342030c97b8f9425389cfa01584686c6-8497871-images-thumbs&n=13" alt="Беспроводная колонка" loading="lazy">
+          <div class="product-card__info">
+            <h3 class="product-card__title">Беспроводная колонка</h3>
+            <p class="product-card__price"><span class="price-icon"><i class="fas fa-ruble-sign"></i></span> 6 490</p>
+            <button class="product-card__button"><i class="fas fa-cart-plus"></i> В корзину</button>
+          </div>
+        </article>
+        <article class="product-card" role="listitem">
+          <img src="https://avatars.mds.yandex.net/get-mpic/5277894/img_id5035057075377151185.jpeg/orig" alt="Геймпад Pro" loading="lazy">
+          <div class="product-card__info">
+            <h3 class="product-card__title">Геймпад Pro</h3>
+            <p class="product-card__price"><span class="price-icon"><i class="fas fa-ruble-sign"></i></span> 3 990</p>
+            <button class="product-card__button"><i class="fas fa-cart-plus"></i> В корзину</button>
+          </div>
+        </article>
+      </div>
+    </section>
+  </main>
 
   <!-- Футер -->
   <footer class="footer">
@@ -260,16 +206,9 @@
         </div>
       </div>
     </div>
-      <div class="footer__consultation">
-        <p>Нужна консультация? Свяжитесь с нами:</p>
-        <div class="footer__contact-options">
-          <a href="tel:+79274008865" class="footer__contact-link" aria-label="Позвонить"><i class="fas fa-phone"></i> Позвонить</a>
-          <a href="https://chatapp.online/wa-redirect/?phone=79274008865&text=добрый день" target="_blank" class="footer__contact-link" aria-label="Написать в WhatsApp"><i class="fab fa-whatsapp"></i> WhatsApp</a>
-          <div class="footer__bottom">
-            <p class="footer__copyright">© 2025 Ваш магазин. Все права защищены.</p>
-            <p class="footer__made-by">Made by <span class="gradient-text">Timur Zakharov</span></p>
-        </div>
-      </div>
+    <div class="footer__bottom">
+      <p class="footer__copyright">© 2025 Ваш магазин. Все права защищены.</p>
+      <p class="footer__made-by">Made by <span class="gradient-text">Bansheebbyy</span></p>
     </div>
   </footer>
 

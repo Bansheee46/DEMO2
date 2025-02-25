@@ -66,20 +66,52 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  background: transparent;
+  background: #fff; /* Изначально белый фон */
   padding: 60px 20px 20px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   justify-content: flex-start;
   opacity: 0;
-  transition: opacity 0.5s ease, background 0.5s ease, box-shadow 0.5s ease;
+  transition: opacity 0.5s ease, background 1.5s ease-in-out; /* Увеличил длительность и сделал плавнее */
+  z-index: 998; /* Уменьшаем z-index, чтобы точка и крестик были выше */
 }
 
 .nav__glass.active {
   opacity: 1;
   background: linear-gradient(135deg, rgba(0, 0, 0, 0.9), #ff6f61) !important;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Анимация градиента с эффектом "волны" от центра */
+.nav__glass.active::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.9), #ff6f61);
+  transform: translate(-50%, -50%);
+  animation: waveGradient 1.5s ease-in-out forwards 0.5s; /* Задержка 0.5s, более плавная кривая */
+  z-index: 997; /* Уменьшаем z-index псевдоэлемента */
+}
+
+@keyframes waveGradient {
+  0% {
+    width: 0;
+    height: 0;
+    opacity: 0;
+  }
+  50% {
+    width: 200%;
+    height: 200%;
+    opacity: 0.5;
+  }
+  100% {
+    width: 100%;
+    height: 100%;
+    opacity: 1;
+  }
 }
 
 .nav__logo {
@@ -87,16 +119,19 @@ body {
   top: 20px;
   left: -50px;
   opacity: 0;
+  z-index: 1000; /* Увеличиваем z-index для переднего плана */
   transition: left 0.5s ease, opacity 0.5s ease, transform 0.5s ease;
 }
 
 .nav__logo .dot {
   display: inline-block;
-  width: 40px;
-  height: 40px;
+  width: 50px; /* Увеличил размер точки */
+  height: 50px; /* Увеличил размер точки */
   background-color: #ff6f61;
   border-radius: 50%;
-  box-shadow: 0 0 15px rgba(255, 111, 97, 0.5);
+  box-shadow: 0 0 25px rgba(255, 111, 97, 0.9); /* Увеличил и усилил свечение */
+  z-index: 1000; /* Убедились, что точка на переднем плане */
+  animation: pulseDot 3s infinite ease-in-out; /* Интересная пульсация */
 }
 
 .nav__logo.active {
@@ -105,11 +140,39 @@ body {
   transform: rotate(360deg);
 }
 
+@keyframes pulseDot {
+  0% {
+    transform: scale(1) rotate(0deg);
+    box-shadow: 0 0 25px rgba(255, 111, 97, 0.9);
+    opacity: 1;
+  }
+  25% {
+    transform: scale(1.1) rotate(5deg);
+    box-shadow: 0 0 35px rgba(255, 111, 97, 1);
+    opacity: 0.9;
+  }
+  50% {
+    transform: scale(1) rotate(0deg);
+    box-shadow: 0 0 25px rgba(255, 111, 97, 0.9);
+    opacity: 1;
+  }
+  75% {
+    transform: scale(0.9) rotate(-5deg);
+    box-shadow: 0 0 15px rgba(255, 111, 97, 0.8);
+    opacity: 0.95;
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    box-shadow: 0 0 25px rgba(255, 111, 97, 0.9);
+    opacity: 1;
+  }
+}
+
 .nav__close {
   position: absolute;
   top: 20px;
   right: 20px;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.2); /* Контрастный фон */
   border: none;
   color: #fff; /* Белый цвет для контраста */
   font-size: 30px; /* Крупный крестик */
@@ -118,8 +181,9 @@ body {
   padding: 15px; /* Заметные отступы */
   border-radius: 50%;
   opacity: 0;
+  z-index: 1000; /* Увеличиваем z-index для переднего плана */
   transition: opacity 0.5s ease, color 0.3s ease, transform 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
-  box-shadow: 0 0 15px rgba(255, 111, 97, 0.5); /* Круглое свечение (одинаковые радиусы) */
+  box-shadow: 0 0 20px rgba(255, 111, 97, 0.8); /* Яркое круглое свечение */
 }
 
 .nav__close.active {
@@ -129,8 +193,8 @@ body {
 .nav__close:hover {
   color: #ff6f61; /* Цвет сайта при наведении */
   transform: scale(1.1);
-  background: rgba(255, 255, 255, 0.2); /* Лёгкий фон при наведении */
-  box-shadow: 0 0 20px rgba(255, 111, 97, 0.7); /* Увеличенное круглое свечение */
+  background: rgba(255, 255, 255, 0.3); /* Ещё более контрастный фон при наведении */
+  box-shadow: 0 0 25px rgba(255, 111, 97, 1); /* Ещё более яркое круглое свечение */
 }
 
 .nav__lines {
@@ -141,6 +205,7 @@ body {
   height: 100%;
   pointer-events: none;
   opacity: 0;
+  z-index: 996; /* Уменьшаем z-index линий */
   transition: opacity 0.5s ease;
 }
 
@@ -155,6 +220,7 @@ body {
   transform-origin: left;
   width: 0;
   opacity: 0;
+  z-index: 996; /* Уменьшаем z-index линий */
   transition: width 0.5s ease, opacity 0.5s ease;
 }
 
@@ -172,7 +238,7 @@ body {
   margin-left: 40px;
   margin-top: 80px;
   position: relative;
-  z-index: 2;
+  z-index: 999; /* Увеличиваем z-index текста для переднего плана */
   opacity: 0;
   transform: translateX(-20px);
   transition: opacity 0.5s ease, transform 0.5s ease;
@@ -183,20 +249,48 @@ body {
   transform: translateX(0) !important;
 }
 
-/* Исправленный стиль для текста */
+/* Исправленный стиль для текста с подчёркиванием слева направо */
 .nav__link {
   color: #fff !important; /* Белый цвет текста с приоритетом */
   font-size: 28px !important; /* Крупный текст с приоритетом */
   font-weight: 700 !important; /* Жирный текст с приоритетом */
   text-decoration: none;
+  position: relative;
   padding: 15px 0;
   transition: all 0.3s ease;
-  position: relative;
-  z-index: 2;
+  z-index: 999; /* Увеличиваем z-index для текста */
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3); /* Тень для контраста на градиенте */
 }
 
+.nav__link:hover::after,
+.nav__link:focus::after,
+.nav__link:active::after {
+  content: '';
+  position: absolute;
+  bottom: 5px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: #fff; /* Белая линия под текстом */
+  animation: underlineDraw 0.5s ease-out forwards; /* Плавная анимация слева направо */
+}
+
+.nav__link.active::after {
+  animation: underlineDraw 0.5s ease-out forwards; /* Сохраняем анимацию при клике */
+  width: 100%; /* Полная ширина после анимации */
+}
+
+@keyframes underlineDraw {
+  0% {
+    width: 0;
+  }
+  100% {
+    width: 100%;
+  }
+}
+
+/* Убираем дефолтное подчёркивание для ссылок */
 .nav__link:hover {
-  color: #fff !important;
   background: rgba(255, 255, 255, 0.1);
   transform: scale(1.1);
 }
@@ -274,92 +368,139 @@ body {
   background: #ff6f61;
 }
 
-/* Баннер */
+/* Баннер "Наши преимущества" */
 .banner {
   position: sticky;
   top: 50px;
-  background: linear-gradient(90deg, #ff6f61, #ff4d4d);
+  background: linear-gradient(90deg, #ff6f61, #ff4d4d); /* Усиленный градиент */
   color: #fff;
-  padding: 10px;
+  padding: 15px;
   z-index: 900;
-  overflow: hidden;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: visible; /* Убрал ограничение, чтобы фон растягивался */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Увеличил тень для глубины */
+  border-radius: 12px; /* Закруглил углы */
 }
 
 .banner.collapsed {
-  height: 40px;
-  animation: collapseBanner 0.3s ease forwards;
+  height: 60px; /* Увеличил высоту для эстетики */
+  display: flex;
+  align-items: center; /* Центрируем текст по вертикали в сложенном состоянии */
 }
 
 .banner:not(.collapsed) {
-  height: 140px;
-  animation: expandBanner 0.3s ease forwards;
+  height: auto; /* Установил авто-высоту, чтобы фон растягивался на весь контент */
 }
 
 .banner__header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 10px 0;
+  width: 100%;
 }
 
 .banner__title {
-  font-size: 16px;
+  font-size: 20px; /* Увеличил размер текста */
   font-weight: 700;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3); /* Тень для контраста */
+  position: relative; /* Для позиционирования абсолютных элементов */
+}
+
+.banner__title-dynamic {
+  display: inline;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 0.8s ease-in-out, transform 0.8s ease-in-out;
+}
+
+.banner__title-dynamic.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.banner__title-dynamic.hidden {
+  opacity: 0;
+  transform: translateY(-10px);
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
 .banner__toggle {
   background: none;
   border: none;
   color: #fff;
-  font-size: 16px;
+  font-size: 20px; /* Убедимся, что иконка видна */
   cursor: pointer;
-  transition: transform 0.3s;
+  padding: 5px;
+  border-radius: 50%; /* Закруглил кнопку */
+  z-index: 902; /* Убедимся, что кнопка над текстом */
+}
+
+.banner__toggle:hover {
+  color: #ff4d4d;
+  transform: scale(1.1);
 }
 
 .banner__toggle.active i {
   transform: rotate(180deg);
 }
 
+.banner__toggle i {
+  display: block; /* Убедимся, что иконка всегда видна */
+}
+
 .banner__content {
-  padding-top: 8px;
+  padding-top: 15px;
+  display: none; /* Скрываем контент в сложенном состоянии без анимации */
+}
+
+.banner:not(.collapsed) .banner__content {
+  display: block; /* Показываем контент в раскрытом состоянии */
 }
 
 .banner__list {
   list-style: none;
-  margin-bottom: 8px;
+  margin-bottom: 15px;
+  display: grid;
+  gap: 10px;
+  z-index: 901; /* Увеличиваем z-index, чтобы элементы были над фоном */
 }
 
-.banner__list li {
-  font-size: 12px;
-  margin: 4px 0;
+.banner__item {
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.1); /* Лёгкий фон для карточек */
+  border-radius: 8px;
+  font-size: 16px; /* Увеличил размер текста */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Тень для глубины */
+  transition: transform 0.3s, box-shadow 0.3s;
+  z-index: 901; /* Увеличиваем z-index для элементов */
+}
+
+.banner__item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .banner__button {
   display: inline-block;
   background-color: #fff;
   color: #ff6f61;
-  padding: 6px 12px;
-  font-size: 12px;
+  padding: 10px 20px; /* Увеличил размер кнопки */
+  font-size: 14px; /* Увеличил размер текста */
   font-weight: 600;
   text-decoration: none;
-  border-radius: 4px;
+  border-radius: 8px; /* Закруглил кнопку */
   transition: all 0.3s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Тень для кнопки */
+  z-index: 901; /* Увеличиваем z-index для кнопки */
 }
 
 .banner__button:hover {
   background-color: #ff4d4d;
   color: #fff;
-}
-
-/* Анимации для баннера */
-@keyframes expandBanner {
-  from { height: 40px; }
-  to { height: 140px; }
-}
-
-@keyframes collapseBanner {
-  from { height: 140px; }
-  to { height: 40px; }
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 /* Карусель */
