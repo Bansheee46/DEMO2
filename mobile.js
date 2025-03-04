@@ -74,7 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function animateMenuOpen() {
     console.log('Opening menu...'); // Отладка
 
-    // 1. Выкатываем точку с использованием requestAnimationFrame
+    // Выкатываем точку с использованием requestAnimationFrame
     requestAnimationFrame(() => {
       console.log('Animating dot...'); // Отладка
       navLogo.classList.add('active');

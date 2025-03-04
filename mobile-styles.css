@@ -37,8 +37,15 @@ body {
   display: inline-block;
   width: 12px;
   height: 12px;
-  background-color: #ff6f61;
+  background-color: #e65a50; /* Скорректированный цвет */
   border-radius: 50%;
+  animation: bounceIn 1s ease-out forwards;
+}
+
+@keyframes bounceIn {
+  0% { transform: scale(0); opacity: 0; }
+  60% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(1); }
 }
 
 .header__nav {
@@ -73,16 +80,15 @@ body {
   align-items: flex-start;
   justify-content: flex-start;
   opacity: 0;
-  transition: opacity 0.5s ease, background 1.5s ease-in-out; /* Увеличил длительность и сделал плавнее */
-  z-index: 998; /* Уменьшаем z-index, чтобы точка и крестик были выше */
+  transition: opacity 0.5s ease, background 1.5s ease-in-out;
+  z-index: 998;
 }
 
 .nav__glass.active {
   opacity: 1;
-  background: linear-gradient(135deg, rgba(0, 0, 0, 0.9), #ff6f61) !important;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.9), #e65a50) !important;
 }
 
-/* Анимация градиента с эффектом "волны" от центра */
 .nav__glass.active::after {
   content: '';
   position: absolute;
@@ -90,10 +96,10 @@ body {
   left: 50%;
   width: 0;
   height: 0;
-  background: linear-gradient(135deg, rgba(0, 0, 0, 0.9), #ff6f61);
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.9), #e65a50);
   transform: translate(-50%, -50%);
-  animation: waveGradient 1.5s ease-in-out forwards 0.5s; /* Задержка 0.5s, более плавная кривая */
-  z-index: 997; /* Уменьшаем z-index псевдоэлемента */
+  animation: waveGradient 1.5s ease-in-out forwards 0.5s;
+  z-index: 997;
 }
 
 @keyframes waveGradient {
@@ -119,19 +125,19 @@ body {
   top: 20px;
   left: -50px;
   opacity: 0;
-  z-index: 1000; /* Увеличиваем z-index для переднего плана */
+  z-index: 1000;
   transition: left 0.5s ease, opacity 0.5s ease, transform 0.5s ease;
 }
 
 .nav__logo .dot {
   display: inline-block;
-  width: 50px; /* Увеличил размер точки */
-  height: 50px; /* Увеличил размер точки */
-  background-color: #ff6f61;
+  width: 50px;
+  height: 50px;
+  background-color: #e65a50;
   border-radius: 50%;
-  box-shadow: 0 0 25px rgba(255, 111, 97, 0.9); /* Увеличил и усилил свечение */
-  z-index: 1000; /* Убедились, что точка на переднем плане */
-  animation: pulseDot 3s infinite ease-in-out; /* Интересная пульсация */
+  box-shadow: 0 0 25px rgba(230, 90, 80, 0.9);
+  z-index: 1000;
+  animation: pulseDot 3s infinite ease-in-out;
 }
 
 .nav__logo.active {
@@ -143,27 +149,27 @@ body {
 @keyframes pulseDot {
   0% {
     transform: scale(1) rotate(0deg);
-    box-shadow: 0 0 25px rgba(255, 111, 97, 0.9);
+    box-shadow: 0 0 25px rgba(230, 90, 80, 0.9);
     opacity: 1;
   }
   25% {
     transform: scale(1.1) rotate(5deg);
-    box-shadow: 0 0 35px rgba(255, 111, 97, 1);
+    box-shadow: 0 0 35px rgba(230, 90, 80, 1);
     opacity: 0.9;
   }
   50% {
     transform: scale(1) rotate(0deg);
-    box-shadow: 0 0 25px rgba(255, 111, 97, 0.9);
+    box-shadow: 0 0 25px rgba(230, 90, 80, 0.9);
     opacity: 1;
   }
   75% {
     transform: scale(0.9) rotate(-5deg);
-    box-shadow: 0 0 15px rgba(255, 111, 97, 0.8);
+    box-shadow: 0 0 15px rgba(230, 90, 80, 0.8);
     opacity: 0.95;
   }
   100% {
     transform: scale(1) rotate(0deg);
-    box-shadow: 0 0 25px rgba(255, 111, 97, 0.9);
+    box-shadow: 0 0 25px rgba(230, 90, 80, 0.9);
     opacity: 1;
   }
 }
@@ -172,18 +178,18 @@ body {
   position: absolute;
   top: 20px;
   right: 20px;
-  background: rgba(255, 255, 255, 0.2); /* Контрастный фон */
+  background: rgba(255, 255, 255, 0.2);
   border: none;
-  color: #fff; /* Белый цвет для контраста */
-  font-size: 30px; /* Крупный крестик */
+  color: #fff;
+  font-size: 30px;
   font-weight: 700;
   cursor: pointer;
-  padding: 15px; /* Заметные отступы */
+  padding: 15px;
   border-radius: 50%;
   opacity: 0;
-  z-index: 1000; /* Увеличиваем z-index для переднего плана */
+  z-index: 1000;
   transition: opacity 0.5s ease, color 0.3s ease, transform 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
-  box-shadow: 0 0 20px rgba(255, 111, 97, 0.8); /* Яркое круглое свечение */
+  box-shadow: 0 0 20px rgba(230, 90, 80, 0.8);
 }
 
 .nav__close.active {
@@ -191,10 +197,10 @@ body {
 }
 
 .nav__close:hover {
-  color: #ff6f61; /* Цвет сайта при наведении */
+  color: #e65a50;
   transform: scale(1.1);
-  background: rgba(255, 255, 255, 0.3); /* Ещё более контрастный фон при наведении */
-  box-shadow: 0 0 25px rgba(255, 111, 97, 1); /* Ещё более яркое круглое свечение */
+  background: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 0 25px rgba(230, 90, 80, 1);
 }
 
 .nav__lines {
@@ -205,7 +211,7 @@ body {
   height: 100%;
   pointer-events: none;
   opacity: 0;
-  z-index: 996; /* Уменьшаем z-index линий */
+  z-index: 996;
   transition: opacity 0.5s ease;
 }
 
@@ -216,11 +222,11 @@ body {
 .nav__line {
   position: absolute;
   height: 2px;
-  background: linear-gradient(to right, rgba(255, 111, 97, 0), #ff6f61);
+  background: linear-gradient(to right, rgba(230, 90, 80, 0), #e65a50);
   transform-origin: left;
   width: 0;
   opacity: 0;
-  z-index: 996; /* Уменьшаем z-index линий */
+  z-index: 996;
   transition: width 0.5s ease, opacity 0.5s ease;
 }
 
@@ -238,7 +244,7 @@ body {
   margin-left: 40px;
   margin-top: 80px;
   position: relative;
-  z-index: 999; /* Увеличиваем z-index текста для переднего плана */
+  z-index: 999;
   opacity: 0;
   transform: translateX(-20px);
   transition: opacity 0.5s ease, transform 0.5s ease;
@@ -249,17 +255,16 @@ body {
   transform: translateX(0) !important;
 }
 
-/* Исправленный стиль для текста с подчёркиванием слева направо */
 .nav__link {
-  color: #fff !important; /* Белый цвет текста с приоритетом */
-  font-size: 28px !important; /* Крупный текст с приоритетом */
-  font-weight: 700 !important; /* Жирный текст с приоритетом */
+  color: #fff !important;
+  font-size: 28px !important;
+  font-weight: 700 !important;
   text-decoration: none;
   position: relative;
   padding: 15px 0;
   transition: all 0.3s ease;
-  z-index: 999; /* Увеличиваем z-index для текста */
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3); /* Тень для контраста на градиенте */
+  z-index: 999;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5); /* Усиленная тень */
 }
 
 .nav__link:hover::after,
@@ -271,13 +276,13 @@ body {
   left: 0;
   width: 0;
   height: 2px;
-  background: #fff; /* Белая линия под текстом */
-  animation: underlineDraw 0.5s ease-out forwards; /* Плавная анимация слева направо */
+  background: #fff;
+  animation: underlineDraw 0.5s ease-out forwards;
 }
 
 .nav__link.active::after {
-  animation: underlineDraw 0.5s ease-out forwards; /* Сохраняем анимацию при клике */
-  width: 100%; /* Полная ширина после анимации */
+  animation: underlineDraw 0.5s ease-out forwards;
+  width: 100%;
 }
 
 @keyframes underlineDraw {
@@ -287,32 +292,6 @@ body {
   100% {
     width: 100%;
   }
-}
-
-/* Убираем дефолтное подчёркивание для ссылок */
-.nav__link:hover {
-  background: rgba(255, 255, 255, 0.1);
-  transform: scale(1.1);
-}
-
-/* Положение линий для каждого пункта */
-#nav__item-1 { top: 0; }
-#nav__item-2 { top: calc(40px + 1 * 70px); }
-#nav__item-3 { top: calc(40px + 2 * 70px); }
-
-.nav__line[data-target="nav__item-1"] {
-  top: calc(20px + 40px / 2);
-  left: 60px;
-}
-
-.nav__line[data-target="nav__item-2"] {
-  top: calc(20px + 40px / 2 + 110px);
-  left: 60px;
-}
-
-.nav__line[data-target="nav__item-3"] {
-  top: calc(20px + 40px / 2 + 220px);
-  left: 60px;
 }
 
 .header__actions {
@@ -326,11 +305,13 @@ body {
   color: #fff;
   font-size: 18px;
   cursor: pointer;
-  transition: color 0.3s;
+  transition: transform 0.3s ease, color 0.3s, box-shadow 0.3s;
 }
 
 .header__action:hover {
-  color: #ff6f61;
+  transform: rotate(15deg) scale(1.1);
+  color: #e65a50;
+  box-shadow: 0 0 10px rgba(230, 90, 80, 0.8);
 }
 
 .burger-menu {
@@ -346,7 +327,7 @@ body {
 .burger-menu__line {
   width: 22px;
   height: 2px;
-  background: linear-gradient(90deg, #fff, #ff6f61);
+  background: linear-gradient(90deg, #fff, #e65a50);
   border-radius: 5px;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
@@ -355,7 +336,7 @@ body {
 .burger-menu[aria-expanded="true"] .burger-menu__line:nth-child(1) {
   transform: translateY(7px) rotate(45deg);
   width: 24px;
-  background: #ff6f61;
+  background: #e65a50;
 }
 
 .burger-menu[aria-expanded="true"] .burger-menu__line:nth-child(2) {
@@ -365,30 +346,30 @@ body {
 .burger-menu[aria-expanded="true"] .burger-menu__line:nth-child(3) {
   transform: translateY(-7px) rotate(-45deg);
   width: 24px;
-  background: #ff6f61;
+  background: #e65a50;
 }
 
 /* Баннер "Наши преимущества" */
 .banner {
   position: sticky;
   top: 50px;
-  background: linear-gradient(90deg, #ff6f61, #ff4d4d); /* Усиленный градиент */
+  background: linear-gradient(90deg, #e65a50, #d94a40); /* Скорректированный градиент */
   color: #fff;
   padding: 15px;
   z-index: 900;
-  overflow: visible; /* Убрал ограничение, чтобы фон растягивался */
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Увеличил тень для глубины */
-  border-radius: 12px; /* Закруглил углы */
+  overflow: visible;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
 }
 
 .banner.collapsed {
-  height: 60px; /* Увеличил высоту для эстетики */
+  height: 60px;
   display: flex;
-  align-items: center; /* Центрируем текст по вертикали в сложенном состоянии */
+  align-items: center;
 }
 
 .banner:not(.collapsed) {
-  height: auto; /* Установил авто-высоту, чтобы фон растягивался на весь контент */
+  height: auto;
 }
 
 .banner__header {
@@ -400,10 +381,10 @@ body {
 }
 
 .banner__title {
-  font-size: 20px; /* Увеличил размер текста */
+  font-size: 20px;
   font-weight: 700;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3); /* Тень для контраста */
-  position: relative; /* Для позиционирования абсолютных элементов */
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  position: relative;
 }
 
 .banner__title-dynamic {
@@ -416,6 +397,12 @@ body {
 .banner__title-dynamic.active {
   opacity: 1;
   transform: translateY(0);
+  animation: typewriter 1.5s steps(15, end) forwards;
+}
+
+@keyframes typewriter {
+  from { width: 0; }
+  to { width: 100%; }
 }
 
 .banner__title-dynamic.hidden {
@@ -430,15 +417,15 @@ body {
   background: none;
   border: none;
   color: #fff;
-  font-size: 20px; /* Убедимся, что иконка видна */
+  font-size: 20px;
   cursor: pointer;
   padding: 5px;
-  border-radius: 50%; /* Закруглил кнопку */
-  z-index: 902; /* Убедимся, что кнопка над текстом */
+  border-radius: 50%;
+  z-index: 902;
 }
 
 .banner__toggle:hover {
-  color: #ff4d4d;
+  color: #d94a40;
   transform: scale(1.1);
 }
 
@@ -446,17 +433,13 @@ body {
   transform: rotate(180deg);
 }
 
-.banner__toggle i {
-  display: block; /* Убедимся, что иконка всегда видна */
-}
-
 .banner__content {
   padding-top: 15px;
-  display: none; /* Скрываем контент в сложенном состоянии без анимации */
+  display: none;
 }
 
 .banner:not(.collapsed) .banner__content {
-  display: block; /* Показываем контент в раскрытом состоянии */
+  display: block;
 }
 
 .banner__list {
@@ -464,40 +447,50 @@ body {
   margin-bottom: 15px;
   display: grid;
   gap: 10px;
-  z-index: 901; /* Увеличиваем z-index, чтобы элементы были над фоном */
+  z-index: 901;
 }
 
 .banner__item {
   padding: 12px;
-  background: rgba(255, 255, 255, 0.1); /* Лёгкий фон для карточек */
+  background: rgba(255, 255, 255, 0.1);
   border-radius: 8px;
-  font-size: 16px; /* Увеличил размер текста */
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Тень для глубины */
+  font-size: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s, box-shadow 0.3s;
-  z-index: 901; /* Увеличиваем z-index для элементов */
+  z-index: 901;
+  opacity: 0; /* Для анимации */
+  transform: translateX(-20px); /* Для анимации */
 }
 
-.banner__item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+.banner:not(.collapsed) .banner__item {
+  animation: slideIn 0.5s ease-out forwards;
+}
+
+.banner__item:nth-child(2) { animation-delay: 0.1s; }
+.banner__item:nth-child(3) { animation-delay: 0.2s; }
+.banner__item:nth-child(4) { animation-delay: 0.3s; }
+
+@keyframes slideIn {
+  0% { transform: translateX(-20px); opacity: 0; }
+  100% { transform: translateX(0); opacity: 1; }
 }
 
 .banner__button {
   display: inline-block;
   background-color: #fff;
-  color: #ff6f61;
-  padding: 10px 20px; /* Увеличил размер кнопки */
-  font-size: 14px; /* Увеличил размер текста */
+  color: #e65a50; /* Скорректированный цвет */
+  padding: 10px 20px;
+  font-size: 14px;
   font-weight: 600;
   text-decoration: none;
-  border-radius: 8px; /* Закруглил кнопку */
+  border-radius: 8px;
   transition: all 0.3s;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Тень для кнопки */
-  z-index: 901; /* Увеличиваем z-index для кнопки */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  z-index: 901;
 }
 
 .banner__button:hover {
-  background-color: #ff4d4d;
+  background-color: #d94a40;
   color: #fff;
   transform: scale(1.05);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
@@ -514,7 +507,7 @@ body {
   display: flex;
   gap: 10px;
   padding: 0 15px;
-  transition: transform 0.5s ease;
+  transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
   width: max-content;
 }
 
@@ -528,6 +521,15 @@ body {
 .carousel__item[data-active] {
   transform: scale(1);
   opacity: 1;
+}
+
+.carousel__item[data-active] .carousel__box {
+  animation: spinAndScale 0.5s ease-out;
+}
+
+@keyframes spinAndScale {
+  0% { transform: scale(0.9) rotate(-10deg); }
+  100% { transform: scale(1) rotate(0deg); }
 }
 
 .carousel__box {
@@ -561,14 +563,14 @@ body {
   transform: translateY(-50%);
   background: none;
   border: none;
-  color: #ff6f61;
+  color: #e65a50;
   font-size: 20px;
   cursor: pointer;
   transition: color 0.3s;
 }
 
 .carousel__control:hover {
-  color: #ff4d4d;
+  color: #d94a40;
 }
 
 .carousel__control--prev {
@@ -589,7 +591,7 @@ body {
   font-weight: 700;
   text-align: center;
   margin-bottom: 15px;
-  color: #ff6f61;
+  color: #e65a50;
 }
 
 .products__grid {
@@ -607,6 +609,15 @@ body {
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
   border: 1px solid #eee;
   transition: transform 0.3s, box-shadow 0.3s;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: hopIn 0.6s ease-out both;
+}
+
+@keyframes hopIn {
+  0% { transform: translateY(20px) scale(0.95); opacity: 0; }
+  60% { transform: translateY(-5px) scale(1.02); opacity: 1; }
+  100% { transform: translateY(0) scale(1); }
 }
 
 .product-card:hover {
@@ -642,7 +653,7 @@ body {
 .product-card__price {
   font-size: 12px;
   font-weight: 700;
-  color: #ff6f61;
+  color: #e65a50;
   display: flex;
   align-items: center;
   gap: 3px;
@@ -653,7 +664,7 @@ body {
 }
 
 .product-card__button {
-  background: linear-gradient(90deg, #ff6f61, #ff4d4d);
+  background: linear-gradient(90deg, #e65a50, #d94a40);
   color: #fff;
   border: none;
   padding: 5px 10px;
@@ -669,6 +680,13 @@ body {
 
 .product-card__button:hover {
   opacity: 0.9;
+  animation: pulse 0.8s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
 }
 
 /* Футер */
@@ -698,14 +716,14 @@ body {
 
 .footer__contacts a,
 .footer__link {
-  color: #ff6f61;
+  color: #e65a50;
   text-decoration: none;
   transition: color 0.3s;
 }
 
 .footer__contacts a:hover,
 .footer__link:hover {
-  color: #ff4d4d;
+  color: #d94a40;
 }
 
 .footer__social-icons {
@@ -716,11 +734,17 @@ body {
 .footer__social-icons a {
   color: #fff;
   font-size: 18px;
-  transition: color 0.3s;
+  transition: color 0.3s, transform 0.5s;
 }
 
 .footer__social-icons a:hover {
-  color: #ff6f61;
+  color: #e65a50;
+  animation: spin 0.5s linear;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 .footer__bottom {
@@ -740,43 +764,16 @@ body {
 }
 
 .gradient-text {
-  background: linear-gradient(90deg, #ff6f61, #ff4d4d);
+  background: linear-gradient(90deg, #e65a50, #d94a40);
+  background-size: 200% 100%;
+  animation: gradientShift 3s infinite alternate;
   -webkit-background-clip: text;
   color: transparent;
 }
 
-.footer__consultation {
-  margin-top: 10px;
-  font-size: 13px;
-}
-
-.footer__consultation p {
-  margin-bottom: 8px;
-  color: rgba(255, 255, 255, 0.9);
-}
-
-.footer__contact-options {
-  display: flex;
-  justify-content: center;
-  gap: 15px;
-}
-
-.footer__contact-link {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  color: #ff6f61;
-  text-decoration: none;
-  font-size: 13px;
-  transition: color 0.3s;
-}
-
-.footer__contact-link:hover {
-  color: #ff4d4d;
-}
-
-.footer__contact-link i {
-  font-size: 16px;
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 100% 50%; }
 }
 
 /* Фиксированный островок */
@@ -808,7 +805,16 @@ body {
   transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1), 
               padding 0.6s cubic-bezier(0.4, 0, 0.2, 1), 
               background 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-  animation: expandAndCollapse 2.5s ease-in-out forwards;
+  animation: expandAndCollapse 2.5s ease-in-out forwards, bounce 1s ease-in-out infinite;
+}
+
+.floating-contact__link:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
 }
 
 .floating-contact__link.active {
@@ -840,7 +846,7 @@ body {
 }
 
 .floating-contact__link:hover {
-  color: #ff6f61;
+  color: #e65a50;
 }
 
 /* Анимации при загрузке */
