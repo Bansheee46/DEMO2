@@ -26,7 +26,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: rgba(0, 0, 0, 0.9);
+  background-color: #BCB88A; /* Шалфейный */
   height: 50px;
   padding: 0 10px;
   z-index: 1000;
@@ -37,7 +37,7 @@ body {
   display: inline-block;
   width: 12px;
   height: 12px;
-  background-color: #e65a50; /* Скорректированный цвет */
+  background-color: #C9897B; /* Пыльная роза */
   border-radius: 50%;
   animation: bounceIn 1s ease-out forwards;
 }
@@ -73,7 +73,7 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  background: #fff; /* Изначально белый фон */
+  background: #fff;
   padding: 60px 20px 20px;
   display: flex;
   flex-direction: column;
@@ -86,7 +86,7 @@ body {
 
 .nav__glass.active {
   opacity: 1;
-  background: linear-gradient(135deg, rgba(0, 0, 0, 0.9), #e65a50) !important;
+  background: linear-gradient(135deg, #BCB88A, #C9897B); /* Шалфейный и пыльная роза */
 }
 
 .nav__glass.active::after {
@@ -96,28 +96,16 @@ body {
   left: 50%;
   width: 0;
   height: 0;
-  background: linear-gradient(135deg, rgba(0, 0, 0, 0.9), #e65a50);
+  background: linear-gradient(135deg, #BCB88A, #C9897B);
   transform: translate(-50%, -50%);
   animation: waveGradient 1.5s ease-in-out forwards 0.5s;
   z-index: 997;
 }
 
 @keyframes waveGradient {
-  0% {
-    width: 0;
-    height: 0;
-    opacity: 0;
-  }
-  50% {
-    width: 200%;
-    height: 200%;
-    opacity: 0.5;
-  }
-  100% {
-    width: 100%;
-    height: 100%;
-    opacity: 1;
-  }
+  0% { width: 0; height: 0; opacity: 0; }
+  50% { width: 200%; height: 200%; opacity: 0.5; }
+  100% { width: 100%; height: 100%; opacity: 1; }
 }
 
 .nav__logo {
@@ -133,9 +121,9 @@ body {
   display: inline-block;
   width: 50px;
   height: 50px;
-  background-color: #e65a50;
+  background-color: #C9897B; /* Пыльная роза */
   border-radius: 50%;
-  box-shadow: 0 0 25px rgba(230, 90, 80, 0.9);
+  box-shadow: 0 0 25px rgba(201, 137, 123, 0.9);
   z-index: 1000;
   animation: pulseDot 3s infinite ease-in-out;
 }
@@ -147,31 +135,11 @@ body {
 }
 
 @keyframes pulseDot {
-  0% {
-    transform: scale(1) rotate(0deg);
-    box-shadow: 0 0 25px rgba(230, 90, 80, 0.9);
-    opacity: 1;
-  }
-  25% {
-    transform: scale(1.1) rotate(5deg);
-    box-shadow: 0 0 35px rgba(230, 90, 80, 1);
-    opacity: 0.9;
-  }
-  50% {
-    transform: scale(1) rotate(0deg);
-    box-shadow: 0 0 25px rgba(230, 90, 80, 0.9);
-    opacity: 1;
-  }
-  75% {
-    transform: scale(0.9) rotate(-5deg);
-    box-shadow: 0 0 15px rgba(230, 90, 80, 0.8);
-    opacity: 0.95;
-  }
-  100% {
-    transform: scale(1) rotate(0deg);
-    box-shadow: 0 0 25px rgba(230, 90, 80, 0.9);
-    opacity: 1;
-  }
+  0% { transform: scale(1) rotate(0deg); box-shadow: 0 0 25px rgba(201, 137, 123, 0.9); opacity: 1; }
+  25% { transform: scale(1.1) rotate(5deg); box-shadow: 0 0 35px rgba(201, 137, 123, 1); opacity: 0.9; }
+  50% { transform: scale(1) rotate(0deg); box-shadow: 0 0 25px rgba(201, 137, 123, 0.9); opacity: 1; }
+  75% { transform: scale(0.9) rotate(-5deg); box-shadow: 0 0 15px rgba(201, 137, 123, 0.8); opacity: 0.95; }
+  100% { transform: scale(1) rotate(0deg); box-shadow: 0 0 25px rgba(201, 137, 123, 0.9); opacity: 1; }
 }
 
 .nav__close {
@@ -189,7 +157,7 @@ body {
   opacity: 0;
   z-index: 1000;
   transition: opacity 0.5s ease, color 0.3s ease, transform 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
-  box-shadow: 0 0 20px rgba(230, 90, 80, 0.8);
+  box-shadow: 0 0 20px rgba(201, 137, 123, 0.8);
 }
 
 .nav__close.active {
@@ -197,10 +165,10 @@ body {
 }
 
 .nav__close:hover {
-  color: #e65a50;
+  color: #C9897B; /* Пыльная роза */
   transform: scale(1.1);
   background: rgba(255, 255, 255, 0.3);
-  box-shadow: 0 0 25px rgba(230, 90, 80, 1);
+  box-shadow: 0 0 25px rgba(201, 137, 123, 1);
 }
 
 .nav__lines {
@@ -222,7 +190,7 @@ body {
 .nav__line {
   position: absolute;
   height: 2px;
-  background: linear-gradient(to right, rgba(230, 90, 80, 0), #e65a50);
+  background: linear-gradient(to right, rgba(201, 137, 123, 0), #C9897B); /* Пыльная роза */
   transform-origin: left;
   width: 0;
   opacity: 0;
@@ -264,7 +232,7 @@ body {
   padding: 15px 0;
   transition: all 0.3s ease;
   z-index: 999;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5); /* Усиленная тень */
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 .nav__link:hover::after,
@@ -286,12 +254,8 @@ body {
 }
 
 @keyframes underlineDraw {
-  0% {
-    width: 0;
-  }
-  100% {
-    width: 100%;
-  }
+  0% { width: 0; }
+  100% { width: 100%; }
 }
 
 .header__actions {
@@ -310,8 +274,8 @@ body {
 
 .header__action:hover {
   transform: rotate(15deg) scale(1.1);
-  color: #e65a50;
-  box-shadow: 0 0 10px rgba(230, 90, 80, 0.8);
+  color: #C9897B; /* Пыльная роза */
+  box-shadow: 0 0 10px rgba(201, 137, 123, 0.8);
 }
 
 .burger-menu {
@@ -327,7 +291,7 @@ body {
 .burger-menu__line {
   width: 22px;
   height: 2px;
-  background: linear-gradient(90deg, #fff, #e65a50);
+  background: linear-gradient(90deg, #fff, #C9897B); /* Пыльная роза */
   border-radius: 5px;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
@@ -336,7 +300,7 @@ body {
 .burger-menu[aria-expanded="true"] .burger-menu__line:nth-child(1) {
   transform: translateY(7px) rotate(45deg);
   width: 24px;
-  background: #e65a50;
+  background: #C9897B; /* Пыльная роза */
 }
 
 .burger-menu[aria-expanded="true"] .burger-menu__line:nth-child(2) {
@@ -346,14 +310,14 @@ body {
 .burger-menu[aria-expanded="true"] .burger-menu__line:nth-child(3) {
   transform: translateY(-7px) rotate(-45deg);
   width: 24px;
-  background: #e65a50;
+  background: #C9897B; /* Пыльная роза */
 }
 
 /* Баннер "Наши преимущества" */
 .banner {
   position: sticky;
   top: 50px;
-  background: linear-gradient(90deg, #e65a50, #d94a40); /* Скорректированный градиент */
+  background: linear-gradient(90deg, #BCB88A, #C9897B); /* Шалфейный и пыльная роза */
   color: #fff;
   padding: 15px;
   z-index: 900;
@@ -425,7 +389,7 @@ body {
 }
 
 .banner__toggle:hover {
-  color: #d94a40;
+  color: #C9897B; /* Пыльная роза */
   transform: scale(1.1);
 }
 
@@ -458,8 +422,8 @@ body {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s, box-shadow 0.3s;
   z-index: 901;
-  opacity: 0; /* Для анимации */
-  transform: translateX(-20px); /* Для анимации */
+  opacity: 0;
+  transform: translateX(-20px);
 }
 
 .banner:not(.collapsed) .banner__item {
@@ -478,7 +442,7 @@ body {
 .banner__button {
   display: inline-block;
   background-color: #fff;
-  color: #e65a50; /* Скорректированный цвет */
+  color: #C9897B; /* Пыльная роза */
   padding: 10px 20px;
   font-size: 14px;
   font-weight: 600;
@@ -490,7 +454,7 @@ body {
 }
 
 .banner__button:hover {
-  background-color: #d94a40;
+  background-color: #C9897B; /* Пыльная роза */
   color: #fff;
   transform: scale(1.05);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
@@ -563,14 +527,14 @@ body {
   transform: translateY(-50%);
   background: none;
   border: none;
-  color: #e65a50;
+  color: #C9897B; /* Пыльная роза */
   font-size: 20px;
   cursor: pointer;
   transition: color 0.3s;
 }
 
 .carousel__control:hover {
-  color: #d94a40;
+  color: #b87a6e; /* Темнее пыльной розы */
 }
 
 .carousel__control--prev {
@@ -591,7 +555,7 @@ body {
   font-weight: 700;
   text-align: center;
   margin-bottom: 15px;
-  color: #e65a50;
+  color: #C9897B; /* Пыльная роза */
 }
 
 .products__grid {
@@ -653,7 +617,7 @@ body {
 .product-card__price {
   font-size: 12px;
   font-weight: 700;
-  color: #e65a50;
+  color: #C9897B; /* Пыльная роза */
   display: flex;
   align-items: center;
   gap: 3px;
@@ -664,7 +628,7 @@ body {
 }
 
 .product-card__button {
-  background: linear-gradient(90deg, #e65a50, #d94a40);
+  background: linear-gradient(90deg, #C9897B, #b87a6e); /* Пыльная роза и темнее */
   color: #fff;
   border: none;
   padding: 5px 10px;
@@ -691,7 +655,7 @@ body {
 
 /* Футер */
 .footer {
-  background-color: #222;
+  background-color: #BCB88A; /* Шалфейный */
   color: #fff;
   padding: 20px 15px;
 }
@@ -716,14 +680,14 @@ body {
 
 .footer__contacts a,
 .footer__link {
-  color: #e65a50;
+  color: #C9897B; /* Пыльная роза */
   text-decoration: none;
   transition: color 0.3s;
 }
 
 .footer__contacts a:hover,
 .footer__link:hover {
-  color: #d94a40;
+  color: #b87a6e; /* Темнее пыльной розы */
 }
 
 .footer__social-icons {
@@ -738,7 +702,7 @@ body {
 }
 
 .footer__social-icons a:hover {
-  color: #e65a50;
+  color: #C9897B; /* Пыльная роза */
   animation: spin 0.5s linear;
 }
 
@@ -764,7 +728,7 @@ body {
 }
 
 .gradient-text {
-  background: linear-gradient(90deg, #e65a50, #d94a40);
+  background: linear-gradient(90deg, #C9897B, #b87a6e); /* Пыльная роза и темнее */
   background-size: 200% 100%;
   animation: gradientShift 3s infinite alternate;
   -webkit-background-clip: text;
@@ -782,7 +746,7 @@ body {
   bottom: 10px;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(0, 0, 0, 0.9);
+  background: #BCB88A; /* Шалфейный */
   padding: 5px 15px;
   border-radius: 20px;
   display: flex;
@@ -839,55 +803,25 @@ body {
   width: 80px;
 }
 
-/* Направление текста для "Позвонить" влево */
 .floating-contact__link:first-child {
   flex-direction: row-reverse;
   justify-content: flex-end;
 }
 
 .floating-contact__link:hover {
-  color: #e65a50;
+  color: #C9897B; /* Пыльная роза */
 }
 
-/* Анимации при загрузке */
 @keyframes expandAndCollapse {
-  0% {
-    width: 30px;
-    padding: 5px;
-    background: transparent;
-  }
-  40% {
-    width: 120px;
-    padding: 5px 12px;
-    background: rgba(255, 255, 255, 0.1);
-  }
-  60% {
-    width: 120px;
-    padding: 5px 12px;
-    background: rgba(255, 255, 255, 0.1);
-  }
-  100% {
-    width: 30px;
-    padding: 5px;
-    background: transparent;
-  }
+  0% { width: 30px; padding: 5px; background: transparent; }
+  40% { width: 120px; padding: 5px 12px; background: rgba(255, 255, 255, 0.1); }
+  60% { width: 120px; padding: 5px 12px; background: rgba(255, 255, 255, 0.1); }
+  100% { width: 30px; padding: 5px; background: transparent; }
 }
 
 @keyframes textFade {
-  0% {
-    opacity: 0;
-    width: 0;
-  }
-  40% {
-    opacity: 1;
-    width: 80px;
-  }
-  60% {
-    opacity: 1;
-    width: 80px;
-  }
-  100% {
-    opacity: 0;
-    width: 0;
-  }
+  0% { opacity: 0; width: 0; }
+  40% { opacity: 1; width: 80px; }
+  60% { opacity: 1; width: 80px; }
+  100% { opacity: 0; width: 0; }
 }
