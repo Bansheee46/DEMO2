@@ -34,7 +34,12 @@
     </nav>
     <div class="header__actions">
       <button class="header__action" aria-label="Поиск"><i class="fas fa-search"></i></button>
-      <button class="header__action" aria-label="Корзина"><i class="fas fa-shopping-bag"></i></button>
+      <div class="cart-wrapper">
+        <button class="header__action" aria-label="Корзина" id="cartToggle">
+          <i class="fas fa-shopping-bag"></i>
+          <span class="cart-count">0</span>
+        </button>
+      </div>
     </div>
     <button class="burger-menu" aria-expanded="false" aria-controls="mobileMenu">
       <span class="burger-menu__line"></span>
@@ -223,6 +228,51 @@
       <i class="fab fa-whatsapp"></i>
       <span class="floating-contact__text">Написать</span>
     </a>
+  </div>
+  <div class="cart-popup" id="cartPopup" aria-hidden="true">
+    <div class="cart-popup__overlay"></div>
+    <div class="cart-popup__content">
+      <div class="cart-popup__header">
+        <h3 class="cart-popup__title">Ваша корзина</h3>
+        <button class="cart-popup__close" aria-label="Закрыть корзину">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="cart-popup__body">
+        <div class="cart-popup__items-wrapper">
+          <ul class="cart-popup__items" role="list"></ul>
+          <div class="cart-popup__footer">
+            <p class="cart-popup__total">Итого: <span>0 ₽</span></p>
+            <button class="cart-popup__checkout">Оформить заказ</button>
+          </div>
+        </div>
+        <form class="cart-popup__checkout-form">
+          <h3>Оформление заказа</h3>
+          <div class="form-group">
+            <label for="checkout-name">Имя</label>
+            <input type="text" id="checkout-name" placeholder="Ваше имя" required>
+          </div>
+          <div class="form-group">
+            <label for="checkout-phone">Телефон</label>
+            <input type="tel" id="checkout-phone" placeholder="Ваш телефон" required>
+          </div>
+          <div class="form-group">
+            <label for="checkout-address">Адрес доставки</label>
+            <input type="text" id="checkout-address" placeholder="Введите адрес" required>
+          </div>
+          <button type="submit" class="cart-popup__submit">Подтвердить заказ</button>
+          <button type="button" class="cart-popup__back">Назад</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+  <div class="custom-modal" id="customModal" aria-hidden="true">
+    <div class="custom-modal__overlay"></div>
+    <div class="custom-modal__content">
+      <p class="custom-modal__message"></p>
+      <button class="custom-modal__close">ОК</button>
+    </div>
   </div>
   <script src="mobile.js"></script>
  </div>
