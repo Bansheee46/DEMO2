@@ -105,36 +105,30 @@ document.addEventListener('DOMContentLoaded', () => {
   function animateMenuClose() {
     console.log('Closing menu...');
     requestAnimationFrame(() => {
-      setTimeout(() => {
-        navList.classList.remove('active');
-        lines.forEach(line => line.classList.remove('active'));
-      }, 100);
-
+      navList.classList.remove('active');
+      lines.forEach(line => line.classList.remove('active'));
+      navClose.classList.remove('active');
+      navLines.classList.remove('active');
+      
+      // Убираем .active с задержкой для анимации выхода
       setTimeout(() => {
         navGlass.classList.remove('active');
         navLogo.classList.remove('active');
-        navLines.classList.remove('active');
-        navClose.classList.remove('active');
-      }, 300);
+      }, 100); // Минимальная задержка для начала анимации
     });
   }
 
   // Баннер
   const banner = document.getElementById('banner');
-  const bannerToggle = document.querySelector('.banner__toggle');
-
-  if (banner && bannerToggle) {
+  if (banner) {
     let isCollapsed = true;
-    bannerToggle.classList.add('active');
 
-    bannerToggle.addEventListener('click', () => {
+    banner.addEventListener('click', () => {
       if (isCollapsed) {
         banner.classList.remove('collapsed');
-        bannerToggle.classList.add('active');
         isCollapsed = false;
       } else {
         banner.classList.add('collapsed');
-        bannerToggle.classList.remove('active');
         isCollapsed = true;
       }
     });
@@ -168,10 +162,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // Карусель
   const track = document.querySelector('.carousel__track');
   const items = document.querySelectorAll('.carousel__item');
-  const prevButton = document.querySelector('.carousel__control--prev');
-  const nextButton = document.querySelector('.carousel__control--next');
 
-  if (track && items.length && prevButton && nextButton) {
+  if (track && items.length) {
     let currentIndex = 0;
 
     const updateCarousel = () => {
@@ -182,22 +174,19 @@ document.addEventListener('DOMContentLoaded', () => {
       items.forEach((item, i) => item.toggleAttribute('data-active', i === currentIndex));
     };
 
-    prevButton.addEventListener('click', () => {
-      currentIndex = currentIndex > 0 ? currentIndex - 1 : items.length - 1;
-      updateCarousel();
-    });
-
-    nextButton.addEventListener('click', () => {
-      currentIndex = currentIndex < items.length - 1 ? currentIndex + 1 : 0;
-      updateCarousel();
-    });
-
+    // Убираем кнопки, оставляем только свайпы
     let startX;
     track.addEventListener('touchstart', (e) => (startX = e.touches[0].clientX));
     track.addEventListener('touchend', (e) => {
       const endX = e.changedTouches[0].clientX;
-      if (startX - endX > 30) nextButton.click();
-      if (endX - startX > 30) prevButton.click();
+      if (startX - endX > 30) {
+        currentIndex = currentIndex < items.length - 1 ? currentIndex + 1 : 0;
+        updateCarousel();
+      }
+      if (endX - startX > 30) {
+        currentIndex = currentIndex > 0 ? currentIndex - 1 : items.length - 1;
+        updateCarousel();
+      }
     });
 
     window.addEventListener('load', updateCarousel);
@@ -337,7 +326,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (cartItems.length > 0) {
       cartWrapper.classList.add('has-items');
       cartWrapper.classList.add('active');
-      setTimeout(() => cartWrapper.classList.remove('active'), 500);
+      setTimeout(() => cartWrapper.classList.remove('active'), 500); // Анимация длится 0.5с
     } else {
       cartWrapper.classList.remove('has-items');
     }
@@ -407,7 +396,6 @@ document.addEventListener('DOMContentLoaded', () => {
       cartToggle.focus();
     };
   }
-});
 
 // WebSocket для live-reload
 if ('WebSocket' in window) {
@@ -442,3 +430,4 @@ if ('WebSocket' in window) {
 } else {
   console.error('Upgrade your browser. This Browser is NOT supported WebSocket for Live-Reloading.');
 }
+})

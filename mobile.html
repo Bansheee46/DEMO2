@@ -58,9 +58,6 @@
           <span class="banner__title-dynamic">Акции</span>
           <span class="banner__title-dynamic">Новинки</span>
         </h2>
-        <button class="banner__toggle active" aria-label="Переключить баннер">
-          <i class="fas fa-chevron-up"></i>
-        </button>
       </div>
       <div class="banner__content">
         <ul class="banner__list">
@@ -108,7 +105,6 @@
           </div>
         </div>
       </div>
-      <button class="carousel__control carousel__control--next" aria-label="Следующий слайд"><i class="fas fa-chevron-right"></i></button>
     </section>
 
     <!-- Секция товаров -->
@@ -254,7 +250,8 @@
           </div>
           <div class="form-group">
             <label for="checkout-phone">Телефон</label>
-            <input type="tel" id="checkout-phone" placeholder="Ваш телефон" required>
+            <input type="tel" id="checkout-phone" placeholder="+7 (XXX) XXX-XX-XX" required>
+            <span class="error-message">Введите номер в формате +7 (XXX) XXX-XX-XX</span>
           </div>
           <div class="form-group">
             <label for="checkout-address">Адрес доставки</label>

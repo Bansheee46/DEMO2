@@ -18,7 +18,7 @@ body {
 }
 
 body.no-scroll {
-  overflow: hidden; /* Отключаем скролл */
+  overflow: hidden;
 }
 
 /* Шапка сайта */
@@ -30,7 +30,7 @@ body.no-scroll {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #BCB88A; /* Шалфейный */
+  background-color: #BCB88A;
   height: 50px;
   padding: 0 10px;
   z-index: 1000;
@@ -38,31 +38,25 @@ body.no-scroll {
 }
 
 .header__logo {
-  display: flex; /* Располагаем иконку и текст в ряд */
-  align-items: center; /* Выравниваем по центру */
-  gap: 5px; /* Расстояние между иконкой и текстом */
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 
 .logo-icon {
   font-size: 24px;
-  color: #C9897B; /* Пыльная роза */
+  color: #C9897B;
   transition: transform 0.3s ease;
 }
 
 .logo-text {
-  font-size: 16px; /* Размер текста */
-  font-weight: 700; /* Жирный шрифт */
-  color: #fff; /* Белый цвет текста */
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
 }
 
 .header__logo:hover .logo-icon {
   transform: scale(1.1);
-}
-
-@keyframes bounceIn {
-  0% { transform: scale(0); opacity: 0; }
-  60% { transform: scale(1.2); opacity: 1; }
-  100% { transform: scale(1); }
 }
 
 .header__nav {
@@ -84,45 +78,129 @@ body.no-scroll {
   pointer-events: auto;
 }
 
+/* Основной контейнер меню */
 .nav__glass {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: #fff;
+  background: #fff; /* Начальный фон */
   padding: 60px 20px 20px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   justify-content: flex-start;
   opacity: 0;
-  transition: opacity 0.5s ease, background 1.5s ease-in-out;
+  transition: opacity 0.3s ease;
   z-index: 998;
 }
 
+/* Состояние активного меню */
 .nav__glass.active {
   opacity: 1;
-  background: linear-gradient(135deg, #BCB88A, #C9897B); /* Шалфейный и пыльная роза */
+  background: linear-gradient(
+    135deg,
+    #BCB88A 0%,    /* Базовый цвет */
+    #C4C08C 10%,   /* Плавный переход */
+    #CBBF8F 20%,
+    #D2BF92 30%,
+    #D9BE95 40%,
+    #E0BD98 50%,   /* Средний тон */
+    #D7A893 60%,
+    #CE938E 70%,
+    #C57E89 80%,
+    #C9897B 100%  /* Конечный цвет */
+  ); /* Многоцветный градиент */
+  animation: revealGradient 1s ease-out forwards; /* Анимация входа */
 }
 
-.nav__glass.active::after {
+/* Анимация появления */
+@keyframes revealGradient {
+  0% {
+    transform: scale(0.5) rotate(-10deg);
+    opacity: 0;
+    clip-path: circle(0% at 50% 50%);
+  }
+  50% {
+    transform: scale(1.1) rotate(5deg);
+    opacity: 0.8;
+    clip-path: circle(70% at 50% 50%);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+    clip-path: circle(100% at 50% 50%);
+  }
+}
+
+/* Циклическая анимация "в меню" */
+.nav__glass.active::before {
   content: '';
   position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  background: linear-gradient(135deg, #BCB88A, #C9897B);
-  transform: translate(-50%, -50%);
-  animation: waveGradient 1.5s ease-in-out forwards 0.5s;
-  z-index: 997;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  /* Сложный градиент с сотнями оттенков (примерно 10 здесь, но можно расширить) */
+  background: linear-gradient(
+    45deg,
+    rgba(188, 184, 138, 0.6) 0%,
+    rgba(192, 185, 140, 0.65) 10%,
+    rgba(196, 186, 142, 0.7) 20%,
+    rgba(200, 187, 144, 0.75) 30%,
+    rgba(204, 188, 146, 0.8) 40%,
+    rgba(208, 189, 148, 0.85) 50%,
+    rgba(212, 190, 150, 0.9) 60%,
+    rgba(216, 191, 152, 0.85) 70%,
+    rgba(220, 192, 154, 0.8) 80%,
+    rgba(201, 137, 123, 0.7) 100%
+  );
+  z-index: -1;
+  animation: flowGradient 5s ease-in-out infinite; /* Плавный и заметный цикл */
 }
 
-@keyframes waveGradient {
-  0% { width: 0; height: 0; opacity: 0; }
-  50% { width: 200%; height: 200%; opacity: 0.5; }
-  100% { width: 100%; height: 100%; opacity: 1; }
+/* Новая циклическая анимация */
+@keyframes flowGradient {
+  0% {
+    background-position: 0% 50%;
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    background-position: 100% 50%;
+    opacity: 1;
+    transform: scale(1.05); /* Лёгкое "дыхание" */
+  }
+  100% {
+    background-position: 0% 50%;
+    opacity: 0.6;
+    transform: scale(1);
+  }
+}
+
+/* Анимация выхода */
+.nav__glass:not(.active) {
+  animation: dissolveGradient 1s ease-in forwards; /* Новая анимация выхода */
+}
+
+/* Новая анимация выхода */
+@keyframes dissolveGradient {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0px);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-20%);
+    filter: blur(10px); /* Эффект растворения */
+  }
+}
+
+/* Убираем старую анимацию ::after */
+.nav__glass.active::after {
+  display: none;
 }
 
 .nav__logo {
@@ -138,7 +216,7 @@ body.no-scroll {
   display: inline-block;
   width: 50px;
   height: 50px;
-  background-color: #C9897B; /* Пыльная роза */
+  background-color: #C9897B;
   border-radius: 50%;
   box-shadow: 0 0 25px rgba(201, 137, 123, 0.9);
   z-index: 1000;
@@ -182,7 +260,7 @@ body.no-scroll {
 }
 
 .nav__close:hover {
-  color: #C9897B; /* Пыльная роза */
+  color: #C9897B;
   transform: scale(1.1);
   background: rgba(255, 255, 255, 0.3);
   box-shadow: 0 0 25px rgba(201, 137, 123, 1);
@@ -207,7 +285,7 @@ body.no-scroll {
 .nav__line {
   position: absolute;
   height: 2px;
-  background: linear-gradient(to right, rgba(201, 137, 123, 0), #C9897B); /* Пыльная роза */
+  background: linear-gradient(to right, rgba(201, 137, 123, 0), #C9897B);
   transform-origin: left;
   width: 0;
   opacity: 0;
@@ -291,11 +369,10 @@ body.no-scroll {
 
 .header__action:hover {
   transform: rotate(15deg) scale(1.1);
-  color: #C9897B; /* Пыльная роза */
+  color: #C9897B;
   box-shadow: 0 0 10px rgba(201, 137, 123, 0.8);
 }
 
-/* Обновление стилей шапки */
 .cart-wrapper {
   position: relative;
 }
@@ -304,7 +381,7 @@ body.no-scroll {
   position: absolute;
   top: -5px;
   right: -5px;
-  background: #C9897B; /* Пыльная роза */
+  background: #C9897B;
   color: #fff;
   font-size: 10px;
   width: 16px;
@@ -323,21 +400,25 @@ body.no-scroll {
   transform: scale(1);
 }
 
-/* Убираем старую анимацию .cart-wrapper.active */
 .cart-wrapper.active .cart-count {
-  animation: bounceIn 0.5s ease-out;
+  animation: popIn 0.5s ease-out; /* Более мягкая анимация */
 }
 
-@keyframes bounceIn {
-  0% { transform: scale(0); }
-  50% { transform: scale(1.2); }
-  100% { transform: scale(1); }
+.cart-wrapper.active .header__action {
+  animation: bounceCart 0.5s ease-out; /* Анимация иконки корзины */
+  color: #C9897B; /* Меняем цвет при добавлении */
 }
 
-.header__action:hover {
-  transform: rotate(15deg) scale(1.1);
-  color: #C9897B;
-  box-shadow: 0 0 10px rgba(201, 137, 123, 0.8);
+@keyframes popIn {
+  0% { transform: scale(0); opacity: 0; }
+  70% { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes bounceCart {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-5px) scale(1.1); }
+  100% { transform: translateY(0) scale(1); }
 }
 
 .burger-menu {
@@ -353,7 +434,7 @@ body.no-scroll {
 .burger-menu__line {
   width: 22px;
   height: 2px;
-  background: linear-gradient(90deg, #fff, #C9897B); /* Пыльная роза */
+  background: linear-gradient(90deg, #fff, #C9897B);
   border-radius: 5px;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
@@ -362,7 +443,7 @@ body.no-scroll {
 .burger-menu[aria-expanded="true"] .burger-menu__line:nth-child(1) {
   transform: translateY(7px) rotate(45deg);
   width: 24px;
-  background: #C9897B; /* Пыльная роза */
+  background: #C9897B;
 }
 
 .burger-menu[aria-expanded="true"] .burger-menu__line:nth-child(2) {
@@ -372,20 +453,21 @@ body.no-scroll {
 .burger-menu[aria-expanded="true"] .burger-menu__line:nth-child(3) {
   transform: translateY(-7px) rotate(-45deg);
   width: 24px;
-  background: #C9897B; /* Пыльная роза */
+  background: #C9897B;
 }
 
 /* Баннер "Наши преимущества" */
 .banner {
   position: sticky;
   top: 50px;
-  background: linear-gradient(90deg, #BCB88A, #C9897B); /* Шалфейный и пыльная роза */
+  background: linear-gradient(90deg, #BCB88A, #C9897B);
   color: #fff;
   padding: 15px;
   z-index: 900;
   overflow: visible;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
   border-radius: 12px;
+  cursor: pointer;
 }
 
 .banner.collapsed {
@@ -439,26 +521,6 @@ body.no-scroll {
   left: 0;
 }
 
-.banner__toggle {
-  background: none;
-  border: none;
-  color: #fff;
-  font-size: 20px;
-  cursor: pointer;
-  padding: 5px;
-  border-radius: 50%;
-  z-index: 902;
-}
-
-.banner__toggle:hover {
-  color: #C9897B; /* Пыльная роза */
-  transform: scale(1.1);
-}
-
-.banner__toggle.active i {
-  transform: rotate(180deg);
-}
-
 .banner__content {
   padding-top: 15px;
   display: none;
@@ -504,7 +566,7 @@ body.no-scroll {
 .banner__button {
   display: inline-block;
   background-color: #fff;
-  color: #C9897B; /* Пыльная роза */
+  color: #C9897B;
   padding: 10px 20px;
   font-size: 14px;
   font-weight: 600;
@@ -516,7 +578,7 @@ body.no-scroll {
 }
 
 .banner__button:hover {
-  background-color: #C9897B; /* Пыльная роза */
+  background-color: #C9897B;
   color: #fff;
   transform: scale(1.05);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
@@ -583,28 +645,9 @@ body.no-scroll {
   background-color: #f9f9f9;
 }
 
-.carousel__control {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  color: #C9897B; /* Пыльная роза */
-  font-size: 20px;
-  cursor: pointer;
-  transition: color 0.3s;
-}
-
-.carousel__control:hover {
-  color: #b87a6e; /* Темнее пыльной розы */
-}
-
-.carousel__control--prev {
-  left: 5px;
-}
-
+.carousel__control--prev,
 .carousel__control--next {
-  right: 5px;
+  display: none;
 }
 
 /* Секция товаров */
@@ -617,7 +660,7 @@ body.no-scroll {
   font-weight: 700;
   text-align: center;
   margin-bottom: 15px;
-  color: #C9897B; /* Пыльная роза */
+  color: #C9897B;
 }
 
 .products__grid {
@@ -632,7 +675,7 @@ body.no-scroll {
   background: linear-gradient(135deg, #ffffff, #f9f9f9);
   border-radius: 10px;
   overflow: hidden;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 intracranial 6px rgba(0, 0, 0, 0.05);
   border: 1px solid #eee;
   transition: transform 0.3s, box-shadow 0.3s;
   opacity: 0;
@@ -679,7 +722,7 @@ body.no-scroll {
 .product-card__price {
   font-size: 12px;
   font-weight: 700;
-  color: #C9897B; /* Пыльная роза */
+  color: #C9897B;
   display: flex;
   align-items: center;
   gap: 3px;
@@ -690,7 +733,7 @@ body.no-scroll {
 }
 
 .product-card__button {
-  background: linear-gradient(90deg, #C9897B, #b87a6e); /* Пыльная роза и темнее */
+  background: linear-gradient(90deg, #C9897B, #b87a6e);
   color: #fff;
   border: none;
   padding: 5px 10px;
@@ -717,7 +760,7 @@ body.no-scroll {
 
 /* Футер */
 .footer {
-  background-color: #BCB88A; /* Шалфейный */
+  background-color: #BCB88A;
   color: #fff;
   padding: 20px 15px;
 }
@@ -742,14 +785,14 @@ body.no-scroll {
 
 .footer__contacts a,
 .footer__link {
-  color: #C9897B; /* Пыльная роза */
+  color: #C9897B;
   text-decoration: none;
   transition: color 0.3s;
 }
 
 .footer__contacts a:hover,
 .footer__link:hover {
-  color: #b87a6e; /* Темнее пыльной розы */
+  color: #b87a6e;
 }
 
 .footer__social-icons {
@@ -764,7 +807,7 @@ body.no-scroll {
 }
 
 .footer__social-icons a:hover {
-  color: #C9897B; /* Пыльная роза */
+  color: #C9897B;
   animation: spin 0.5s linear;
 }
 
@@ -790,7 +833,7 @@ body.no-scroll {
 }
 
 .gradient-text {
-  background: linear-gradient(90deg, #C9897B, #b87a6e); /* Пыльная роза и темнее */
+  background: linear-gradient(90deg, #C9897B, #b87a6e);
   background-size: 200% 100%;
   animation: gradientShift 3s infinite alternate;
   -webkit-background-clip: text;
@@ -808,7 +851,7 @@ body.no-scroll {
   bottom: 10px;
   left: 50%;
   transform: translateX(-50%);
-  background: #BCB88A; /* Шалфейный */
+  background: #BCB88A;
   padding: 5px 15px;
   border-radius: 20px;
   display: flex;
@@ -871,7 +914,7 @@ body.no-scroll {
 }
 
 .floating-contact__link:hover {
-  color: #C9897B; /* Пыльная роза */
+  color: #C9897B;
 }
 
 @keyframes expandAndCollapse {
@@ -933,20 +976,12 @@ body.no-scroll {
   max-width: 400px;
   padding: 20px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-  transform: translateY(20px);
-  opacity: 0;
-  transition: transform 0.4s ease, opacity 0.4s ease;
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
 }
 
 .cart-popup[aria-hidden="false"] .cart-popup__content {
-  transform: translateY(0);
-  opacity: 1;
-  animation: slideUp 0.4s ease-out;
-}
-
-@keyframes slideUp {
-  0% { transform: translateY(20px); opacity: 0; }
-  100% { transform: translateY(0); opacity: 1; }
+  transform: translateX(0);
 }
 
 .cart-popup__header {
@@ -991,7 +1026,7 @@ body.no-scroll {
 .cart-popup__items-wrapper.hidden {
   opacity: 0;
   position: absolute;
-  pointer-events: none; /* Отключаем взаимодействие */
+  pointer-events: none;
 }
 
 .cart-popup__items:empty::after {
@@ -1023,7 +1058,6 @@ body.no-scroll {
   position: relative;
 }
 
-
 .cart-popup__checkout-form {
   display: none;
   opacity: 0;
@@ -1049,22 +1083,6 @@ body.no-scroll {
   border: 1px solid #BCB88A;
   border-radius: 5px;
   font-size: 14px;
-}
-
-.cart-popup__submit, .cart-popup__back {
-  background: linear-gradient(90deg, #BCB88A, #C9897B);
-  color: #fff;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 10px;
-  font-size: 14px;
-  cursor: pointer;
-  margin: 5px 0;
-  transition: transform 0.3s;
-}
-
-.cart-popup__submit:hover, .cart-popup__back:hover {
-  transform: scale(1.05);
 }
 
 .cart-popup__items li.remove {
@@ -1108,7 +1126,6 @@ body.no-scroll {
   opacity: 0.8;
 }
 
-
 .cart-popup__footer {
   text-align: right;
   animation: fadeIn 0.5s ease-out 0.2s backwards;
@@ -1122,7 +1139,7 @@ body.no-scroll {
 }
 
 .cart-popup__checkout {
-  background: linear-gradient(90deg, #BCB88A, #C9897B); /* Шалфейный и пыльная роза */
+  background: linear-gradient(90deg, #BCB88A, #C9897B);
   color: #fff;
   border: none;
   padding: 10px 20px;
@@ -1137,7 +1154,6 @@ body.no-scroll {
   transform: scale(1.05);
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
-
 
 .form-group {
   margin-bottom: 15px;
@@ -1165,8 +1181,26 @@ body.no-scroll {
   outline: none;
 }
 
-.form-group input:invalid {
+.form-group input:invalid:not(:placeholder-shown) {
   border-color: #ff6b6b;
+}
+
+.form-group input#checkout-phone {
+  pattern: "^\\+7\\s\\(\\d{3}\\)\\s\\d{3}-\\d{2}-\\d{2}$";
+}
+
+.form-group .error-message {
+  display: none;
+  color: #ff6b6b;
+  font-size: 12px;
+  margin-top: 5px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.form-group input:invalid:not(:placeholder-shown) + .error-message {
+  display: block;
+  opacity: 1;
 }
 
 .suggestions {
@@ -1197,7 +1231,8 @@ body.no-scroll {
   background: #f9f9f9;
 }
 
-.cart-popup__submit, .cart-popup__back {
+.cart-popup__submit,
+.cart-popup__back {
   background: linear-gradient(90deg, #BCB88A, #C9897B);
   color: #fff;
   border: none;
@@ -1207,10 +1242,11 @@ body.no-scroll {
   cursor: pointer;
   margin: 5px 0;
   width: 100%;
-  transition: transform 0.3s, box-shadow 0.3s;
+  transition: transform 0.1s ease, background-color 0.3s ease;
 }
 
-.cart-popup__submit:hover, .cart-popup__back:hover {
+.cart-popup__submit:hover,
+.cart-popup__back:hover {
   transform: scale(1.05);
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
@@ -1219,6 +1255,10 @@ body.no-scroll {
   background: #ccc;
   cursor: not-allowed;
   transform: none;
+}
+
+.cart-popup__submit:active:not(:disabled) {
+  transform: scale(0.95);
 }
 
 @keyframes fadeIn {
@@ -1290,4 +1330,3 @@ body.no-scroll {
 .custom-modal__close:hover {
   transform: scale(1.05);
 }
-
