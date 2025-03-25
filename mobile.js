@@ -14,7 +14,6 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('cartIconLink:', cartIconLink);
     console.log('cartIcon:', cartIcon);
   
-    // Обновление счетчика корзины
     function updateCartCount() {
       if (cartCount && cartWrapper) {
         cartCount.textContent = cartItems.length;
@@ -28,7 +27,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
   
-    // Динамическая замена иконки и ссылки
     if (window.location.pathname.includes('cart.html')) {
       console.log('Switching to home icon');
       if (cartIconWrapper && cartIconLink && cartIcon) {
@@ -51,10 +49,8 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
   
-    // Логика для главной страницы (mobile.html)
     if (window.location.pathname.includes('mobile.html') || window.location.pathname === '/') {
       console.log('Main page logic');
-  
       const buttons = document.querySelectorAll('.product-card__button');
       buttons.forEach(button => {
         button.addEventListener('click', () => {
@@ -123,13 +119,13 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
   
-    // Логика для страницы корзины (cart.html)
     if (window.location.pathname.includes('cart.html')) {
       console.log('Cart page logic');
       const cartItemsList = document.querySelector('.cart-page__items');
       const totalElement = document.querySelector('.cart-page__total span');
       const checkoutButton = document.querySelector('.cart-page__checkout');
       const checkoutForm = document.querySelector('.cart-page__checkout-form');
+      const cartFooter = document.querySelector('.cart-page__footer');
       const backButton = document.querySelector('.cart-page__back');
       const submitButton = document.querySelector('.cart-page__submit');
       const modal = document.querySelector('#customModal');
@@ -137,19 +133,14 @@ document.addEventListener('DOMContentLoaded', () => {
       const modalClose = modal.querySelector('.custom-modal__close');
       const phoneInput = document.querySelector('#checkout-phone');
   
-      // Функция форматирования номера телефона
       function formatPhoneNumber(value) {
-        // Удаляем всё, кроме цифр
         const digits = value.replace(/\D/g, '');
-        // Если первая цифра 8, заменяем на 7
         let phoneNumber = digits;
         if (phoneNumber.startsWith('8')) {
           phoneNumber = '7' + phoneNumber.slice(1);
         } else if (!phoneNumber.startsWith('7') && phoneNumber.length > 0) {
           phoneNumber = '7' + phoneNumber;
         }
-  
-        // Форматируем по паттерну +7 (XXX) XXX-XX-XX
         const match = phoneNumber.match(/^(\d{0,1})(\d{0,3})(\d{0,3})(\d{0,2})(\d{0,2})$/);
         if (match) {
           const parts = [];
@@ -160,23 +151,15 @@ document.addEventListener('DOMContentLoaded', () => {
           if (match[5]) parts.push(`-${match[5]}`);
           return parts.join('');
         }
-        return value; // Если не удалось форматировать, возвращаем исходное
+        return value;
       }
   
-      // Обработчик ввода номера телефона
       if (phoneInput) {
-        phoneInput.addEventListener('input', (e) => {
-          const cursorPosition = e.target.selectionStart;
-          const formatted = formatPhoneNumber(e.target.value);
-          e.target.value = formatted;
-  
-          // Корректируем позицию курсора
-          const diff = formatted.length - e.target.value.length;
-          e.target.setSelectionRange(cursorPosition + diff, cursorPosition + diff);
+        phoneInput.addEventListener('blur', (e) => {
+          e.target.value = formatPhoneNumber(e.target.value);
         });
       }
   
-      // Отображение товаров в корзине
       function renderCartItems() {
         cartItemsList.innerHTML = '';
         let total = 0;
@@ -205,13 +188,15 @@ document.addEventListener('DOMContentLoaded', () => {
       }
   
       checkoutButton.addEventListener('click', () => {
-        checkoutForm.style.display = 'block';
-        checkoutButton.style.display = 'none';
+        cartItemsList.style.display = 'none';
+        cartFooter.style.display = 'none';
+        checkoutForm.classList.add('active');
       });
   
       backButton.addEventListener('click', () => {
-        checkoutForm.style.display = 'none';
-        checkoutButton.style.display = 'block';
+        cartItemsList.style.display = 'block';
+        cartFooter.style.display = 'block';
+        checkoutForm.classList.remove('active');
       });
   
       checkoutForm.addEventListener('submit', (e) => {
@@ -228,8 +213,9 @@ document.addEventListener('DOMContentLoaded', () => {
           renderCartItems();
           updateCartCount();
           checkoutForm.reset();
-          checkoutForm.style.display = 'none';
-          checkoutButton.style.display = 'block';
+          cartItemsList.style.display = 'block';
+          cartFooter.style.display = 'block';
+          checkoutForm.classList.remove('active');
         }
       });
   

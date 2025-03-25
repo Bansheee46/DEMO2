@@ -3,71 +3,70 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Damax</title>
+  <title>Корзина</title>
   <link rel="stylesheet" href="mobile-styles.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lato:wght@400;700&family=Dancing+Script:wght@400&display=swap" rel="stylesheet">
 </head>
-<body>
-    <header class="header">
-        <div class="header__logo">Logo</div>
-        <div class="header__main-icons">
-          <div class="icon-wrapper" data-tooltip="Профиль">
-            <a href="#" class="header__icon" aria-label="Профиль"><i class="fas fa-user"></i></a>
-          </div>
-          <div class="cart-wrapper">
-            <div class="icon-wrapper" id="cart-icon-wrapper" data-tooltip="Корзина">
-              <a href="cart.html" class="header__icon" id="cart-icon-link" aria-label="Корзина">
-                <i id="cart-icon" class="fas fa-shopping-cart"></i>
-                <span class="cart-count">0</span>
-              </a>
-            </div>
-          </div>
+<body class="cart-page">
+  <header class="header">
+    <div class="header__logo">Logo</div>
+    <div class="header__main-icons">
+      <div class="icon-wrapper" data-tooltip="Профиль">
+        <a href="#" class="header__icon" aria-label="Профиль"><i class="fas fa-user"></i></a>
+      </div>
+      <div class="cart-wrapper">
+        <div class="icon-wrapper" id="cart-icon-wrapper" data-tooltip="На главную">
+          <a href="mobile.html" class="header__icon" id="cart-icon-link" aria-label="На главную">
+            <i id="cart-icon" class="fas fa-home"></i>
+            <span class="cart-count">0</span>
+          </a>
         </div>
-        <input type="checkbox" id="menu-icon" class="menu-icon" aria-expanded="false">
-        <label for="menu-icon" class="burger-menu">
-          <span class="burger-menu__line"></span>
-          <span class="burger-menu__line"></span>
-          <span class="burger-menu__line"></span>
-        </label>
-        <div class="header__extra">
-          <div class="header__extra-icons">
-            <div class="icon-wrapper">
-              <a href="#" class="header__icon" aria-label="Избранное"><i class="fas fa-heart"></i><span class="icon-bg"><span class="icon-text">Избранное</span></span></a>
-            </div>
-            <div class="icon-wrapper">
-              <a href="#" class="header__icon" aria-label="Поиск"><i class="fas fa-search"></i><span class="icon-bg"><span class="icon-text">Поиск</span></span></a>
-            </div>
-            <div class="icon-wrapper">
-              <a href="#" class="header__icon" aria-label="О нас"><i class="fas fa-info-circle"></i><span class="icon-bg"><span class="icon-text">О нас</span></span></a>
-            </div>
-          </div>
+      </div>
+    </div>
+    <input type="checkbox" id="menu-icon" class="menu-icon" aria-expanded="false">
+    <label for="menu-icon" class="burger-menu">
+      <span class="burger-menu__line"></span>
+      <span class="burger-menu__line"></span>
+      <span class="burger-menu__line"></span>
+    </label>
+    <div class="header__extra">
+      <div class="header__extra-icons">
+        <div class="icon-wrapper">
+          <a href="#" class="header__icon" aria-label="Избранное"><i class="fas fa-heart"></i><span class="icon-bg"><span class="icon-text">Избранное</span></span></a>
         </div>
-      </header>
+        <div class="icon-wrapper">
+          <a href="#" class="header__icon" aria-label="Поиск"><i class="fas fa-search"></i><span class="icon-bg"><span class="icon-text">Поиск</span></span></a>
+        </div>
+        <div class="icon-wrapper">
+          <a href="#" class="header__icon" aria-label="О нас"><i class="fas fa-info-circle"></i><span class="icon-bg"><span class="icon-text">О нас</span></span></a>
+        </div>
+      </div>
+    </div>
+  </header>
 
   <section class="cart-page">
-    <h2 class="cart-page__title">Корзина</h2>
-    <ul class="cart-page__items"></ul>
-    <div class="cart-page__footer">
-      <p class="cart-page__total">Итого: <span>0 ₽</span></p>
-      <button class="cart-page__checkout">Оформить заказ</button>
-      <form class="cart-page__checkout-form" style="display: none;">
+    <div class="cart-page__container">
+      <h2 class="cart-page__title">Ваша корзина</h2>
+      <ul class="cart-page__items" role="list"></ul>
+      <div class="cart-page__footer">
+        <p class="cart-page__total">Итого: <span>0 ₽</span></p>
+        <button class="cart-page__checkout">Оформить заказ</button>
+      </div>
+      <form class="cart-page__checkout-form">
         <h3>Оформление заказа</h3>
         <div class="form-group">
           <label for="checkout-name">Имя</label>
-          <input type="text" id="checkout-name" required>
+          <input type="text" id="checkout-name" placeholder="Ваше имя" required>
         </div>
         <div class="form-group">
           <label for="checkout-phone">Телефон</label>
-          <input type="tel" id="checkout-phone" pattern="^\+7\s\d{3}\s\d{3}\d{2}\d{2}$" placeholder="89991234567" required>
+          <input type="tel" id="checkout-phone" placeholder="+7 (XXX) XXX-XX-XX" required>
         </div>
         <div class="form-group">
           <label for="checkout-address">Адрес доставки</label>
-          <input type="text" id="checkout-address" required>
+          <input type="text" id="checkout-address" placeholder="Введите адрес" required>
         </div>
-        <button type="submit" class="cart-page__submit">Отправить заказ</button>
+        <button type="submit" class="cart-page__submit">Подтвердить заказ</button>
         <button type="button" class="cart-page__back">Назад</button>
       </form>
     </div>
@@ -77,15 +76,10 @@
     <div class="custom-modal__overlay"></div>
     <div class="custom-modal__content">
       <p class="custom-modal__message"></p>
-      <button class="custom-modal__close">Закрыть</button>
+      <button class="custom-modal__close">ОК</button>
     </div>
   </div>
 
   <script src="mobile.js"></script>
-  <script>
-    document.addEventListener("DOMContentLoaded", function() {
-      document.body.classList.add("loaded");
-    });
-  </script>
 </body>
 </html>
