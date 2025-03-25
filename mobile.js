@@ -2,9 +2,9 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('Script loaded');
     document.body.classList.add('loaded');
   
+    let cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
     const cartCount = document.querySelector('.cart-count');
     const cartWrapper = document.querySelector('.cart-wrapper');
-    let cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
   
     // Обновление счетчика корзины
     function updateCartCount() {
@@ -26,23 +26,21 @@ document.addEventListener('DOMContentLoaded', () => {
   
       // Добавление в корзину
       const buttons = document.querySelectorAll('.product-card__button');
-      if (buttons.length) {
-        buttons.forEach(button => {
-          button.addEventListener('click', () => {
-            console.log('Add to cart clicked');
-            const card = button.closest('.product-card');
-            const item = {
-              id: Date.now(),
-              title: card.querySelector('.product-card__title').textContent,
-              price: parseInt(card.querySelector('.product-card__price').textContent.replace(/[^\d]/g, '')),
-              image: card.querySelector('img').src
-            };
-            cartItems.push(item);
-            localStorage.setItem('cartItems', JSON.stringify(cartItems));
-            updateCartCount();
-          });
+      buttons.forEach(button => {
+        button.addEventListener('click', () => {
+          console.log('Add to cart clicked');
+          const card = button.closest('.product-card');
+          const item = {
+            id: Date.now(),
+            title: card.querySelector('.product-card__title').textContent,
+            price: parseInt(card.querySelector('.product-card__price').textContent.replace(/[^\d]/g, '')),
+            image: card.querySelector('img').src
+          };
+          cartItems.push(item);
+          localStorage.setItem('cartItems', JSON.stringify(cartItems));
+          updateCartCount();
         });
-      }
+      });
   
       // Карусель
       const track = document.querySelector('.carousel__track');
@@ -95,26 +93,100 @@ document.addEventListener('DOMContentLoaded', () => {
           observer.observe(card);
         });
       }
+    }
   
-      updateCartCount();
+    // Логика для страницы корзины (cart.html)
+    if (window.location.pathname.includes('cart.html')) {
+      console.log('Cart page logic');
+      const cartItemsList = document.querySelector('.cart-page__items');
+      const totalElement = document.querySelector('.cart-page__total span');
+      const checkoutButton = document.querySelector('.cart-page__checkout');
+      const checkoutForm = document.querySelector('.cart-page__checkout-form');
+      const backButton = document.querySelector('.cart-page__back');
+      const submitButton = document.querySelector('.cart-page__submit');
+      const modal = document.querySelector('#customModal');
+      const modalMessage = modal.querySelector('.custom-modal__message');
+      const modalClose = modal.querySelector('.custom-modal__close');
+  
+      // Отображение товаров в корзине
+      function renderCartItems() {
+        cartItemsList.innerHTML = '';
+        let total = 0;
+        cartItems.forEach((item, index) => {
+          const li = document.createElement('li');
+          li.innerHTML = `
+            <img src="${item.image}" alt="${item.title}">
+            <span>${item.title} - ${item.price} ₽</span>
+            <button>Удалить</button>
+          `;
+          li.querySelector('button').addEventListener('click', () => {
+            cartItems.splice(index, 1);
+            localStorage.setItem('cartItems', JSON.stringify(cartItems));
+            renderCartItems();
+            updateCartCount();
+          });
+          cartItemsList.appendChild(li);
+          total += item.price;
+        });
+        totalElement.textContent = `${total} ₽`;
+      }
+  
+      // Переключение на форму оформления
+      checkoutButton.addEventListener('click', () => {
+        checkoutForm.style.display = 'block';
+        checkoutButton.style.display = 'none';
+      });
+  
+      // Возврат назад
+      backButton.addEventListener('click', () => {
+        checkoutForm.style.display = 'none';
+        checkoutButton.style.display = 'block';
+      });
+  
+      // Отправка формы
+      checkoutForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = document.querySelector('#checkout-name').value;
+        const phone = document.querySelector('#checkout-phone').value;
+        const address = document.querySelector('#checkout-address').value;
+  
+        if (name && phone && address) {
+          modalMessage.textContent = `Заказ оформлен!\nИмя: ${name}\nТелефон: ${phone}\nАдрес: ${address}`;
+          modal.setAttribute('aria-hidden', 'false');
+          cartItems = [];
+          localStorage.setItem('cartItems', JSON.stringify(cartItems));
+          renderCartItems();
+          updateCartCount();
+          checkoutForm.reset();
+          checkoutForm.style.display = 'none';
+          checkoutButton.style.display = 'block';
+        }
+      });
+  
+      // Закрытие модального окна
+      modalClose.addEventListener('click', () => {
+        modal.setAttribute('aria-hidden', 'true');
+      });
+  
+      renderCartItems();
     }
   
     // Анимация иконок в островке
     const contactLinks = document.querySelectorAll('.floating-contact__link');
-    if (contactLinks.length) {
-      contactLinks.forEach(link => {
-        link.addEventListener('click', (e) => {
-          e.preventDefault();
-          const href = link.getAttribute('href');
-          contactLinks.forEach(otherLink => {
-            if (otherLink !== link) otherLink.classList.remove('active');
-          });
-          link.classList.add('active');
-          setTimeout(() => {
-            link.classList.remove('active');
-            window.location.href = href;
-          }, 600);
+    contactLinks.forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const href = link.getAttribute('href');
+        contactLinks.forEach(otherLink => {
+          if (otherLink !== link) otherLink.classList.remove('active');
         });
+        link.classList.add('active');
+        setTimeout(() => {
+          link.classList.remove('active');
+          window.location.href = href;
+        }, 600);
       });
-    }
+    });
+  
+    updateCartCount();
   });
