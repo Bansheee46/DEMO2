@@ -135,7 +135,48 @@ document.addEventListener('DOMContentLoaded', () => {
       const modal = document.querySelector('#customModal');
       const modalMessage = modal.querySelector('.custom-modal__message');
       const modalClose = modal.querySelector('.custom-modal__close');
+      const phoneInput = document.querySelector('#checkout-phone');
   
+      // Функция форматирования номера телефона
+      function formatPhoneNumber(value) {
+        // Удаляем всё, кроме цифр
+        const digits = value.replace(/\D/g, '');
+        // Если первая цифра 8, заменяем на 7
+        let phoneNumber = digits;
+        if (phoneNumber.startsWith('8')) {
+          phoneNumber = '7' + phoneNumber.slice(1);
+        } else if (!phoneNumber.startsWith('7') && phoneNumber.length > 0) {
+          phoneNumber = '7' + phoneNumber;
+        }
+  
+        // Форматируем по паттерну +7 (XXX) XXX-XX-XX
+        const match = phoneNumber.match(/^(\d{0,1})(\d{0,3})(\d{0,3})(\d{0,2})(\d{0,2})$/);
+        if (match) {
+          const parts = [];
+          if (match[1]) parts.push('+7');
+          if (match[2]) parts.push(` (${match[2]}`);
+          if (match[3]) parts.push(`) ${match[3]}`);
+          if (match[4]) parts.push(`-${match[4]}`);
+          if (match[5]) parts.push(`-${match[5]}`);
+          return parts.join('');
+        }
+        return value; // Если не удалось форматировать, возвращаем исходное
+      }
+  
+      // Обработчик ввода номера телефона
+      if (phoneInput) {
+        phoneInput.addEventListener('input', (e) => {
+          const cursorPosition = e.target.selectionStart;
+          const formatted = formatPhoneNumber(e.target.value);
+          e.target.value = formatted;
+  
+          // Корректируем позицию курсора
+          const diff = formatted.length - e.target.value.length;
+          e.target.setSelectionRange(cursorPosition + diff, cursorPosition + diff);
+        });
+      }
+  
+      // Отображение товаров в корзине
       function renderCartItems() {
         cartItemsList.innerHTML = '';
         let total = 0;
