@@ -11,50 +11,41 @@
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lato:wght@400;700&family=Dancing+Script:wght@400&display=swap" rel="stylesheet">
 </head>
 <body>
-  <header class="header">
-    <div class="header__logo">Logo</div>
-    <div class="header__main-icons">
-      <div class="icon-wrapper" data-tooltip="Профиль">
-        <a href="#" class="header__icon" aria-label="Профиль"><i class="fas fa-user"></i></a>
-      </div>
-      <div class="cart-wrapper">
-        <div class="icon-wrapper" data-tooltip="Корзина">
-          <a href="cart.html" class="header__icon" aria-label="Корзина">
-            <i class="fas fa-shopping-cart"></i>
-            <span class="cart-count">0</span>
-          </a>
+    <header class="header">
+        <div class="header__logo">Logo</div>
+        <div class="header__main-icons">
+          <div class="icon-wrapper" data-tooltip="Профиль">
+            <a href="#" class="header__icon" aria-label="Профиль"><i class="fas fa-user"></i></a>
+          </div>
+          <div class="cart-wrapper">
+            <div class="icon-wrapper" id="cart-icon-wrapper" data-tooltip="Корзина">
+              <a href="cart.html" class="header__icon" id="cart-icon-link" aria-label="Корзина">
+                <i id="cart-icon" class="fas fa-shopping-cart"></i>
+                <span class="cart-count">0</span>
+              </a>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
-    <input type="checkbox" id="menu-icon" class="menu-icon" aria-expanded="false">
-    <label for="menu-icon" class="burger-menu">
-      <span class="burger-menu__line"></span>
-      <span class="burger-menu__line"></span>
-      <span class="burger-menu__line"></span>
-    </label>
-    <div class="header__extra">
-      <div class="header__extra-icons">
-        <div class="icon-wrapper">
-          <a href="#" class="header__icon" aria-label="Избранное">
-            <i class="fas fa-heart"></i>
-            <span class="icon-bg"><span class="icon-text">Избранное</span></span>
-          </a>
+        <input type="checkbox" id="menu-icon" class="menu-icon" aria-expanded="false">
+        <label for="menu-icon" class="burger-menu">
+          <span class="burger-menu__line"></span>
+          <span class="burger-menu__line"></span>
+          <span class="burger-menu__line"></span>
+        </label>
+        <div class="header__extra">
+          <div class="header__extra-icons">
+            <div class="icon-wrapper">
+              <a href="#" class="header__icon" aria-label="Избранное"><i class="fas fa-heart"></i><span class="icon-bg"><span class="icon-text">Избранное</span></span></a>
+            </div>
+            <div class="icon-wrapper">
+              <a href="#" class="header__icon" aria-label="Поиск"><i class="fas fa-search"></i><span class="icon-bg"><span class="icon-text">Поиск</span></span></a>
+            </div>
+            <div class="icon-wrapper">
+              <a href="#" class="header__icon" aria-label="О нас"><i class="fas fa-info-circle"></i><span class="icon-bg"><span class="icon-text">О нас</span></span></a>
+            </div>
+          </div>
         </div>
-        <div class="icon-wrapper">
-          <a href="#" class="header__icon" aria-label="Поиск">
-            <i class="fas fa-search"></i>
-            <span class="icon-bg"><span class="icon-text">Поиск</span></span>
-          </a>
-        </div>
-        <div class="icon-wrapper">
-          <a href="#" class="header__icon" aria-label="О нас">
-            <i class="fas fa-info-circle"></i>
-            <span class="icon-bg"><span class="icon-text">О нас</span></span>
-          </a>
-        </div>
-      </div>
-    </div>
-  </header>
+      </header>
 
   <main>
     <section class="carousel">

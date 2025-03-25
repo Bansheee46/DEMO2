@@ -5,6 +5,14 @@ document.addEventListener('DOMContentLoaded', () => {
     let cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
     const cartCount = document.querySelector('.cart-count');
     const cartWrapper = document.querySelector('.cart-wrapper');
+    const cartIconWrapper = document.querySelector('#cart-icon-wrapper');
+    const cartIconLink = document.querySelector('#cart-icon-link');
+    const cartIcon = document.querySelector('#cart-icon');
+  
+    // Проверка наличия элементов для иконок
+    console.log('cartIconWrapper:', cartIconWrapper);
+    console.log('cartIconLink:', cartIconLink);
+    console.log('cartIcon:', cartIcon);
   
     // Обновление счетчика корзины
     function updateCartCount() {
@@ -20,11 +28,33 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
   
+    // Динамическая замена иконки и ссылки
+    if (window.location.pathname.includes('cart.html')) {
+      console.log('Switching to home icon');
+      if (cartIconWrapper && cartIconLink && cartIcon) {
+        cartIconWrapper.setAttribute('data-tooltip', 'На главную');
+        cartIconLink.setAttribute('href', 'mobile.html');
+        cartIconLink.setAttribute('aria-label', 'На главную');
+        cartIcon.className = 'fas fa-home';
+      } else {
+        console.error('Cart icon elements not found');
+      }
+    } else {
+      console.log('Switching to cart icon');
+      if (cartIconWrapper && cartIconLink && cartIcon) {
+        cartIconWrapper.setAttribute('data-tooltip', 'Корзина');
+        cartIconLink.setAttribute('href', 'cart.html');
+        cartIconLink.setAttribute('aria-label', 'Корзина');
+        cartIcon.className = 'fas fa-shopping-cart';
+      } else {
+        console.error('Cart icon elements not found');
+      }
+    }
+  
     // Логика для главной страницы (mobile.html)
     if (window.location.pathname.includes('mobile.html') || window.location.pathname === '/') {
       console.log('Main page logic');
   
-      // Добавление в корзину
       const buttons = document.querySelectorAll('.product-card__button');
       buttons.forEach(button => {
         button.addEventListener('click', () => {
@@ -42,7 +72,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       });
   
-      // Карусель
       const track = document.querySelector('.carousel__track');
       const items = document.querySelectorAll('.carousel__item');
       if (track && items.length) {
@@ -69,7 +98,6 @@ document.addEventListener('DOMContentLoaded', () => {
         window.addEventListener('resize', updateCarousel);
       }
   
-      // Анимация карточек
       const cards = document.querySelectorAll('.product-card');
       if (cards.length) {
         const observer = new IntersectionObserver(
@@ -108,42 +136,43 @@ document.addEventListener('DOMContentLoaded', () => {
       const modalMessage = modal.querySelector('.custom-modal__message');
       const modalClose = modal.querySelector('.custom-modal__close');
   
-      // Отображение товаров в корзине
       function renderCartItems() {
         cartItemsList.innerHTML = '';
         let total = 0;
-        cartItems.forEach((item, index) => {
-          const li = document.createElement('li');
-          li.innerHTML = `
-            <img src="${item.image}" alt="${item.title}">
-            <span>${item.title} - ${item.price} ₽</span>
-            <button>Удалить</button>
-          `;
-          li.querySelector('button').addEventListener('click', () => {
-            cartItems.splice(index, 1);
-            localStorage.setItem('cartItems', JSON.stringify(cartItems));
-            renderCartItems();
-            updateCartCount();
+        cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
+        if (cartItems.length === 0) {
+          cartItemsList.innerHTML = '<li>Корзина пуста</li>';
+        } else {
+          cartItems.forEach((item, index) => {
+            const li = document.createElement('li');
+            li.innerHTML = `
+              <img src="${item.image}" alt="${item.title}">
+              <span>${item.title} - ${item.price} ₽</span>
+              <button>Удалить</button>
+            `;
+            li.querySelector('button').addEventListener('click', () => {
+              cartItems.splice(index, 1);
+              localStorage.setItem('cartItems', JSON.stringify(cartItems));
+              renderCartItems();
+              updateCartCount();
+            });
+            cartItemsList.appendChild(li);
+            total += item.price;
           });
-          cartItemsList.appendChild(li);
-          total += item.price;
-        });
+        }
         totalElement.textContent = `${total} ₽`;
       }
   
-      // Переключение на форму оформления
       checkoutButton.addEventListener('click', () => {
         checkoutForm.style.display = 'block';
         checkoutButton.style.display = 'none';
       });
   
-      // Возврат назад
       backButton.addEventListener('click', () => {
         checkoutForm.style.display = 'none';
         checkoutButton.style.display = 'block';
       });
   
-      // Отправка формы
       checkoutForm.addEventListener('submit', (e) => {
         e.preventDefault();
         const name = document.querySelector('#checkout-name').value;
@@ -163,7 +192,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
   
-      // Закрытие модального окна
       modalClose.addEventListener('click', () => {
         modal.setAttribute('aria-hidden', 'true');
       });
@@ -171,7 +199,6 @@ document.addEventListener('DOMContentLoaded', () => {
       renderCartItems();
     }
   
-    // Анимация иконок в островке
     const contactLinks = document.querySelectorAll('.floating-contact__link');
     contactLinks.forEach(link => {
       link.addEventListener('click', (e) => {
