@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>О нас - Damax</title>
+  <link rel="stylesheet" href="mobile-styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lato:wght@400;700&family=Dancing+Script:wght@400&display=swap" rel="stylesheet">
+</head>
+<body class="about-page">
+  <header class="header">
+    <div class="header__logo">Damax</div>
+    <div class="header__main-icons">
+      <div class="icon-wrapper" data-tooltip="Профиль">
+        <a href="#" class="header__icon" aria-label="Профиль"><i class="fas fa-user"></i></a>
+      </div>
+      <div class="cart-wrapper">
+        <div class="icon-wrapper" id="cart-icon-wrapper" data-tooltip="На главную">
+          <a href="mobile.html" class="header__icon" id="cart-icon-link" aria-label="На главную">
+            <i id="cart-icon" class="fas fa-home"></i>
+            <span class="cart-count">0</span>
+          </a>
+        </div>
+      </div>
+    </div>
+    <input type="checkbox" id="menu-icon" class="menu-icon" aria-expanded="false">
+    <label for="menu-icon" class="burger-menu">
+      <span class="burger-menu__line"></span>
+      <span class="burger-menu__line"></span>
+      <span class="burger-menu__line"></span>
+    </label>
+    <div class="header__extra">
+      <div class="header__extra-icons">
+        <div class="icon-wrapper">
+          <a href="favorites.html" class="header__icon" aria-label="Избранное"><i class="fas fa-heart"></i><span class="icon-bg"><span class="icon-text">Избранное</span></span></a>
+        </div>
+        <div class="icon-wrapper">
+          <a href="#" class="header__icon" aria-label="Поиск"><i class="fas fa-search"></i><span class="icon-bg"><span class="icon-text">Поиск</span></span></a>
+        </div>
+        <div class="icon-wrapper">
+          <a href="about.html" class="header__icon" aria-label="О нас"><i class="fas fa-info-circle"></i><span class="icon-bg"><span class="icon-text">О нас</span></span></a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section class="about-page">
+    <div class="about-section active" data-section="company">
+      <h2 class="about-section__title">О компании</h2>
+      <div class="about-section__content">
+        <p>Damax — это ваш надёжный магазин электроники, одежды и аксессуаров. Мы стремимся предложить лучшие товары по доступным ценам с удобной доставкой.</p>
+      </div>
+    </div>
+    <div class="about-section" data-section="faq">
+      <h2 class="about-section__title">FAQ</h2>
+      <div class="about-section__content">
+        <p><strong>Как сделать заказ?</strong> Добавьте товары в корзину и оформите заказ через форму.</p>
+        <p><strong>Сколько стоит доставка?</strong> Доставка бесплатна при заказе от 5000 ₽.</p>
+        <p><strong>Можно ли вернуть товар?</strong> Да, в течение 14 дней при сохранении товарного вида.</p>
+      </div>
+    </div>
+    <div class="about-section" data-section="contacts">
+      <h2 class="about-section__title">Контакты</h2>
+      <div class="about-section__content">
+        <p>Email: support@damax.ru</p>
+        <p>Телефон: +7 (999) 123-45-67</p>
+        <p>Адрес: г. Москва, ул. Примерная, д. 10</p>
+      </div>
+    </div>
+  </section>
+
+  <script src="mobile.js"></script>
+</body>
+</html>

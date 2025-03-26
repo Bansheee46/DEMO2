@@ -35,46 +35,51 @@
         <div class="header__extra">
           <div class="header__extra-icons">
             <div class="icon-wrapper">
-              <a href="#" class="header__icon" aria-label="Избранное"><i class="fas fa-heart"></i><span class="icon-bg"><span class="icon-text">Избранное</span></span></a>
+              <a href="favorites.html" class="header__icon" aria-label="Избранное"><i class="fas fa-heart"></i><span class="icon-bg"><span class="icon-text">Избранное</span></span></a>
+            </div>
+            <div class="search-wrapper">
+              <form class="search-form">
+                <label for="search-input">Поиск</label>
+                <input type="search" id="search-input" placeholder=" " required>
+                <span class="caret"></span>
+              </form>
             </div>
             <div class="icon-wrapper">
-              <a href="#" class="header__icon" aria-label="Поиск"><i class="fas fa-search"></i><span class="icon-bg"><span class="icon-text">Поиск</span></span></a>
-            </div>
-            <div class="icon-wrapper">
-              <a href="#" class="header__icon" aria-label="О нас"><i class="fas fa-info-circle"></i><span class="icon-bg"><span class="icon-text">О нас</span></span></a>
+              <a href="about.html" class="header__icon" aria-label="О нас"><i class="fas fa-info-circle"></i><span class="icon-bg"><span class="icon-text">О нас</span></span></a>
             </div>
           </div>
+          <div class="search-results" id="search-results"></div>
         </div>
       </header>
 
   <main>
     <section class="carousel">
       <div class="carousel__track">
-        <div class="carousel__item" data-active>
+        <div class="carousel__item" data-active data-category="electronics">
           <div class="carousel__box">
             <img src="../images/electronics.png" alt="Электроника" loading="lazy">
             <span class="carousel__text">Электроника</span>
           </div>
         </div>
-        <div class="carousel__item">
+        <div class="carousel__item" data-category="toys">
           <div class="carousel__box">
             <img src="../images/toys.png" alt="Игрушки" loading="lazy">
             <span class="carousel__text">Игрушки</span>
           </div>
         </div>
-        <div class="carousel__item">
+        <div class="carousel__item" data-category="accessories">
           <div class="carousel__box">
             <img src="../images/accessories.png" alt="Аксессуары" loading="lazy">
             <span class="carousel__text">Аксессуары</span>
           </div>
         </div>
-        <div class="carousel__item">
+        <div class="carousel__item" data-category="clothes">
           <div class="carousel__box">
             <img src="../images/clothes.png" alt="Одежда" loading="lazy">
             <span class="carousel__text">Одежда</span>
           </div>
         </div>
-        <div class="carousel__item">
+        <div class="carousel__item" data-category="appliances">
           <div class="carousel__box">
             <img src="../images/appliances.png" alt="Бытовая техника" loading="lazy">
             <span class="carousel__text">Бытовая техника</span>
@@ -84,9 +89,10 @@
     </section>
 
     <section class="products">
-      <h2 class="products__heading">Товары-электроника</h2>
+      <h2 class="products__heading">Товары - Электроника</h2>
       <div class="products__grid" role="list">
-        <article class="product-card" role="listitem">
+        <!-- Электроника -->
+        <article class="product-card" role="listitem" data-id="1" data-category="electronics">
           <img src="https://avatars.mds.yandex.net/i?id=16c02de528eae0501192dc54a8435a018ff02154-9674922-images-thumbs&n=13" alt="Наушники Wireless" loading="lazy">
           <div class="product-card__info">
             <h3 class="product-card__title">Наушники Wireless</h3>
@@ -94,7 +100,7 @@
             <button class="product-card__button"><i class="fas fa-cart-plus"></i> В корзину</button>
           </div>
         </article>
-        <article class="product-card" role="listitem">
+        <article class="product-card" role="listitem" data-id="2" data-category="electronics">
           <img src="https://avatars.mds.yandex.net/get-mpic/5234463/img_id2819387384900565932.jpeg/orig" alt="Смарт-часы X" loading="lazy">
           <div class="product-card__info">
             <h3 class="product-card__title">Смарт-часы X</h3>
@@ -102,7 +108,7 @@
             <button class="product-card__button"><i class="fas fa-cart-plus"></i> В корзину</button>
           </div>
         </article>
-        <article class="product-card" role="listitem">
+        <article class="product-card" role="listitem" data-id="3" data-category="electronics">
           <img src="https://avatars.mds.yandex.net/i?id=16ef61d4342030c97b8f9425389cfa01584686c6-8497871-images-thumbs&n=13" alt="Беспроводная колонка" loading="lazy">
           <div class="product-card__info">
             <h3 class="product-card__title">Беспроводная колонка</h3>
@@ -110,7 +116,7 @@
             <button class="product-card__button"><i class="fas fa-cart-plus"></i> В корзину</button>
           </div>
         </article>
-        <article class="product-card" role="listitem">
+        <article class="product-card" role="listitem" data-id="4" data-category="electronics">
           <img src="https://avatars.mds.yandex.net/get-mpic/5277894/img_id5035057075377151185.jpeg/orig" alt="Геймпад Pro" loading="lazy">
           <div class="product-card__info">
             <h3 class="product-card__title">Геймпад Pro</h3>
@@ -118,35 +124,71 @@
             <button class="product-card__button"><i class="fas fa-cart-plus"></i> В корзину</button>
           </div>
         </article>
-        <article class="product-card" role="listitem">
-          <img src="https://avatars.mds.yandex.net/i?id=16c02de528eae0501192dc54a8435a018ff02154-9674922-images-thumbs&n=13" alt="Наушники Wireless" loading="lazy">
+        <!-- Игрушки -->
+        <article class="product-card" role="listitem" data-id="5" data-category="toys">
+          <img src="https://avatars.mds.yandex.net/i?id=1a0a8e8e8f7e7e8f8e8f8e8f8e8f8e8f-8497871-images-thumbs&n=13" alt="Конструктор LEGO" loading="lazy">
           <div class="product-card__info">
-            <h3 class="product-card__title">Наушники Wireless</h3>
-            <p class="product-card__price"><span class="price-icon"><i class="fas fa-ruble-sign"></i></span> 4 990</p>
+            <h3 class="product-card__title">Конструктор LEGO</h3>
+            <p class="product-card__price"><span class="price-icon"><i class="fas fa-ruble-sign"></i></span> 2 490</p>
             <button class="product-card__button"><i class="fas fa-cart-plus"></i> В корзину</button>
           </div>
         </article>
-        <article class="product-card" role="listitem">
-          <img src="https://avatars.mds.yandex.net/get-mpic/5234463/img_id2819387384900565932.jpeg/orig" alt="Смарт-часы X" loading="lazy">
+        <article class="product-card" role="listitem" data-id="6" data-category="toys">
+          <img src="https://avatars.mds.yandex.net/i?id=2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b-9674922-images-thumbs&n=13" alt="Мягкая игрушка" loading="lazy">
           <div class="product-card__info">
-            <h3 class="product-card__title">Смарт-часы X</h3>
-            <p class="product-card__price"><span class="price-icon"><i class="fas fa-ruble-sign"></i></span> 9 990</p>
+            <h3 class="product-card__title">Мягкая игрушка</h3>
+            <p class="product-card__price"><span class="price-icon"><i class="fas fa-ruble-sign"></i></span> 1 290</p>
             <button class="product-card__button"><i class="fas fa-cart-plus"></i> В корзину</button>
           </div>
         </article>
-        <article class="product-card" role="listitem">
-          <img src="https://avatars.mds.yandex.net/i?id=16ef61d4342030c97b8f9425389cfa01584686c6-8497871-images-thumbs&n=13" alt="Беспроводная колонка" loading="lazy">
+        <!-- Аксессуары -->
+        <article class="product-card" role="listitem" data-id="7" data-category="accessories">
+          <img src="https://avatars.mds.yandex.net/i?id=3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c-8497871-images-thumbs&n=13" alt="Чехол для телефона" loading="lazy">
           <div class="product-card__info">
-            <h3 class="product-card__title">Беспроводная колонка</h3>
-            <p class="product-card__price"><span class="price-icon"><i class="fas fa-ruble-sign"></i></span> 6 490</p>
+            <h3 class="product-card__title">Чехол для телефона</h3>
+            <p class="product-card__price"><span class="price-icon"><i class="fas fa-ruble-sign"></i></span> 990</p>
             <button class="product-card__button"><i class="fas fa-cart-plus"></i> В корзину</button>
           </div>
         </article>
-        <article class="product-card" role="listitem">
-          <img src="https://avatars.mds.yandex.net/get-mpic/5277894/img_id5035057075377151185.jpeg/orig" alt="Геймпад Pro" loading="lazy">
+        <article class="product-card" role="listitem" data-id="8" data-category="accessories">
+          <img src="https://avatars.mds.yandex.net/i?id=4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d-9674922-images-thumbs&n=13" alt="Ремешок для часов" loading="lazy">
           <div class="product-card__info">
-            <h3 class="product-card__title">Геймпад Pro</h3>
-            <p class="product-card__price"><span class="price-icon"><i class="fas fa-ruble-sign"></i></span> 3 990</p>
+            <h3 class="product-card__title">Ремешок для часов</h3>
+            <p class="product-card__price"><span class="price-icon"><i class="fas fa-ruble-sign"></i></span> 1 490</p>
+            <button class="product-card__button"><i class="fas fa-cart-plus"></i> В корзину</button>
+          </div>
+        </article>
+        <!-- Одежда -->
+        <article class="product-card" role="listitem" data-id="9" data-category="clothes">
+          <img src="https://avatars.mds.yandex.net/i?id=5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e-8497871-images-thumbs&n=13" alt="Футболка" loading="lazy">
+          <div class="product-card__info">
+            <h3 class="product-card__title">Футболка</h3>
+            <p class="product-card__price"><span class="price-icon"><i class="fas fa-ruble-sign"></i></span> 1 990</p>
+            <button class="product-card__button"><i class="fas fa-cart-plus"></i> В корзину</button>
+          </div>
+        </article>
+        <article class="product-card" role="listitem" data-id="10" data-category="clothes">
+          <img src="https://avatars.mds.yandex.net/i?id=6f6f6f6f6f6f6f6f6f6f6f6f6f6f6f6f-9674922-images-thumbs&n=13" alt="Джинсы" loading="lazy">
+          <div class="product-card__info">
+            <h3 class="product-card__title">Джинсы</h3>
+            <p class="product-card__price"><span class="price-icon"><i class="fas fa-ruble-sign"></i></span> 3 490</p>
+            <button class="product-card__button"><i class="fas fa-cart-plus"></i> В корзину</button>
+          </div>
+        </article>
+        <!-- Бытовая техника -->
+        <article class="product-card" role="listitem" data-id="11" data-category="appliances">
+          <img src="https://avatars.mds.yandex.net/i?id=7g7g7g7g7g7g7g7g7g7g7g7g7g7g7g7g-8497871-images-thumbs&n=13" alt="Электрочайник" loading="lazy">
+          <div class="product-card__info">
+            <h3 class="product-card__title">Электрочайник</h3>
+            <p class="product-card__price"><span class="price-icon"><i class="fas fa-ruble-sign"></i></span> 2 990</p>
+            <button class="product-card__button"><i class="fas fa-cart-plus"></i> В корзину</button>
+          </div>
+        </article>
+        <article class="product-card" role="listitem" data-id="12" data-category="appliances">
+          <img src="https://avatars.mds.yandex.net/i?id=8h8h8h8h8h8h8h8h8h8h8h8h8h8h8h8h-9674922-images-thumbs&n=13" alt="Микроволновка" loading="lazy">
+          <div class="product-card__info">
+            <h3 class="product-card__title">Микроволновка</h3>
+            <p class="product-card__price"><span class="price-icon"><i class="fas fa-ruble-sign"></i></span> 5 990</p>
             <button class="product-card__button"><i class="fas fa-cart-plus"></i> В корзину</button>
           </div>
         </article>
@@ -197,6 +239,27 @@
       <i class="fab fa-whatsapp"></i>
       <span class="floating-contact__text">Написать</span>
     </a>
+  </div>
+
+  <div class="product-popup" id="productPopup" aria-hidden="true">
+    <div class="product-popup__overlay"></div>
+    <div class="product-popup__content">
+      <button class="product-popup__close"><i class="fas fa-times"></i></button>
+      <div class="product-popup__gallery">
+        <img src="" alt="Фото 1" class="product-popup__image active" id="popupImage1">
+        <img src="" alt="Фото 2" class="product-popup__image" id="popupImage2">
+        <img src="" alt="Фото 3" class="product-popup__image" id="popupImage3">
+      </div>
+      <div class="product-popup__details">
+        <h2 class="product-popup__title" id="popupTitle">Название товара</h2>
+        <p class="product-popup__price" id="popupPrice">0 ₽</p>
+        <p class="product-popup__description" id="popupDescription">Описание товара будет здесь.</p>
+        <div class="product-popup__actions">
+          <button class="product-popup__cart" id="popupAddToCart">В корзину</button>
+          <button class="product-popup__favorite" id="popupFavorite"><i class="far fa-heart"></i></button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script src="mobile.js"></script>
