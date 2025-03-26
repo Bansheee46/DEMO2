@@ -93,198 +93,51 @@
     transform: translateY(-7px) rotate(-45deg);
   }
   
- /* Стили шапки */
-.header__extra {
+  /* Extra header styles */
+  .header__extra {
+    width: 100%;
+    height: 50px;
+    background: linear-gradient(135deg, #BCB88A 0%, #C9897B 100%);
     position: absolute;
-    top: 100%;
+    top: 50px;
     left: 0;
-    width: 100%;
-    background: rgba(255, 255, 255, 0.9);
-    border-radius: 0 0 15px 15px;
-    padding: 10px 0;
-    transform: translateY(-100%);
     opacity: 0;
-    pointer-events: none;
-    transition: all 0.3s ease;
-  }
-  
-  .menu-icon:checked ~ .header__extra {
-    transform: translateY(0);
-    opacity: 1;
-    pointer-events: auto;
-  }
-  
-  .header__extra-icons {
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    width: 100%;
-    padding: 0 10px;
-  }
-  
-  /* Поиск */
-  .search-wrapper {
+    transform: translateY(-50px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 33%; /* Начальная ширина */
-    transition: width 0.3s ease;
+    z-index: 1001;
+    border-radius: 50px;
+    pointer-events: none;
   }
   
-  .search-form {
-    position: relative;
-    width: 100%;
-    max-width: 200px; /* Ограничим максимальную ширину */
+  .menu-icon:checked ~ .header__extra {
+    opacity: 1;
+    transform: translateY(0);
+    animation: round-to-rect 1s ease forwards;
+    pointer-events: auto;
   }
   
-  .search-form input, .caret {
-    display: block;
-    transition: all 0.5s linear;
+  .menu-icon:not(:checked) ~ .header__extra {
+    animation: rect-to-round 1s ease forwards;
   }
   
-  .search-form input {
-    background: transparent;
-    border-radius: 50%;
-    box-shadow: 0 0 0 2px inset #C9897B; /* Тонкая рамка в стиле */
-    caret-color: #BCB88A;
-    width: 2em;
-    height: 2em;
-    font-family: 'Lato', sans-serif;
-    font-size: 14px;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
+  /* Extra icons container */
+  .header__extra-icons {
+    display: flex;
+    justify-content: flex-start; /* Выравнивание влево */
+    align-items: center;
+    gap: 25px; /* Умеренный промежуток между иконками */
+    width: auto; /* Убираем 100%, пусть занимает естественную ширину */
+    max-width: 100%; /* Не даём выйти за пределы родителя */
+    transform: translateX(-20px); /* Сдвиг влево */
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); /* Анимация */
   }
   
-  .search-form input:focus, .search-form input:valid {
-    background: rgba(255, 255, 255, 0.95);
-    border-radius: 8px; /* Более мягкие углы */
-    box-shadow: none;
-    padding: 0.5em 1em;
-    width: 100%;
-    height: 2.5em;
-  }
-  
-  .search-form input:focus {
-    animation: showCaret 1s steps(1);
-    outline: none;
-  }
-  
-  .search-form input:focus + .caret, .search-form input:valid + .caret {
-    animation: handleToCaret 1s linear;
-    background: transparent;
-    width: 1px;
-    height: 1.2em;
-    transform: translate(0, -0.8em) rotate(-180deg) translate(6em, -0.2em);
-  }
-  
-  .search-form input::-webkit-search-decoration {
-    -webkit-appearance: none;
-  }
-  
-  .search-form label {
-    color: #e3e4e8;
-    overflow: hidden;
-    position: absolute;
-    width: 0;
-    height: 0;
-  }
-  
-  .caret {
-    background: #C9897B;
-    border-radius: 0 0 0.1em 0.1em;
-    margin-bottom: -0.5em;
-    width: 0.2em;
-    height: 0.8em;
-    transform: translate(0, -0.8em) rotate(-45deg) translate(0, 0.7em);
-    transform-origin: 50% 0;
-  }
-  
-  /* Результаты поиска */
-  .search-results {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    width: 100%;
-    background: rgba(255, 255, 255, 0.9);
-    border-radius: 0 0 15px 15px;
-    max-height: 200px;
-    overflow-y: auto;
-    display: none;
-    z-index: 10;
-    padding: 10px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-  }
-  
-  .search-results.active {
-    display: block;
-  }
-  
-  .search-results ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-  
-  .search-results li {
-    padding: 5px 10px;
-    cursor: pointer;
-    font-family: 'Lato', sans-serif;
-    font-size: 14px;
-    color: #333;
-  }
-  
-  .search-results li:hover {
-    background: rgba(201, 137, 123, 0.2);
-  }
-  
-  /* Анимации */
-  @keyframes showCaret {
-    from { caret-color: transparent; }
-    to { caret-color: #BCB88A; }
-  }
-  
-  @keyframes handleToCaret {
-    from {
-      background: #C9897B;
-      width: 0.2em;
-      height: 0.8em;
-      transform: translate(0, -0.8em) rotate(-45deg) translate(0, 0.7em);
-    }
-    25% {
-      background: #C9897B;
-      width: 0.2em;
-      height: 0.8em;
-      transform: translate(0, -0.8em) rotate(-180deg) translate(0, 0.7em);
-    }
-    50%, 62.5% {
-      background: #BCB88A;
-      width: 1px;
-      height: 1.2em;
-      transform: translate(0, -0.8em) rotate(-180deg) translate(6em, 2em);
-    }
-    75%, 99% {
-      background: #BCB88A;
-      width: 1px;
-      height: 1.2em;
-      transform: translate(0, -0.8em) rotate(-180deg) translate(6em, -0.2em);
-    }
-    87.5% {
-      background: #BCB88A;
-      width: 1px;
-      height: 1.2em;
-      transform: translate(0, -0.8em) rotate(-180deg) translate(6em, 0.1em);
-    }
-    to {
-      background: transparent;
-      width: 1px;
-      height: 1.2em;
-      transform: translate(0, -0.8em) rotate(-180deg) translate(6em, -0.2em);
-    }
-  }
-  
+  /* Поддержка бургер-меню */
   .menu-icon:checked ~ .header__extra .header__extra-icons {
-    transform: translateX(-30px);
+    transform: translateX(20px); /* Сдвиг вправо при открытии меню */
   }
   
   /* Разъезжание иконок */
@@ -599,6 +452,81 @@
     0% { opacity: 0; transform: translateY(-50px); }
     70% { transform: translateY(5px); }
     100% { opacity: 1; transform: translateY(0); }
+  }
+
+ /* Стили для обертки поиска */
+.search-wrapper {
+    position: relative;
+    transition: width 0.4s ease;
+  }
+  
+  /* Обертка для каждой иконки */
+  .icon-wrapper {
+    position: relative;
+    flex: 0 0 auto; /* Фиксированная ширина, не растягивается */
+    transition: opacity 0.3s ease, width 0.3s ease;
+  }
+  
+  /* Стили для обертки поиска */
+  .search-wrapper {
+    position: relative;
+    transition: width 0.4s ease;
+  }
+  
+  /* Скрываем поле ввода по умолчанию */
+  .search-input {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 0;
+    height: 30px;
+    padding: 0;
+    border: none;
+    border-radius: 15px;
+    background: rgba(255, 255, 255, 0.9);
+    font-family: 'Lato', sans-serif;
+    font-size: 14px;
+    opacity: 0;
+    transform: translateY(-50%);
+    transition: width 0.4s ease, opacity 0.3s ease, padding 0.4s ease;
+    z-index: 2;
+  }
+  
+  /* Активное состояние поиска */
+  .search-wrapper.active {
+    width: 100%; /* Занимает всю ширину контейнера */
+  }
+  
+  /* Показываем поле ввода в активном состоянии */
+  .search-wrapper.active .search-input {
+    width: 100%; /* Полная ширина внутри search-wrapper */
+    padding: 5px 10px;
+    opacity: 1;
+  }
+  
+  /* Скрываем иконку поиска в активном состоянии */
+  .search-wrapper.active .search-icon {
+    opacity: 0;
+    width: 0;
+    padding: 0;
+  }
+  
+  /* Скрываем соседние иконки при активном поиске */
+  .search-wrapper.active ~ .icon-wrapper,
+  .icon-wrapper:has(+ .search-wrapper.active) {
+    opacity: 0;
+    width: 0;
+    overflow: hidden; /* Предотвращаем утечку контента */
+  }
+  
+  /* Убираем влияние бургер-меню на иконки */
+  .menu-icon:checked ~ .header__extra .header__extra-icons {
+    transform: translateX(20px); /* Сдвиг вправо при открытии меню */
+  }
+  
+  /* Убираем анимацию разъезжания для других иконок при поиске */
+  .search-wrapper.active ~ .icon-wrapper {
+    transform: none;
   }
   
   /* Carousel */
@@ -1460,11 +1388,8 @@ body.about-page {
     background-size: 200% 200%;
     min-height: 100vh;
     padding: 0;
-    margin: 0;
+    margin: 0; /* Добавим, чтобы убрать возможные отступы */
     animation: gradientPulse 12s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-    display: flex; /* Центрируем содержимое по вертикали */
-    justify-content: center;
-    align-items: center;
   }
   
   .about-page {
@@ -1472,52 +1397,43 @@ body.about-page {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 20px; /* Увеличим расстояние между блоками */
+    gap: 15px;
     width: 100%;
-    max-width: 480px; /* Ограничим ширину для аккуратности */
-    box-sizing: border-box;
+    min-height: 100vh;
+    box-sizing: border-box; /* Учитываем padding в размерах */
   }
   
   .about-section {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.6)); /* Добавим градиент для красоты */
+    background: rgba(255, 255, 255, 0.6); /* Полупрозрачный белый фон */
     border-radius: 50px; /* Овал в свёрнутом состоянии */
     width: 90%;
     max-width: 400px;
     overflow: hidden;
     transition: all 0.3s ease;
     cursor: pointer;
-    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.25); /* Увеличим тень */
-    border: 1px solid rgba(255, 255, 255, 0.3); /* Тонкая белая рамка для контраста */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); /* Тень для объёма */
   }
   
   .about-section.active {
     border-radius: 15px; /* Прямоугольник в открытом состоянии */
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.75)); /* Чуть ярче */
-    padding: 20px; /* Больше внутренних отступов */
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3); /* Ещё больше тени в открытом состоянии */
-  }
-  
-  /* Эффект при наведении */
-  .about-section:hover {
-    transform: translateY(-5px); /* Лёгкий подъём */
-    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.35); /* Усиленная тень */
+    background: rgba(255, 255, 255, 0.8); /* Чуть ярче в открытом виде */
+    padding: 15px; /* Внутренние отступы */
   }
   
   .about-section__title {
     font-family: 'Cinzel', serif;
-    font-size: 22px; /* Чуть крупнее для стиля */
+    font-size: 20px;
     font-weight: 700;
-    color: #C9897B;
+    color: #C9897B; /* Цвет заголовков */
     text-align: center;
-    padding: 15px 20px; /* Больше воздуха */
+    padding: 10px 20px;
     margin: 0;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1); /* Тень для текста */
   }
   
   .about-section__content {
     font-family: 'Lato', sans-serif;
-    font-size: 15px; /* Чуть крупнее для читаемости */
-    color: #2b2b2b; /* Темнее для контраста */
+    font-size: 14px;
+    color: #333; /* Цвет текста */
     padding: 0 20px 10px;
     max-height: 0;
     opacity: 0;

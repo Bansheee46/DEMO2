@@ -11,46 +11,51 @@
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lato:wght@400;700&family=Dancing+Script:wght@400&display=swap" rel="stylesheet">
 </head>
 <body>
-    <header class="header">
-        <div class="header__logo">Damax</div>
-        <div class="header__main-icons">
-          <div class="icon-wrapper" data-tooltip="Профиль">
-            <a href="#" class="header__icon" aria-label="Профиль"><i class="fas fa-user"></i></a>
+  <header class="header">
+    <div class="header__logo">Damax</div>
+    <div class="header__main-icons">
+      <div class="icon-wrapper" data-tooltip="Профиль">
+        <a href="#" class="header__icon" aria-label="Профиль"><i class="fas fa-user"></i></a>
+      </div>
+      <div class="cart-wrapper">
+        <div class="icon-wrapper" id="cart-icon-wrapper" data-tooltip="Корзина">
+          <a href="cart.html" class="header__icon" id="cart-icon-link" aria-label="Корзина">
+            <i id="cart-icon" class="fas fa-shopping-cart"></i>
+            <span class="cart-count">0</span>
+          </a>
+        </div>
+      </div>
+    </div>
+    <input type="checkbox" id="menu-icon" class="menu-icon" aria-expanded="false">
+    <label for="menu-icon" class="burger-menu">
+      <span class="burger-menu__line"></span>
+      <span class="burger-menu__line"></span>
+      <span class="burger-menu__line"></span>
+    </label>
+    <div class="header__extra">
+        <div class="header__extra-icons">
+          <div class="icon-wrapper">
+            <a href="favorites.html" class="header__icon" aria-label="Избранное">
+              <i class="fas fa-heart"></i>
+              <span class="icon-bg"><span class="icon-text">Избранное</span></span>
+            </a>
           </div>
-          <div class="cart-wrapper">
-            <div class="icon-wrapper" id="cart-icon-wrapper" data-tooltip="Корзина">
-              <a href="cart.html" class="header__icon" id="cart-icon-link" aria-label="Корзина">
-                <i id="cart-icon" class="fas fa-shopping-cart"></i>
-                <span class="cart-count">0</span>
-              </a>
-            </div>
+          <div class="icon-wrapper search-wrapper">
+            <a href="#" class="header__icon search-icon" aria-label="Поиск">
+              <i class="fas fa-search"></i>
+              <span class="icon-bg"><span class="icon-text">Поиск</span></span>
+            </a>
+            <input type="text" class="search-input" placeholder="Найти товар..." aria-label="Поле поиска">
+          </div>
+          <div class="icon-wrapper">
+            <a href="about.html" class="header__icon" aria-label="О нас">
+              <i class="fas fa-info-circle"></i>
+              <span class="icon-bg"><span class="icon-text">О нас</span></span>
+            </a>
           </div>
         </div>
-        <input type="checkbox" id="menu-icon" class="menu-icon" aria-expanded="false">
-        <label for="menu-icon" class="burger-menu">
-          <span class="burger-menu__line"></span>
-          <span class="burger-menu__line"></span>
-          <span class="burger-menu__line"></span>
-        </label>
-        <div class="header__extra">
-          <div class="header__extra-icons">
-            <div class="icon-wrapper">
-              <a href="favorites.html" class="header__icon" aria-label="Избранное"><i class="fas fa-heart"></i><span class="icon-bg"><span class="icon-text">Избранное</span></span></a>
-            </div>
-            <div class="search-wrapper">
-              <form class="search-form">
-                <label for="search-input">Поиск</label>
-                <input type="search" id="search-input" placeholder=" " required>
-                <span class="caret"></span>
-              </form>
-            </div>
-            <div class="icon-wrapper">
-              <a href="about.html" class="header__icon" aria-label="О нас"><i class="fas fa-info-circle"></i><span class="icon-bg"><span class="icon-text">О нас</span></span></a>
-            </div>
-          </div>
-          <div class="search-results" id="search-results"></div>
-        </div>
-      </header>
+      </div>
+  </header>
 
   <main>
     <section class="carousel">
