@@ -15,7 +15,7 @@
     <div class="header__logo">Damax</div>
     <div class="header__main-icons">
       <div class="icon-wrapper" data-tooltip="Профиль">
-        <a href="#" class="header__icon" aria-label="Профиль"><i class="fas fa-user"></i></a>
+        <a href="account.html" class="header__icon" aria-label="Профиль"><i class="fas fa-user"></i></a>
       </div>
       <div class="cart-wrapper">
         <div class="icon-wrapper" id="cart-icon-wrapper" data-tooltip="На главную">
@@ -33,44 +33,57 @@
       <span class="burger-menu__line"></span>
     </label>
     <div class="header__extra">
-      <div class="header__extra-icons">
-        <div class="icon-wrapper">
-          <a href="favorites.html" class="header__icon" aria-label="Избранное"><i class="fas fa-heart"></i><span class="icon-bg"><span class="icon-text">Избранное</span></span></a>
-        </div>
-        <div class="icon-wrapper">
-          <a href="#" class="header__icon" aria-label="Поиск"><i class="fas fa-search"></i><span class="icon-bg"><span class="icon-text">Поиск</span></span></a>
-        </div>
-        <div class="icon-wrapper">
-          <a href="about.html" class="header__icon" aria-label="О нас"><i class="fas fa-info-circle"></i><span class="icon-bg"><span class="icon-text">О нас</span></span></a>
+        <div class="header__extra-icons">
+          <div class="icon-wrapper">
+            <a href="favorites.html" class="header__icon" aria-label="Избранное"><i class="fas fa-heart"></i><span class="icon-bg"><span class="icon-text">Избранное</span></span></a>
+          </div>
+          <div class="icon-wrapper search-wrapper">
+            <a href="#" class="header__icon search-icon" aria-label="Поиск"><i class="fas fa-search"></i><span class="icon-bg"><span class="icon-text">Поиск</span></span></a>
+          </div>
+          <div class="icon-wrapper">
+            <a href="about.html" class="header__icon" aria-label="О нас"><i class="fas fa-info-circle"></i><span class="icon-bg"><span class="icon-text">О нас</span></span></a>
+          </div>
         </div>
       </div>
-    </div>
-  </header>
+    </header>
 
   <section class="about-page">
-    <div class="about-section active" data-section="company">
-      <h2 class="about-section__title">О компании</h2>
-      <div class="about-section__content">
-        <p>Damax — это ваш надёжный магазин электроники, одежды и аксессуаров. Мы стремимся предложить лучшие товары по доступным ценам с удобной доставкой.</p>
+    <div class="about-page__container">
+      <div class="about-section" id="company" data-section="company">
+        <img src="https://timeseller.ru/netcat_files/2017/04/IMG_8770.jpg" alt="О компании" class="about-section__image">
+        <h2 class="about-section__title">О компании</h2>
+        <div class="about-section__content">
+          <p>Damax — это ваш надёжный магазин электроники, одежды и аксессуаров. Мы стремимся предложить лучшие товары по доступным ценам с удобной доставкой.</p>
+        </div>
       </div>
-    </div>
-    <div class="about-section" data-section="faq">
-      <h2 class="about-section__title">FAQ</h2>
-      <div class="about-section__content">
-        <p><strong>Как сделать заказ?</strong> Добавьте товары в корзину и оформите заказ через форму.</p>
-        <p><strong>Сколько стоит доставка?</strong> Доставка бесплатна при заказе от 5000 ₽.</p>
-        <p><strong>Можно ли вернуть товар?</strong> Да, в течение 14 дней при сохранении товарного вида.</p>
+      <div class="about-section" id="faq" data-section="faq">
+        <img src="https://avatars.mds.yandex.net/i?id=0e97655dbae2c1c92abe8e08f07a7a97ea023919-5888121-images-thumbs&n=13" alt="FAQ" class="about-section__image">
+        <h2 class="about-section__title">FAQ</h2>
+        <div class="about-section__content">
+          <p><strong>Как сделать заказ?</strong> Добавьте товары в корзину и оформите заказ через форму.</p>
+          <p><strong>Сколько стоит доставка?</strong> Доставка бесплатна при заказе от 5000 ₽.</p>
+          <p><strong>Можно ли вернуть товар?</strong> Да, в течение 14 дней при сохранении товарного вида.</p>
+        </div>
       </div>
-    </div>
-    <div class="about-section" data-section="contacts">
-      <h2 class="about-section__title">Контакты</h2>
-      <div class="about-section__content">
-        <p>Email: support@damax.ru</p>
-        <p>Телефон: +7 (999) 123-45-67</p>
-        <p>Адрес: г. Москва, ул. Примерная, д. 10</p>
+      <div class="about-section" id="contacts" data-section="contacts">
+        <img src="https://sc04.alicdn.com/kf/U83c1209065ee46a4b5b6287e89e58a588/968462634/U83c1209065ee46a4b5b6287e89e58a588.jpg" alt="Контакты" class="about-section__image">
+        <h2 class="about-section__title">Контакты</h2>
+        <div class="about-section__content">
+          <p>Email: <a href="mailto:support@damax.ru">support@damax.ru</a></p>
+          <p>Телефон: <a href="tel:+79991234567">+7 (999) 123-45-67</a></p>
+          <p>Адрес: г. Москва, ул. Примерная, д. 10</p>
+        </div>
       </div>
     </div>
   </section>
+
+  <div class="search-popup" id="searchPopup" aria-hidden="true">
+    <div class="search-popup__overlay"></div>
+    <div class="search-popup__content">
+      <input type="text" class="search-popup__input" id="searchInput" placeholder="Найти товар..." aria-label="Поле поиска">
+      <div class="search-popup__results" id="searchResults"></div>
+    </div>
+  </div>
 
   <script src="mobile.js"></script>
 </body>

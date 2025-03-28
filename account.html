@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Аккаунт - Damax</title>
+  <link rel="stylesheet" href="mobile-styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body class="account-page">
+  <header class="header">
+    <div class="header__logo">Damax</div>
+    <div class="header__main-icons">
+      <div class="icon-wrapper" data-tooltip="Профиль">
+        <a href="account.html" class="header__icon header__icon--active" aria-label="Профиль"><i class="fas fa-user"></i></a>
+      </div>
+      <div class="cart-wrapper">
+        <div class="icon-wrapper" id="cart-icon-wrapper" data-tooltip="На главную">
+          <a href="mobile.html" class="header__icon" id="cart-icon-link" aria-label="На главную">
+            <i id="cart-icon" class="fas fa-home"></i>
+            <span class="cart-count">0</span>
+          </a>
+        </div>
+      </div>
+    </div>
+    <input type="checkbox" id="menu-icon" class="menu-icon" aria-expanded="false">
+    <label for="menu-icon" class="burger-menu">
+      <span class="burger-menu__line"></span>
+      <span class="burger-menu__line"></span>
+      <span class="burger-menu__line"></span>
+    </label>
+    <div class="header__extra">
+        <div class="header__extra-icons">
+          <div class="icon-wrapper">
+            <a href="favorites.html" class="header__icon" aria-label="Избранное"><i class="fas fa-heart"></i><span class="icon-bg"><span class="icon-text">Избранное</span></span></a>
+          </div>
+          <div class="icon-wrapper search-wrapper">
+            <a href="#" class="header__icon search-icon" aria-label="Поиск"><i class="fas fa-search"></i><span class="icon-bg"><span class="icon-text">Поиск</span></span></a>
+          </div>
+          <div class="icon-wrapper">
+            <a href="about.html" class="header__icon" aria-label="О нас"><i class="fas fa-info-circle"></i><span class="icon-bg"><span class="icon-text">О нас</span></span></a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+  <section class="account-page">
+    <div class="account-page__container">
+      <div class="account-page__login" id="loginForm">
+        <h2 class="account-page__title">Вход</h2>
+        <form id="loginSubmit">
+          <div class="form-group">
+            <label for="loginEmail">Email</label>
+            <input type="email" id="loginEmail" placeholder="Ваш email" autocomplete="email" required>
+          </div>
+          <div class="form-group">
+            <label for="loginPassword">Пароль</label>
+            <input type="password" id="loginPassword" placeholder="Ваш пароль" autocomplete="current-password" required>
+          </div>
+          <button type="submit" class="account-page__submit">Войти</button>
+          <p class="account-page__toggle">Нет аккаунта? <a href="#" id="showRegister">Зарегистрироваться</a></p>
+        </form>
+      </div>
+
+      <div class="account-page__register" id="registerForm" aria-hidden="true">
+        <h2 class="account-page__title">Регистрация</h2>
+        <form id="registerSubmit">
+          <div class="form-group">
+            <label for="registerName">Имя</label>
+            <input type="text" id="registerName" placeholder="Ваше имя" autocomplete="name" required>
+          </div>
+          <div class="form-group">
+            <label for="registerEmail">Email</label>
+            <input type="email" id="registerEmail" placeholder="Ваш email" autocomplete="email" required>
+          </div>
+          <div class="form-group">
+            <label for="registerPassword">Пароль</label>
+            <input type="password" id="registerPassword" placeholder="Придумайте пароль" autocomplete="new-password" required>
+          </div>
+          <button type="submit" class="account-page__submit">Зарегистрироваться</button>
+          <p class="account-page__toggle">Уже есть аккаунт? <a href="#" id="showLogin">Войти</a></p>
+        </form>
+      </div>
+
+      <div class="account-page__profile" id="profileSection" aria-hidden="true">
+        <h2 class="account-page__title">Ваш аккаунт</h2>
+        <div class="account-page__info">
+          <p><strong>Имя:</strong> <span id="accountName"></span></p>
+          <p><strong>Email:</strong> <span id="accountEmail"></span></p>
+          <button id="editProfile" class="account-page__button">Редактировать профиль</button>
+          <button id="logout" class="account-page__button">Выйти</button>
+        </div>
+        <div class="account-page__orders">
+          <h3>История заказов</h3>
+          <ul class="account-page__orders-list" id="ordersList"></ul>
+        </div>
+      </div>
+
+      <form class="account-page__edit-form" id="editForm" aria-hidden="true">
+        <h3>Редактировать профиль</h3>
+        <div class="form-group">
+          <label for="editName">Имя</label>
+          <input type="text" id="editName" placeholder="Ваше имя" autocomplete="name" required>
+        </div>
+        <div class="form-group">
+          <label for="editEmail">Email</label>
+          <input type="email" id="editEmail" placeholder="Ваш email" autocomplete="email" required>
+        </div>
+        <button type="submit" class="account-page__submit">Сохранить</button>
+        <button type="button" id="cancelEdit" class="account-page__back">Отмена</button>
+      </form>
+    </div>
+  </section>
+
+  <div class="search-popup" id="searchPopup" aria-hidden="true">
+    <div class="search-popup__overlay"></div>
+    <div class="search-popup__content">
+      <input type="text" class="search-popup__input" id="searchInput" placeholder="Найти товар..." aria-label="Поле поиска">
+      <div class="search-popup__results" id="searchResults"></div>
+    </div>
+  </div>
+
+  <script src="mobile.js"></script>
+</body>
+</html>
