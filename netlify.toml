@@ -1,4 +1,10 @@
+[build]
+  publish = "."
+
 [[headers]]
-  for = "/*.js"
+  for = "/*"
   [headers.values]
     Cache-Control = "no-store, no-cache, must-revalidate"
+
+[dev]
+  prettyUrls = false # Отключаем чистые URL
