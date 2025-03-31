@@ -865,6 +865,7 @@
     background-size: 200% 100%;
     animation: gradientShift 3s infinite alternate;
     -webkit-background-clip: text;
+    background-clip: text; /* Добавьте это */
     color: transparent;
   }
   
@@ -1281,6 +1282,24 @@ body.favorites-page {
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
   }
 
+  .favorites-page__to-cart {
+    font-family: 'Lato', sans-serif;
+    background: linear-gradient(90deg, #BCB88A, #C9897B);
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-size: 14px;
+    cursor: pointer;
+    width: 100%; /* Чтобы соответствовать ширине .favorites-page__back */
+    margin: 5px 0; /* Отступы как у .favorites-page__back */
+    transition: opacity 0.3s ease; /* Плавный эффект как у других кнопок */
+  }
+  
+  .favorites-page__to-cart:hover {
+    opacity: 0.8; /* Эффект при наведении, как у кнопок в списке */
+  }
+
   /* Search Popup */
 .search-popup {
     position: fixed;
@@ -1364,10 +1383,7 @@ body.favorites-page {
     background: rgba(188, 184, 138, 0.2);
   }
   
-  /* Убираем лишние стили для .search-wrapper, если они были */
-  .search-wrapper {
-    /* Оставляем только базовые стили для иконки */
-  }
+
 
 /* Account Page */
 body.account-page {
