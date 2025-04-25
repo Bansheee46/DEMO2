@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Damax</title>
+  <link rel="stylesheet" href="desktop-styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lato:wght@400;700&family=Dancing+Script:wght@400&display=swap" rel="stylesheet">
+  <script src="https://npmcdn.com/parse/dist/parse.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css" />
+</head>
+<body>
+<!-- Логотип в шапке сайта -->
+<div class="top-cloud" id="site-logo">
+  <div class="top-cloud__logo">Damax</div>
+  <div class="top-cloud__accent" aria-label="Открыть меню">
+    <div class="accent-menu" aria-hidden="true">
+      <button class="accent-menu__item" data-action="toggle-theme" data-tooltip="Сменить тему">
+        <i class="fas fa-sun"></i>
+        <span class="accent-menu__tooltip">Сменить тему</span>
+      </button>
+      <button class="accent-menu__item" data-action="toggle-sound" data-tooltip="Вкл/выкл звук">
+        <i class="fas fa-volume-up"></i>
+        <span class="accent-menu__tooltip">Вкл/выкл звук</span>
+      </button>
+      <button class="accent-menu__item" data-action="scroll-top" data-tooltip="Наверх">
+        <i class="fas fa-arrow-up"></i>
+        <span class="accent-menu__tooltip">Наверх</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+  <main class="main">
+    <section class="products">
+      <div class="products__grid">
+        <article class="product-card" data-id="1" data-category="electronics" data-aos="fade-up">
+          <div class="product-card__image">
+            <img src="https://avatars.mds.yandex.net/i?id=16c02de528eae0501192dc54a8435a018ff02154-9674922-images-thumbs&n=13" alt="Наушники Wireless">
+          </div>
+          <div class="product-card__info">
+            <h3 class="product-card__title">Наушники Wireless</h3>
+            <p class="product-card__price"><i class="fas fa-ruble-sign"></i> 4 990</p>
+            <button class="product-card__button">В корзину</button>
+          </div>
+        </article>
+        <article class="product-card" data-id="1" data-category="electronics" data-aos="fade-up">
+            <div class="product-card__image">
+              <img src="https://avatars.mds.yandex.net/i?id=16c02de528eae0501192dc54a8435a018ff02154-9674922-images-thumbs&n=13" alt="Наушники Wireless">
+            </div>
+            <div class="product-card__info">
+              <h3 class="product-card__title">Наушники Wireless</h3>
+              <p class="product-card__price"><i class="fas fa-ruble-sign"></i> 4 990</p>
+              <button class="product-card__button">В корзину</button>
+            </div>
+          </article>
+          <article class="product-card" data-id="1" data-category="electronics" data-aos="fade-up">
+            <div class="product-card__image">
+              <img src="https://avatars.mds.yandex.net/i?id=16c02de528eae0501192dc54a8435a018ff02154-9674922-images-thumbs&n=13" alt="Наушники Wireless">
+            </div>
+            <div class="product-card__info">
+              <h3 class="product-card__title">Наушники Wireless</h3>
+              <p class="product-card__price"><i class="fas fa-ruble-sign"></i> 4 990</p>
+              <button class="product-card__button">В корзину</button>
+            </div>
+          </article>
+          <article class="product-card" data-id="1" data-category="electronics" data-aos="fade-up">
+              <div class="product-card__image">
+                <img src="https://avatars.mds.yandex.net/i?id=16c02de528eae0501192dc54a8435a018ff02154-9674922-images-thumbs&n=13" alt="Наушники Wireless">
+              </div>
+              <div class="product-card__info">
+                <h3 class="product-card__title">Наушники Wireless</h3>
+                <p class="product-card__price"><i class="fas fa-ruble-sign"></i> 4 990</p>
+                <button class="product-card__button">В корзину</button>
+              </div>
+            </article>
+        <article class="product-card" data-id="2" data-category="toys" data-aos="fade-up">
+          <div class="product-card__image">
+            <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c" alt="Конструктор LEGO">
+          </div>
+          <div class="product-card__info">
+            <h3 class="product-card__title">Конструктор LEGO City</h3>
+            <p class="product-card__price"><i class="fas fa-ruble-sign"></i> 3 200</p>
+            <button class="product-card__button">В корзину</button>
+          </div>
+        </article>
+        <article class="product-card" data-id="2" data-category="toys" data-aos="fade-up">
+            <div class="product-card__image">
+              <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c" alt="Конструктор LEGO">
+            </div>
+            <div class="product-card__info">
+              <h3 class="product-card__title">Конструктор LEGO City</h3>
+              <p class="product-card__price"><i class="fas fa-ruble-sign"></i> 3 200</p>
+              <button class="product-card__button">В корзину</button>
+            </div>
+          </article>
+          <article class="product-card" data-id="2" data-category="toys" data-aos="fade-up">
+            <div class="product-card__image">
+              <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c" alt="Конструктор LEGO">
+            </div>
+            <div class="product-card__info">
+              <h3 class="product-card__title">Конструктор LEGO City</h3>
+              <p class="product-card__price"><i class="fas fa-ruble-sign"></i> 3 200</p>
+              <button class="product-card__button">В корзину</button>
+            </div>
+          </article>
+        <article class="product-card" data-id="3" data-category="accessories" data-aos="fade-up">
+          <div class="product-card__image">
+            <img src="https://images.unsplash.com/photo-1524805444758-089113d48a6d" alt="Смарт-часы">
+          </div>
+          <div class="product-card__info">
+            <h3 class="product-card__title">Смарт-часы XFit</h3>
+            <p class="product-card__price"><i class="fas fa-ruble-sign"></i> 7 890</p>
+            <button class="product-card__button">В корзину</button>
+          </div>
+        </article>
+        <article class="product-card" data-id="3" data-category="accessories" data-aos="fade-up">
+            <div class="product-card__image">
+              <img src="https://images.unsplash.com/photo-1524805444758-089113d48a6d" alt="Смарт-часы">
+            </div>
+            <div class="product-card__info">
+              <h3 class="product-card__title">Смарт-часы XFit</h3>
+              <p class="product-card__price"><i class="fas fa-ruble-sign"></i> 7 890</p>
+              <button class="product-card__button">В корзину</button>
+            </div>
+          </article> <article class="product-card" data-id="3" data-category="accessories" data-aos="fade-up">
+            <div class="product-card__image">
+              <img src="https://images.unsplash.com/photo-1524805444758-089113d48a6d" alt="Смарт-часы">
+            </div>
+            <div class="product-card__info">
+              <h3 class="product-card__title">Смарт-часы XFit</h3>
+              <p class="product-card__price"><i class="fas fa-ruble-sign"></i> 7 890</p>
+              <button class="product-card__button">В корзину</button>
+            </div>
+          </article> <article class="product-card" data-id="3" data-category="accessories" data-aos="fade-up">
+            <div class="product-card__image">
+              <img src="https://images.unsplash.com/photo-1524805444758-089113d48a6d" alt="Смарт-часы">
+            </div>
+            <div class="product-card__info">
+              <h3 class="product-card__title">Смарт-часы XFit</h3>
+              <p class="product-card__price"><i class="fas fa-ruble-sign"></i> 7 890</p>
+              <button class="product-card__button">В корзину</button>
+            </div>
+          </article>
+        <article class="product-card" data-id="4" data-category="clothes" data-aos="fade-up">
+          <div class="product-card__image">
+            <img src="https://images.unsplash.com/photo-1596755094514-f87e34085b2c" alt="Футболка">
+          </div>
+          <div class="product-card__info">
+            <h3 class="product-card__title">Футболка Oversize</h3>
+            <p class="product-card__price"><i class="fas fa-ruble-sign"></i> 1 500</p>
+            <button class="product-card__button">В корзину</button>
+          </div>
+        </article>
+        <article class="product-card" data-id="4" data-category="clothes" data-aos="fade-up">
+            <div class="product-card__image">
+              <img src="https://images.unsplash.com/photo-1596755094514-f87e34085b2c" alt="Футболка">
+            </div>
+            <div class="product-card__info">
+              <h3 class="product-card__title">Футболка Oversize</h3>
+              <p class="product-card__price"><i class="fas fa-ruble-sign"></i> 1 500</p>
+              <button class="product-card__button">В корзину</button>
+            </div>
+          </article><article class="product-card" data-id="4" data-category="clothes" data-aos="fade-up">
+            <div class="product-card__image">
+              <img src="https://images.unsplash.com/photo-1596755094514-f87e34085b2c" alt="Футболка">
+            </div>
+            <div class="product-card__info">
+              <h3 class="product-card__title">Футболка Oversize</h3>
+              <p class="product-card__price"><i class="fas fa-ruble-sign"></i> 1 500</p>
+              <button class="product-card__button">В корзину</button>
+            </div>
+          </article><article class="product-card" data-id="4" data-category="clothes" data-aos="fade-up">
+            <div class="product-card__image">
+              <img src="https://images.unsplash.com/photo-1596755094514-f87e34085b2c" alt="Футболка">
+            </div>
+            <div class="product-card__info">
+              <h3 class="product-card__title">Футболка Oversize</h3>
+              <p class="product-card__price"><i class="fas fa-ruble-sign"></i> 1 500</p>
+              <button class="product-card__button">В корзину</button>
+            </div>
+          </article>
+        <article class="product-card" data-id="5" data-category="appliances" data-aos="fade-up">
+          <div class="product-card__image">
+            <img src="https://images.unsplash.com/photo-1588854330972-03e8c0c13534" alt="Блендер">
+          </div>
+          <div class="product-card__info">
+            <h3 class="product-card__title">Блендер PowerMix</h3>
+            <p class="product-card__price"><i class="fas fa-ruble-sign"></i> 5 600</p>
+            <button class="product-card__button">В корзину</button>
+          </div>
+        </article>
+        <article class="product-card" data-id="5" data-category="appliances" data-aos="fade-up">
+            <div class="product-card__image">
+              <img src="https://images.unsplash.com/photo-1588854330972-03e8c0c13534" alt="Блендер">
+            </div>
+            <div class="product-card__info">
+              <h3 class="product-card__title">Блендер PowerMix</h3>
+              <p class="product-card__price"><i class="fas fa-ruble-sign"></i> 5 600</p>
+              <button class="product-card__button">В корзину</button>
+            </div>
+          </article> <article class="product-card" data-id="5" data-category="appliances" data-aos="fade-up">
+            <div class="product-card__image">
+              <img src="https://images.unsplash.com/photo-1588854330972-03e8c0c13534" alt="Блендер">
+            </div>
+            <div class="product-card__info">
+              <h3 class="product-card__title">Блендер PowerMix</h3>
+              <p class="product-card__price"><i class="fas fa-ruble-sign"></i> 5 600</p>
+              <button class="product-card__button">В корзину</button>
+            </div>
+          </article> <article class="product-card" data-id="5" data-category="appliances" data-aos="fade-up">
+            <div class="product-card__image">
+              <img src="https://images.unsplash.com/photo-1588854330972-03e8c0c13534" alt="Блендер">
+            </div>
+            <div class="product-card__info">
+              <h3 class="product-card__title">Блендер PowerMix</h3>
+              <p class="product-card__price"><i class="fas fa-ruble-sign"></i> 5 600</p>
+              <button class="product-card__button">В корзину</button>
+            </div>
+          </article> <article class="product-card" data-id="5" data-category="appliances" data-aos="fade-up">
+            <div class="product-card__image">
+              <img src="https://images.unsplash.com/photo-1588854330972-03e8c0c13534" alt="Блендер">
+            </div>
+            <div class="product-card__info">
+              <h3 class="product-card__title">Блендер PowerMix</h3>
+              <p class="product-card__price"><i class="fas fa-ruble-sign"></i> 5 600</p>
+              <button class="product-card__button">В корзину</button>
+            </div>
+          </article>
+        <article class="product-card" data-id="6" data-category="electronics" data-aos="fade-up">
+          <div class="product-card__image">
+            <img src="https://images.unsplash.com/photo-1496181133206-80ce9b88a0a6" alt="Ноутбук">
+          </div>
+          <div class="product-card__info">
+            <h3 class="product-card__title">Ноутбук ProBook 15</h3>
+            <p class="product-card__price"><i class="fas fa-ruble-sign"></i> 89 900</p>
+            <button class="product-card__button">В корзину</button>
+          </div>
+        </article>
+        <article class="product-card" data-id="6" data-category="electronics" data-aos="fade-up">
+            <div class="product-card__image">
+              <img src="https://images.unsplash.com/photo-1496181133206-80ce9b88a0a6" alt="Ноутбук">
+            </div>
+            <div class="product-card__info">
+              <h3 class="product-card__title">Ноутбук ProBook 15</h3>
+              <p class="product-card__price"><i class="fas fa-ruble-sign"></i> 89 900</p>
+              <button class="product-card__button">В корзину</button>
+            </div>
+          </article><article class="product-card" data-id="6" data-category="electronics" data-aos="fade-up">
+            <div class="product-card__image">
+              <img src="https://images.unsplash.com/photo-1496181133206-80ce9b88a0a6" alt="Ноутбук">
+            </div>
+            <div class="product-card__info">
+              <h3 class="product-card__title">Ноутбук ProBook 15</h3>
+              <p class="product-card__price"><i class="fas fa-ruble-sign"></i> 89 900</p>
+              <button class="product-card__button">В корзину</button>
+            </div>
+          </article><article class="product-card" data-id="6" data-category="electronics" data-aos="fade-up">
+            <div class="product-card__image">
+              <img src="https://images.unsplash.com/photo-1496181133206-80ce9b88a0a6" alt="Ноутбук">
+            </div>
+            <div class="product-card__info">
+              <h3 class="product-card__title">Ноутбук ProBook 15</h3>
+              <p class="product-card__price"><i class="fas fa-ruble-sign"></i> 89 900</p>
+              <button class="product-card__button">В корзину</button>
+            </div>
+          </article><article class="product-card" data-id="6" data-category="electronics" data-aos="fade-up">
+            <div class="product-card__image">
+              <img src="https://images.unsplash.com/photo-1496181133206-80ce9b88a0a6" alt="Ноутбук">
+            </div>
+            <div class="product-card__info">
+              <h3 class="product-card__title">Ноутбук ProBook 15</h3>
+              <p class="product-card__price"><i class="fas fa-ruble-sign"></i> 89 900</p>
+              <button class="product-card__button">В корзину</button>
+            </div>
+          </article>
+        <article class="product-card" data-id="7" data-category="toys" data-aos="fade-up">
+          <div class="product-card__image">
+            <img src="https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4" alt="Плюшевый мишка">
+          </div>
+          <div class="product-card__info">
+            <h3 class="product-card__title">Плюшевый мишка Teddy</h3>
+            <p class="product-card__price"><i class="fas fa-ruble-sign"></i> 2 100</p>
+            <button class="product-card__button">В корзину</button>
+          </div>
+        </article>
+        <article class="product-card" data-id="7" data-category="toys" data-aos="fade-up">
+            <div class="product-card__image">
+              <img src="https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4" alt="Плюшевый мишка">
+            </div>
+            <div class="product-card__info">
+              <h3 class="product-card__title">Плюшевый мишка Teddy</h3>
+              <p class="product-card__price"><i class="fas fa-ruble-sign"></i> 2 100</p>
+              <button class="product-card__button">В корзину</button>
+            </div>
+          </article> <article class="product-card" data-id="7" data-category="toys" data-aos="fade-up">
+            <div class="product-card__image">
+              <img src="https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4" alt="Плюшевый мишка">
+            </div>
+            <div class="product-card__info">
+              <h3 class="product-card__title">Плюшевый мишка Teddy</h3>
+              <p class="product-card__price"><i class="fas fa-ruble-sign"></i> 2 100</p>
+              <button class="product-card__button">В корзину</button>
+            </div>
+          </article> <article class="product-card" data-id="7" data-category="toys" data-aos="fade-up">
+            <div class="product-card__image">
+              <img src="https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4" alt="Плюшевый мишка">
+            </div>
+            <div class="product-card__info">
+              <h3 class="product-card__title">Плюшевый мишка Teddy</h3>
+              <p class="product-card__price"><i class="fas fa-ruble-sign"></i> 2 100</p>
+              <button class="product-card__button">В корзину</button>
+            </div>
+          </article> <article class="product-card" data-id="7" data-category="toys" data-aos="fade-up">
+            <div class="product-card__image">
+              <img src="https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4" alt="Плюшевый мишка">
+            </div>
+            <div class="product-card__info">
+              <h3 class="product-card__title">Плюшевый мишка Teddy</h3>
+              <p class="product-card__price"><i class="fas fa-ruble-sign"></i> 2 100</p>
+              <button class="product-card__button">В корзину</button>
+            </div>
+          </article> <article class="product-card" data-id="7" data-category="toys" data-aos="fade-up">
+            <div class="product-card__image">
+              <img src="https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4" alt="Плюшевый мишка">
+            </div>
+            <div class="product-card__info">
+              <h3 class="product-card__title">Плюшевый мишка Teddy</h3>
+              <p class="product-card__price"><i class="fas fa-ruble-sign"></i> 2 100</p>
+              <button class="product-card__button">В корзину</button>
+            </div>
+          </article>
+        <article class="product-card" data-id="8" data-category="accessories" data-aos="fade-up">
+          <div class="product-card__image">
+            <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff" alt="Кроссовки">
+          </div>
+          <div class="product-card__info">
+            <h3 class="product-card__title">Кроссовки AirMax</h3>
+            <p class="product-card__price"><i class="fas fa-ruble-sign"></i> 6 300</p>
+            <button class="product-card__button">В корзину</button>
+          </div>
+        </article>
+        <article class="product-card" data-id="8" data-category="accessories" data-aos="fade-up">
+            <div class="product-card__image">
+              <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff" alt="Кроссовки">
+            </div>
+            <div class="product-card__info">
+              <h3 class="product-card__title">Кроссовки AirMax</h3>
+              <p class="product-card__price"><i class="fas fa-ruble-sign"></i> 6 300</p>
+              <button class="product-card__button">В корзину</button>
+            </div>
+          </article><article class="product-card" data-id="8" data-category="accessories" data-aos="fade-up">
+            <div class="product-card__image">
+              <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff" alt="Кроссовки">
+            </div>
+            <div class="product-card__info">
+              <h3 class="product-card__title">Кроссовки AirMax</h3>
+              <p class="product-card__price"><i class="fas fa-ruble-sign"></i> 6 300</p>
+              <button class="product-card__button">В корзину</button>
+            </div>
+          </article><article class="product-card" data-id="8" data-category="accessories" data-aos="fade-up">
+            <div class="product-card__image">
+              <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff" alt="Кроссовки">
+            </div>
+            <div class="product-card__info">
+              <h3 class="product-card__title">Кроссовки AirMax</h3>
+              <p class="product-card__price"><i class="fas fa-ruble-sign"></i> 6 300</p>
+              <button class="product-card__button">В корзину</button>
+            </div>
+          </article><article class="product-card" data-id="8" data-category="accessories" data-aos="fade-up">
+            <div class="product-card__image">
+              <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff" alt="Кроссовки">
+            </div>
+            <div class="product-card__info">
+              <h3 class="product-card__title">Кроссовки AirMax</h3>
+              <p class="product-card__price"><i class="fas fa-ruble-sign"></i> 6 300</p>
+              <button class="product-card__button">В корзину</button>
+            </div>
+          </article>
+      </div>
+    </section>
+  </main>
+
+  <div class="island">
+    <div class="island__categories all-active">
+      <button class="island__category" data-category="electronics">Электроника</button>
+      <button class="island__category" data-category="toys">Игрушки</button>
+      <button class="island__category" data-category="accessories">Аксессуары</button>
+      <button class="island__category" data-category="clothes">Одежда</button>
+      <button class="island__category" data-category="appliances">Бытовая техника</button>
+    </div>
+    <div class="island__actions">
+      <div class="search-bar">
+        <input type="text" class="search-bar__input" placeholder="Поиск...">
+        <i class="fas fa-search search-bar__icon"></i>
+      </div>
+      <a href="#" class="cart-icon"><i class="fas fa-shopping-cart"></i><span class="cart-count">0</span></a>
+    </div>
+  </div>
+
+  <div class="cart-panel" aria-hidden="true">
+    <div class="cart-panel__header">
+      <h2 class="cart-panel__title">Корзина</h2>
+      <button class="cart-panel__close">&times;</button>
+    </div>
+    <ul class="cart-panel__items"></ul>
+    <div class="cart-panel__footer">
+      <div class="cart-panel__total">Итого: <span>0 ₽</span></div>
+      <button class="cart-panel__checkout">Оформить заказ</button>
+    </div>
+  </div>
+  </aside>
+
+  <footer class="footer" data-aos="fade-in">
+    <div class="footer__container">
+      <div class="footer__section">
+        <h4>Контакты</h4>
+        <p>Телефон: <a href="tel:+79991234567">+7 (999) 123-45-67</a></p>
+        <p>Email: <a href="mailto:info@example.com">info@example.com</a></p>
+      </div>
+      <div class="footer__section">
+        <h4>Соцсети</h4>
+        <div class="footer__social-icons">
+          <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+          <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+        </div>
+      </div>
+    </div>
+    <p class="footer__copyright">© 2025 Damax. Все права защищены.</p>
+  </footer>
+
+ <!-- Auth Modal -->
+<div class="modal-auth" aria-hidden="true" data-aos="zoom-in">
+  <div class="modal-auth__content">
+    <div class="auth-hero">
+      <div class="auth-hero__backdrop"></div>
+      <div class="auth-hero__logo">Damax</div>
+      <div class="auth-hero__tagline">Ваш персональный шоппинг-ассистент</div>
+    </div>
+
+    <div class="auth-forms">
+      <div class="modal-auth__tabs">
+        <button class="modal-auth__tab active" data-tab="login">Вход</button>
+        <button class="modal-auth__tab" data-tab="register">Регистрация</button>
+      </div>
+      
+      <!-- Login Form -->
+      <form id="login-form" class="modal-auth__form">
+        <div class="input-group">
+          <label for="login-email">Email</label>
+          <div class="input-wrapper">
+            <i class="fas fa-envelope input-icon"></i>
+            <input type="email" id="login-email" class="modal-auth__input" name="email" required autocomplete="email">
+          </div>
+        </div>
+        <div class="input-group">
+          <label for="login-password">Пароль</label>
+          <div class="input-wrapper">
+            <i class="fas fa-lock input-icon"></i>
+            <input type="password" id="login-password" class="modal-auth__input" name="password" required autocomplete="current-password">
+            <button type="button" class="password-toggle" aria-label="Показать пароль">
+              <i class="fas fa-eye"></i>
+            </button>
+          </div>
+        </div>
+        <div class="auth-options">
+          <div class="remember-me">
+            <input type="checkbox" id="remember-me" name="remember">
+            <label for="remember-me">Запомнить меня</label>
+          </div>
+          <a href="#" class="forgot-password">Забыли пароль?</a>
+        </div>
+        <button type="submit" class="modal-auth__submit">
+          <span>Войти</span>
+          <i class="fas fa-arrow-right"></i>
+        </button>
+      </form>
+
+      <!-- Register Form -->
+      <form id="register-form" class="modal-auth__form" style="display: none;">
+        <div class="input-group">
+          <label for="register-name">Имя</label>
+          <div class="input-wrapper">
+            <i class="fas fa-user input-icon"></i>
+            <input type="text" id="register-name" class="modal-auth__input" name="name" required autocomplete="name">
+          </div>
+        </div>
+        <div class="input-group">
+          <label for="register-email">Email</label>
+          <div class="input-wrapper">
+            <i class="fas fa-envelope input-icon"></i>
+            <input type="email" id="register-email" class="modal-auth__input" name="email" required autocomplete="email">
+          </div>
+        </div>
+        <div class="input-group">
+          <label for="register-password">Пароль</label>
+          <div class="input-wrapper">
+            <i class="fas fa-lock input-icon"></i>
+            <input type="password" id="register-password" class="modal-auth__input" name="password" required autocomplete="new-password">
+            <button type="button" class="password-toggle" aria-label="Показать пароль">
+              <i class="fas fa-eye"></i>
+            </button>
+          </div>
+          <div class="password-strength">
+            <span class="strength-bar"></span>
+            <span class="strength-text">Надежность пароля</span>
+          </div>
+        </div>
+        <div class="terms-agreement">
+          <input type="checkbox" id="terms-agree" name="terms" required>
+          <label for="terms-agree">Я согласен с <a href="#">Условиями использования</a>и<a href="#">Политикой конфиденциальности</a></label>
+        </div>
+        <button type="submit" class="modal-auth__submit">
+          <span>Зарегистрироваться</span>
+          <i class="fas fa-arrow-right"></i>
+        </button>
+      </form>
+
+      <div class="social-auth">
+        <div class="social-auth__divider">
+          <span>или</span>
+        </div>
+        <div class="social-auth__buttons">
+          <button type="button" class="social-button social-button--google">
+            <i class="fab fa-google"></i>
+            <span>Google</span>
+          </button>
+          <button type="button" class="social-button social-button--vk">
+            <i class="fab fa-vk"></i>
+            <span>ВКонтакте</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <button class="modal-auth__close" aria-label="Закрыть">&times;</button>
+  </div>
+</div>
+  
+<!-- Account Panel -->
+<div class="account-panel" aria-hidden="true">
+  <button class="account-toggle">
+    <i class="fas fa-user"></i>
+  </button>
+  <div class="account-menu">
+    <!-- Динамически заполняется в JS -->
+  </div>
+</div>
+
+<!-- Profile Modal -->
+<div class="modal-profile" aria-hidden="true" data-aos="zoom-in">
+  <div class="modal-profile__content">
+    <div class="auth-hero">
+      <div class="auth-hero__backdrop"></div>
+      <div class="auth-hero__logo">Damax</div>
+      <div class="auth-hero__tagline">Личный кабинет</div>
+    </div>
+    <div class="profile-content">
+      <h2 class="modal-profile__title">Профиль</h2>
+      <div class="profile-info">
+        <div class="profile-header">
+          <div class="profile-avatar">
+            <i class="fas fa-user-circle"></i>
+            <button class="avatar-change"><i class="fas fa-camera"></i></button>
+          </div>
+          <div class="profile-status">
+            <span class="status-badge status-vip">VIP-клиент</span>
+            <div class="loyalty-progress">
+              <div class="loyalty-bar">
+                <div class="loyalty-fill" style="width: 75%"></div>
+              </div>
+              <span class="loyalty-text">Программа лояльности: 75%</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="profile-tabs">
+          <button class="profile-tab active" data-tab="info">Основная информация</button>
+          <button class="profile-tab" data-tab="orders">История заказов</button>
+          <button class="profile-tab" data-tab="wishlist">Избранное</button>
+        </div>
+        
+        <div class="profile-tab-content active" data-tab-content="info">
+          <div class="profile-field">
+            <span class="profile-label">Имя:</span>
+            <span id="profile-name" class="profile-value"></span>
+          </div>
+          <div class="profile-field">
+            <span class="profile-label">Email:</span>
+            <span id="profile-email" class="profile-value"></span>
+          </div>
+          <div class="profile-field">
+            <span class="profile-label">Телефон:</span>
+            <span id="profile-phone" class="profile-value">Не указано</span>
+            <button class="profile-edit-btn"><i class="fas fa-pencil-alt"></i></button>
+          </div>
+          <div class="profile-field">
+            <span class="profile-label">Адрес доставки:</span>
+            <span id="profile-address" class="profile-value">Не указано</span>
+            <button class="profile-edit-btn"><i class="fas fa-pencil-alt"></i></button>
+          </div>
+          <div class="profile-field">
+            <span class="profile-label">Дата регистрации:</span>
+            <span id="profile-date" class="profile-value"></span>
+          </div>
+          <!-- Динамически добавляемое поле для способа авторизации -->
+        </div>
+        
+        <div class="profile-tab-content" data-tab-content="orders">
+          <div class="orders-empty">
+            <i class="fas fa-shopping-bag"></i>
+            <p>У вас пока нет заказов</p>
+            <button class="btn-start-shopping">Начать покупки</button>
+          </div>
+        </div>
+        
+        <div class="profile-tab-content" data-tab-content="wishlist">
+          <div class="wishlist-empty">
+            <i class="fas fa-heart"></i>
+            <p>Ваш список избранного пуст</p>
+            <button class="btn-browse-catalog">Перейти в каталог</button>
+          </div>
+        </div>
+      </div>
+      <div class="profile-actions">
+        <button class="modal-profile__edit">
+          <i class="fas fa-user-edit"></i>
+          <span>Редактировать профиль</span>
+        </button>
+        <button class="modal-profile__password">
+          <i class="fas fa-key"></i>
+          <span>Сменить пароль</span>
+        </button>
+        <button class="modal-profile__close">
+          <i class="fas fa-times"></i>
+          <span>Закрыть</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Settings Modal -->
+<div class="modal-settings" aria-hidden="true" data-aos="zoom-in">
+  <div class="modal-settings__content">
+    <div class="auth-hero">
+      <div class="auth-hero__backdrop"></div>
+      <div class="auth-hero__logo">Damax</div>
+      <div class="auth-hero__tagline">Персонализация</div>
+    </div>
+    <div class="settings-content">
+      <h2 class="modal-settings__title">Настройки</h2>
+      <div class="settings-tabs">
+        <button class="settings-tab active" data-settings-tab="interface">Интерфейс</button>
+        <button class="settings-tab" data-settings-tab="privacy">Конфиденциальность</button>
+        <button class="settings-tab" data-settings-tab="notifications">Уведомления</button>
+      </div>
+      
+      <div class="settings-tab-content active" data-settings-content="interface">
+        <div class="settings-menu">
+          <div class="settings-menu__item" data-action="toggle-theme">
+            <i class="fas fa-moon"></i>
+            <div class="settings-item-content">
+              <span class="settings-item-title">Тёмная тема</span>
+              <span class="settings-item-desc">Изменяет цветовую схему на тёмную</span>
+            </div>
+            <div class="settings-toggle">
+              <span class="toggle-track">
+                <span class="toggle-indicator"></span>
+              </span>
+            </div>
+          </div>
+          
+          <div class="settings-menu__item" data-action="toggle-sound">
+            <i class="fas fa-volume-up"></i>
+            <div class="settings-item-content">
+              <span class="settings-item-title">Звуковые эффекты</span>
+              <span class="settings-item-desc">Воспроизводит звуки при взаимодействии</span>
+            </div>
+            <div class="settings-toggle">
+              <span class="toggle-track">
+                <span class="toggle-indicator"></span>
+              </span>
+            </div>
+          </div>
+          
+          <div class="settings-menu__item" data-action="toggle-animations">
+            <i class="fas fa-film"></i>
+            <div class="settings-item-content">
+              <span class="settings-item-title">Анимации</span>
+              <span class="settings-item-desc">Визуальные эффекты при навигации</span>
+            </div>
+            <div class="settings-toggle">
+              <span class="toggle-track">
+                <span class="toggle-indicator toggle-active"></span>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="settings-tab-content" data-settings-content="privacy">
+        <div class="settings-menu">
+          <div class="settings-menu__item" data-action="clear-search">
+            <i class="fas fa-history"></i>
+            <div class="settings-item-content">
+              <span class="settings-item-title">История поиска</span>
+              <span class="settings-item-desc">Удалить все записи истории поиска</span>
+            </div>
+            <button class="settings-btn">Очистить</button>
+          </div>
+          
+          <div class="settings-menu__item" data-action="clear-cookies">
+            <i class="fas fa-cookie-bite"></i>
+            <div class="settings-item-content">
+              <span class="settings-item-title">Файлы cookie</span>
+              <span class="settings-item-desc">Удалить все сохраненные cookies</span>
+            </div>
+            <button class="settings-btn">Очистить</button>
+          </div>
+          
+          <div class="settings-menu__item" data-action="clear-cart">
+            <i class="fas fa-shopping-cart"></i>
+            <div class="settings-item-content">
+              <span class="settings-item-title">Корзина</span>
+              <span class="settings-item-desc">Очистить содержимое корзины</span>
+            </div>
+            <button class="settings-btn">Очистить</button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="settings-tab-content" data-settings-content="notifications">
+        <div class="settings-menu">
+          <div class="settings-menu__item" data-action="toggle-email-notifications">
+            <i class="fas fa-envelope"></i>
+            <div class="settings-item-content">
+              <span class="settings-item-title">Email уведомления</span>
+              <span class="settings-item-desc">Получать уведомления на почту</span>
+            </div>
+            <div class="settings-toggle">
+              <span class="toggle-track">
+                <span class="toggle-indicator toggle-active"></span>
+              </span>
+            </div>
+          </div>
+          
+          <div class="settings-menu__item" data-action="toggle-promo-notifications">
+            <i class="fas fa-tag"></i>
+            <div class="settings-item-content">
+              <span class="settings-item-title">Акции и скидки</span>
+              <span class="settings-item-desc">Получать уведомления о скидках</span>
+            </div>
+            <div class="settings-toggle">
+              <span class="toggle-track">
+                <span class="toggle-indicator toggle-active"></span>
+              </span>
+            </div>
+          </div>
+          
+          <div class="settings-menu__item" data-action="toggle-order-notifications">
+            <i class="fas fa-truck"></i>
+            <div class="settings-item-content">
+              <span class="settings-item-title">Статус заказа</span>
+              <span class="settings-item-desc">Уведомления о статусе заказов</span>
+            </div>
+            <div class="settings-toggle">
+              <span class="toggle-track">
+                <span class="toggle-indicator toggle-active"></span>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="settings-footer">
+        <button class="settings-btn-save">Сохранить настройки</button>
+        <button class="modal-settings__close">
+          <i class="fas fa-times"></i>
+          <span>Закрыть</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+  <script src="desktop.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+  <script>
+    // Функция для имитации авторизации Google
+    function simulateGoogleAuth() {
+      // Проверяем, авторизован ли пользователь
+      let userData = localStorage.getItem('user');
+      
+      // Если пользователь не авторизован, выполняем эмуляцию авторизации
+      if (!userData) {
+        // Создаем имитацию данных пользователя
+        const mockUserData = {
+          id: 'google_' + Math.random().toString(36).substr(2, 9),
+          name: 'Иван Петров',
+          email: 'user@gmail.com',
+          avatar: 'https://i.pravatar.cc/150?img=' + Math.floor(Math.random() * 70),
+          provider: 'google',
+          date: new Date().toLocaleDateString()
+        };
+        
+        // Сохраняем данные в localStorage
+        localStorage.setItem('user', JSON.stringify(mockUserData));
+        
+        // Добавляем пользователя в "базу данных", если его там еще нет
+        const users = JSON.parse(localStorage.getItem('users')) || [];
+        if (!users.some(u => u.email === mockUserData.email && u.provider === 'google')) {
+          users.push({
+            name: mockUserData.name,
+            email: mockUserData.email,
+            provider: 'google',
+            date: new Date().toLocaleDateString()
+          });
+          localStorage.setItem('users', JSON.stringify(users));
+        }
+        
+        console.log('Эмуляция авторизации Google выполнена успешно', mockUserData);
+        return mockUserData;
+      }
+      
+      return JSON.parse(userData);
+    }
+    
+    // Вызываем функцию имитации при загрузке страницы
+    document.addEventListener('DOMContentLoaded', () => {
+      const user = simulateGoogleAuth();
+      console.log('Авторизованный пользователь:', user);
+      
+      // Обновляем интерфейс с учетом авторизации пользователя
+      if (user) {
+        // Обновляем аватар пользователя
+        const avatarElements = document.querySelectorAll('.user-avatar');
+        if (avatarElements.length > 0) {
+          avatarElements.forEach(avatar => {
+            if (user.avatar) {
+              avatar.src = user.avatar;
+            }
+          });
+        }
+        
+        // Обновляем имя пользователя
+        const nameElements = document.querySelectorAll('.user-name');
+        if (nameElements.length > 0) {
+          nameElements.forEach(nameEl => {
+            nameEl.textContent = user.name;
+          });
+        }
+        
+        // Обновляем email пользователя
+        const emailElements = document.querySelectorAll('.user-email');
+        if (emailElements.length > 0) {
+          emailElements.forEach(emailEl => {
+            emailEl.textContent = user.email;
+          });
+        }
+        
+        // Делаем все контейнеры для авторизованных пользователей видимыми
+        const authContainers = document.querySelectorAll('.auth-only');
+        if (authContainers.length > 0) {
+          authContainers.forEach(container => {
+            container.style.display = 'block';
+          });
+        }
+        
+        // Скрываем контейнеры для неавторизованных пользователей
+        const noAuthContainers = document.querySelectorAll('.no-auth-only');
+        if (noAuthContainers.length > 0) {
+          noAuthContainers.forEach(container => {
+            container.style.display = 'none';
+          });
+        }
+      }
+    });
+  </script>
+</body>
+</html>

@@ -590,7 +590,3 @@ document.addEventListener('DOMContentLoaded', () => {
   
     updateCartCount();
   });
-
-  //parse
-parse.initialize("h2c35HqCvBZJldXwlkivSY0C8InNFrtobkJfd3ar","VdJsJTjxZ7MpI0tBVVzvBwpreHQmwHrZhXLt6Nd8");
-parse.serverURL = "https://parseapi.back4app.com/";
