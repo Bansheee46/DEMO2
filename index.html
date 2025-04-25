@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Перенаправление</title>
+    <script>
+        // Функция определения мобильного устройства
+        function isMobileDevice() {
+            const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
+            return mobileRegex.test(navigator.userAgent);
+        }
+        
+        // Функция для получения параметра из URL
+        function getUrlParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
+        
+        // Проверка, если пользователь явно запросил определенную версию
+        const forceDesktop = getUrlParam('desktop') === 'true';
+        const forceMobile = getUrlParam('mobile') === 'true';
+        
+        // Проверка сохраненного выбора пользователя
+        const userChoice = localStorage.getItem('preferredVersion');
+        
+        // Принятие решения о переадресации
+        let redirectTo;
+        
+        if (forceDesktop) {
+            // Если явно запрошена десктопная версия
+            redirectTo = 'desktop.html';
+            localStorage.setItem('preferredVersion', 'desktop');
+        } else if (forceMobile) {
+            // Если явно запрошена мобильная версия
+            redirectTo = 'mobile.html';
+            localStorage.setItem('preferredVersion', 'mobile');
+        } else if (userChoice) {
+            // Если пользователь ранее выбрал версию
+            redirectTo = userChoice === 'desktop' ? 'desktop.html' : 'mobile.html';
+        } else {
+            // Автоматическое определение по типу устройства
+            redirectTo = isMobileDevice() ? 'mobile.html' : 'desktop.html';
+        }
+        
+        // Перенаправление на соответствующую страницу
+        window.location.href = redirectTo;
+    </script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        .loader {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <h2>Перенаправление...</h2>
+    <div class="loader"></div>
+    <p>Если вы не были перенаправлены автоматически, выберите версию:</p>
+    <p>
+        <a href="desktop.html">Десктопная версия</a> | 
+        <a href="mobile.html">Мобильная версия</a>
+    </p>
+</body>
+</html> 
