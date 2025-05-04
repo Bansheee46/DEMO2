@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Damax - Авторизация</title>
+    <link rel="stylesheet" href="desktop-styles.css">
+    <link rel="stylesheet" href="desktop-styles-fixed.css">
+    <link rel="stylesheet" href="login-system.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lato:wght@400;700&family=Dancing+Script:wght@400&display=swap" rel="stylesheet">
+    <script src="https://npmcdn.com/parse/dist/parse.min.js"></script>
+    
+    <!-- Немедленно установить стили для иконок темы -->
+    <script>
+      (function() {
+        const isDark = localStorage.getItem('theme') === 'dark';
+        if (isDark) {
+          document.documentElement.classList.add('dark');
+        }
+        
+        // Обновим стили иконок как можно раньше, чтобы избежать мигания
+        window.addEventListener('DOMContentLoaded', function() {
+          document.querySelectorAll('[data-action="toggle-theme"]').forEach(btn => {
+            const sunIcon = btn.querySelector('i.fa-sun');
+            const moonIcon = btn.querySelector('i.fa-moon');
+            
+            if (sunIcon && moonIcon) {
+              if (isDark) {
+                sunIcon.style.cssText = 'display: none !important';
+                moonIcon.style.cssText = 'display: inline-block !important';
+              } else {
+                sunIcon.style.cssText = 'display: inline-block !important';
+                moonIcon.style.cssText = 'display: none !important';
+              }
+            }
+          });
+        });
+      })();
+    </script>
+</head>
+<body>
+    <!-- Обёртка для всего содержимого страницы -->
+    <div class="page-wrapper">
+        <!-- Обёртка для основного содержимого -->
+        <div class="content-wrapper">
+            <!-- Логотип в шапке сайта -->
+            <div class="top-cloud" id="site-logo">
+                <div class="top-cloud__logo">Damax</div>
+                <div class="top-cloud__accent" aria-label="Открыть меню">
+                    <div class="accent-menu" inert>
+                        <button class="accent-menu__item" data-action="toggle-theme" data-tooltip="Сменить тему">
+                            <i class="fas fa-sun"></i>
+                            <i class="fas fa-moon"></i>
+                            <span class="accent-menu__tooltip">Сменить тему</span>
+                        </button>
+                        <button class="accent-menu__item" data-action="toggle-sound" data-tooltip="Вкл/выкл звук">
+                            <i class="fas fa-volume-up"></i>
+                            <span class="accent-menu__tooltip">Вкл/выкл звук</span>
+                        </button>
+                        <button class="accent-menu__item" data-action="scroll-top" data-tooltip="Наверх">
+                            <i class="fas fa-arrow-up"></i>
+                            <span class="accent-menu__tooltip">Наверх</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <main class="main">
+                <!-- Контейнер для авторизации -->
+                <div class="auth-container">
+                    <h1>Добро пожаловать в <span>Damax</span></h1>
+                    <p class="auth-subtitle">Войдите в свой аккаунт или создайте новый</p>
+                    <button class="toggle-auth-button">
+                        <span>Начать</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </main>
+        </div>
+
+        <!-- Футер -->
+        <footer class="footer">
+            <div class="footer__container">
+                <div class="footer__section">
+                    <h4>Damax</h4>
+                    <p>Качественные товары для вас</p>
+                </div>
+                <div class="footer__section">
+                    <h4>Ссылки</h4>
+                    <a href="#">О нас</a>
+                    <a href="#">Каталог</a>
+                    <a href="#">Контакты</a>
+                </div>
+                <div class="footer__section">
+                    <h4>Соцсети</h4>
+                    <div class="footer__social-icons">
+                        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                    </div>
+                </div>
+            </div>
+            <p class="footer__copyright">© 2025 Damax. Все права защищены.</p>
+        </footer>
+    </div>
+
+    <!-- Модальное окно авторизации (новый двухколоночный дизайн) -->
+    <div class="auth-modal">
+        <div class="auth-modal__overlay"></div>
+        
+        <div class="auth-modal__card">
+            <!-- Левая колонка с градиентом и логотипом -->
+            <div class="auth-modal__brand">
+                <!-- Минималистичный фон с анимацией -->
+                <div class="animated-background">
+                    <!-- Тонкая сетка -->
+                    <div class="grid-overlay"></div>
+                    
+                    <!-- Фокус внимания -->
+                    <div class="focus-element"></div>
+                    
+                    <!-- Диагональные линии будут добавлены через JavaScript -->
+                    <div class="diagonal-lines"></div>
+                    
+                    <!-- Контейнер для динамических частиц -->
+                    <div class="light-particles"></div>
+                </div>
+                
+                <div class="auth-modal__logo">Damax</div>
+                <div class="auth-modal__tagline">Личный кабинет</div>
+            </div>
+            
+            <!-- Правая колонка с формами -->
+            <div class="auth-modal__content-wrapper">
+                <!-- Кнопка закрытия в верхнем правом углу -->
+                <button class="auth-modal__close">
+                    <i class="fas fa-times"></i>
+                </button>
+                
+                <!-- Заголовок модального окна с вкладками -->
+                <div class="auth-modal__header">
+                    <div class="auth-tabs">
+                        <button class="auth-tab active" data-tab="login">Вход</button>
+                        <button class="auth-tab" data-tab="register">Регистрация</button>
+                    </div>
+                </div>
+                
+                <!-- Содержимое модального окна -->
+                <div class="auth-modal__content">
+                    <!-- Форма входа -->
+                    <form id="loginForm" class="auth-form active">
+                        <h2>Вход в аккаунт</h2>
+                        
+                        <div class="social-login">
+                            <button type="button" class="social-button google">
+                                <i class="fab fa-google"></i>
+                                <span>Google</span>
+                            </button>
+                            <button type="button" class="social-button vk">
+                                <i class="fab fa-vk"></i>
+                                <span>ВКонтакте</span>
+                            </button>
+                        </div>
+                        
+                        <div class="divider">
+                            <span>или через email</span>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="loginEmail">Email</label>
+                            <div class="input-container">
+                                <i class="fas fa-envelope input-icon"></i>
+                                <input type="email" id="loginEmail" placeholder="your@email.com" required>
+                            </div>
+                            <span class="error-message"></span>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="loginPassword">Пароль</label>
+                            <div class="input-container">
+                                <i class="fas fa-lock input-icon"></i>
+                                <input type="password" id="loginPassword" placeholder="••••••••" required>
+                                <button type="button" class="toggle-password">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <span class="error-message"></span>
+                        </div>
+                        
+                        <div class="form-group checkbox-group">
+                            <div class="checkbox-container">
+                                <input type="checkbox" id="rememberMe">
+                                <label for="rememberMe">Запомнить меня</label>
+                            </div>
+                            <a href="#" class="forgot-password-link">Забыли пароль?</a>
+                        </div>
+                        
+                        <button type="submit" class="submit-button">
+                            <span class="button-text">Войти</span>
+                            <span class="loading-spinner"></span>
+                        </button>
+                    </form>
+                    
+                    <!-- Форма регистрации -->
+                    <form id="registerForm" class="auth-form">
+                        <h2>Создать аккаунт</h2>
+                        
+                        <div class="form-group">
+                            <label for="registerName">Имя и фамилия</label>
+                            <div class="input-container">
+                                <i class="fas fa-user input-icon"></i>
+                                <input type="text" id="registerName" placeholder="Иван Иванов" required>
+                            </div>
+                            <span class="error-message"></span>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="registerEmail">Email</label>
+                            <div class="input-container">
+                                <i class="fas fa-envelope input-icon"></i>
+                                <input type="email" id="registerEmail" placeholder="your@email.com" required>
+                            </div>
+                            <span class="error-message"></span>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="registerPassword">Пароль</label>
+                            <div class="input-container">
+                                <i class="fas fa-lock input-icon"></i>
+                                <input type="password" id="registerPassword" placeholder="••••••••" required>
+                                <button type="button" class="toggle-password">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <span class="error-message"></span>
+                            
+                            <div class="password-strength">
+                                <div class="strength-meter">
+                                    <div class="strength-indicator"></div>
+                                </div>
+                                <span class="strength-text"></span>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="registerPasswordConfirm">Подтвердите пароль</label>
+                            <div class="input-container">
+                                <i class="fas fa-lock input-icon"></i>
+                                <input type="password" id="registerPasswordConfirm" placeholder="••••••••" required>
+                                <button type="button" class="toggle-password">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <span class="error-message"></span>
+                        </div>
+                        
+                        <div class="form-group">
+                            <div class="agreement-checkbox">
+                                <input type="checkbox" id="termsAgreement" required>
+                                <label for="termsAgreement">Я согласен с <a href="#">Условиями использования</a> и <a href="#">Политикой конфиденциальности</a></label>
+                            </div>
+                            <span class="error-message"></span>
+                        </div>
+                        
+                        <button type="submit" class="submit-button">
+                            <span class="button-text">Создать аккаунт</span>
+                            <span class="loading-spinner"></span>
+                        </button>
+                    </form>
+                    
+                    <!-- Форма восстановления пароля -->
+                    <form id="forgotPasswordForm" class="auth-form">
+                        <button type="button" class="back-button">
+                            <i class="fas fa-arrow-left"></i>
+                        </button>
+                        
+                        <h2>Восстановление пароля</h2>
+                        <p class="form-subtitle">Введите email для получения инструкций</p>
+                        
+                        <div class="form-group">
+                            <label for="forgotEmail">Email</label>
+                            <div class="input-container">
+                                <i class="fas fa-envelope input-icon"></i>
+                                <input type="email" id="forgotEmail" placeholder="your@email.com" required>
+                            </div>
+                            <span class="error-message"></span>
+                        </div>
+                        
+                        <button type="submit" class="submit-button">
+                            <span class="button-text">Отправить ссылку</span>
+                            <span class="loading-spinner"></span>
+                        </button>
+                    </form>
+                    
+                    <!-- Экран успешного входа -->
+                    <div class="auth-success">
+                        <div class="success-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <h2>Вход выполнен!</h2>
+                        <p class="success-message">Вы успешно вошли в систему. Добро пожаловать!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="login-system.js"></script>
+</body>
+</html> 

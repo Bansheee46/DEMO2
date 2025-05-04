@@ -1,32 +1,77 @@
-document.addEventListener('DOMContentLoaded', () => {
-  let cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
-  let user = JSON.parse(localStorage.getItem('user')) || null;
-  let users = JSON.parse(localStorage.getItem('users')) || [];
+// Подключаем модуль настроек, интегрированный в основной код
+// ... existing code ...
 
-  // Если пользователь авторизован через социальную сеть, обрабатываем это
-  if (user && (user.provider === 'google' || user.provider === 'vk')) {
-    console.log(`User logged in via ${user.provider}`);
+document.addEventListener('DOMContentLoaded', function() {
+  // Глобальная переменная для хранения данных пользователей
+  let registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+  
+  // Удаляем все существующие меню пользователя при загрузке страницы
+  if (typeof deleteUserMenu === 'function') {
+    deleteUserMenu();
+  }
+
+  // Обработчик клавиши ё для перехода на страницу пользователей
+  document.addEventListener('keydown', function(e) {
+    // Клавиша ё (код 192)
+    if (e.keyCode === 192) {
+      // Проверяем, авторизован ли пользователь
+      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+      if (userData.loggedIn) {
+        window.location.href = 'users.html';
+      } else {
+        showNotification('Доступ запрещен. Авторизуйтесь для просмотра списка пользователей.', 'error');
+      }
+    }
+  });
+
+  // Функция для очистки localStorage
+  function clearLocalStorage() {
+    localStorage.clear();
+    registeredUsers = [];
     
-    // Проверяем, добавлен ли уже этот пользователь в локальную базу
-    const existingUserIndex = users.findIndex(u => u.email === user.email && u.provider === user.provider);
+    // Сбрасываем UI кнопки входа
+    if (loginButton) {
+      // Очищаем существующие обработчики
+      const newButton = loginButton.cloneNode(true);
+      loginButton.parentNode.replaceChild(newButton, loginButton);
+      
+      // Обновляем внешний вид кнопки
+      newButton.innerHTML = `<i class="fas fa-user"></i>`;
+      newButton.title = 'Войти в аккаунт';
+      newButton.classList.remove('logged-in');
+      
+      // Устанавливаем обработчик для открытия формы входа
+      newButton.addEventListener('click', showLoginModal);
+    }
     
-    // Если пользователя нет, добавляем его в локальную базу
-    if (existingUserIndex === -1) {
-      users.push({
-        name: user.name,
-        email: user.email,
-        provider: user.provider,
-        date: new Date().toLocaleDateString(),
-        // Для социальных сетей пароль не нужен
-        password: null
-      });
-      localStorage.setItem('users', JSON.stringify(users));
+    // Удаляем все возможные меню пользователя
+    deleteUserMenu();
+    
+    showNotification('Данные очищены', 'info');
+  }
+
+  // Функция получения IP адреса пользователя (асинхронная)
+  async function getUserIP() {
+    try {
+      const response = await fetch('https://api.ipify.org?format=json');
+      const data = await response.json();
+      return data.ip;
+    } catch (error) {
+      console.error('Ошибка при получении IP:', error);
+      return 'unknown';
     }
   }
 
-  const cartPanel = document.querySelector('.cart-panel');
-  const cartCount = document.querySelector('.cart-count');
-  const cartIcon = document.querySelector('.cart-icon');
+  // Инициализация AOS
+  AOS.init({
+    duration: 800,
+    easing: 'ease-in-out',
+    once: true
+  });
+
+  let cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
+  
+  // Основные элементы интерфейса
   const island = document.querySelector('.island');
   const productCards = document.querySelectorAll('.product-card');
   const footer = document.querySelector('.footer');
@@ -34,1868 +79,51 @@ document.addEventListener('DOMContentLoaded', () => {
   const accentMenu = document.querySelector('.accent-menu');
   const accentMenuItems = document.querySelectorAll('.accent-menu__item');
   const categoryButtons = document.querySelectorAll('.island__category');
-  const accountPanel = document.querySelector('.account-panel');
-  const accountToggle = document.querySelector('.account-toggle');
-  const accountMenu = document.querySelector('.account-menu');
-  const modalAuth = document.querySelector('.modal-auth');
-  const modalRegister = document.querySelector('.modal-register');
-  const modalProfile = document.querySelector('.modal-profile');
-  const modalSettings = document.querySelector('.modal-settings');
-  const loginForm = document.getElementById('login-form');
-  const registerForm = document.getElementById('register-form');
-  const modalAuthClose = modalAuth ? modalAuth.querySelector('.modal-auth__close') : null;
-  const modalRegisterClose = modalRegister ? modalRegister.querySelector('.modal-register__close') : null;
-  const modalProfileClose = modalProfile ? modalProfile.querySelector('.modal-profile__close') : null;
-  const modalSettingsClose = modalSettings ? modalSettings.querySelector('.modal-settings__close') : null;
-  const settingsMenuItems = document.querySelectorAll('.settings-menu__item');
-  const loginTab = modalAuth ? modalAuth.querySelector('.modal-auth__tab[data-tab="login"]') : null;
-  const registerTab = modalAuth ? modalAuth.querySelector('.modal-auth__tab[data-tab="register"]') : null;
+  const cartIcon = document.querySelector('.cart-icon');
+  const cartPanel = document.querySelector('.cart-panel');
+  const cartCount = document.querySelector('.cart-count');
+  const cartItemsList = document.querySelector('.cart-panel__items');
+  const cartTotal = document.querySelector('.cart-panel__total span');
+  const cartCheckout = document.querySelector('.cart-panel__checkout');
 
-  // Add overlay div to the DOM for modal background
+  // Создаем оверлей для затемнения страницы при открытом меню
   const overlayDiv = document.createElement('div');
-  overlayDiv.className = 'modal-overlay';
+  overlayDiv.className = 'overlay';
+  overlayDiv.style.display = 'none';
   document.body.appendChild(overlayDiv);
 
-  // Убедимся, что модальные окна скрыты при загрузке
-  if (modalAuth) {
-    modalAuth.style.display = 'none';
-    modalAuth.setAttribute('aria-hidden', 'true');
-  }
+  // Инициализация обработчика комбинации клавиш Left Alt + Left Ctrl
+  initKeyboardShortcuts();
+
+  // Инициализация темы при загрузке страницы
+  const isDark = localStorage.getItem('theme') === 'dark';
   
-  if (modalRegister) {
-    modalRegister.style.display = 'none';
-    modalRegister.setAttribute('aria-hidden', 'true');
-  }
-  
-  if (modalProfile) {
-    modalProfile.style.display = 'none';
-    modalProfile.setAttribute('aria-hidden', 'true');
-  }
-  
-  if (modalSettings) {
-    modalSettings.style.display = 'none';
-    modalSettings.setAttribute('aria-hidden', 'true');
-  }
-
-  // Render Account Menu
-  function renderAccountMenu() {
-    if (!accountMenu) return;
-    
-    accountMenu.innerHTML = user ? `
-      <div class="account-menu__item" data-action="profile">
-        <i class="fas fa-user-circle"></i>
-        <span>Профиль</span>
-      </div>
-      <div class="account-menu__item" data-action="settings">
-        <i class="fas fa-cog"></i>
-        <span>Настройки</span>
-      </div>
-      <div class="account-menu__item" data-action="logout">
-        <i class="fas fa-sign-out-alt"></i>
-        <span>Выйти</span>
-      </div>
-    ` : `
-      <div class="account-menu__item" data-action="login">
-        <i class="fas fa-sign-in-alt"></i>
-        <span>Войти</span>
-      </div>
-      <div class="account-menu__item" data-action="register">
-        <i class="fas fa-user-plus"></i>
-        <span>Зарегистрироваться</span>
-      </div>
-    `;
-    
-    attachAccountMenuListeners();
-  }
-
-  // Attach event listeners to account menu items
-  function attachAccountMenuListeners() {
-    const accountToggle = document.querySelector('.account-toggle');
-    const accountMenu = document.querySelector('.account-menu');
-    
-    if (accountToggle) {
-      // Удаляем существующие обработчики, чтобы избежать дублирования
-      accountToggle.removeEventListener('click', toggleAccountPanel);
-      // Добавляем новый обработчик
-      accountToggle.addEventListener('click', toggleAccountPanel);
-    }
-    
-    if (accountMenu) {
-      // Предотвращаем закрытие при клике внутри меню
-      accountMenu.addEventListener('click', function(e) {
-        e.stopPropagation(); // Предотвращаем всплытие события к document
-        
-        // Проверяем, является ли цель элементом с data-action
-        const actionElement = e.target.closest('[data-action]');
-        if (actionElement) {
-          handleAccountMenuClick(e);
-        }
-      });
-    }
-    
-    // Обработчик для закрытия при клике вне панели
-    document.addEventListener('click', function(e) {
-      const accountPanel = document.querySelector('.account-panel');
-      
-      if (accountPanel && accountPanel.getAttribute('aria-hidden') === 'false') {
-        // Проверяем, что клик был не внутри панели и не по кнопке переключения
-        const isOutsideClick = !accountPanel.contains(e.target) && 
-                               !e.target.closest('.account-toggle');
-        
-        if (isOutsideClick) {
-          hideAccountPanel();
-        }
-      }
-    });
-    
-    // Добавляем улучшенные обработчики для модальных окон
-    const modalProfileBtn = document.querySelector('[data-action="profile"]');
-    const modalSettingsBtn = document.querySelector('[data-action="settings"]');
-    const modalLogoutBtn = document.querySelector('[data-action="logout"]');
-    const modalLoginBtn = document.querySelector('[data-action="login"]');
-    const modalRegisterBtn = document.querySelector('[data-action="register"]');
-    
-    if (modalProfileBtn) {
-      modalProfileBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        showProfileModal();
-        hideAccountPanel();
-      });
-    }
-    
-    if (modalSettingsBtn) {
-      modalSettingsBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        showSettingsModal();
-        hideAccountPanel();
-      });
-    }
-    
-    if (modalLogoutBtn) {
-      modalLogoutBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        logoutUser();
-        hideAccountPanel();
-      });
-    }
-    
-    if (modalLoginBtn) {
-      modalLoginBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        showLoginModal();
-        hideAccountPanel();
-      });
-    }
-    
-    if (modalRegisterBtn) {
-      modalRegisterBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        showRegisterModal();
-        hideAccountPanel();
-      });
-    }
-  }
-
-  // Handle clicks on account menu items
-  function handleAccountMenuClick(e) {
-    e.preventDefault();
-    const action = e.target.closest('[data-action]')?.dataset.action;
-
-    if (!action) return;
-
-    switch (action) {
-      case 'profile':
-        showProfileModal();
-        break;
-      case 'settings':
-        showSettingsModal();
-        break;
-      case 'logout':
-        logoutUser(); // Теперь вызывает модифицированную функцию с подтверждением
-        break;
-      case 'login':
-        showLoginModal();
-        break;
-      case 'register':
-        showRegisterModal();
-        break;
-    }
-
-    // Скрываем меню после выбора действия
-    hideAccountPanel();
-  }
-
-  // Function to show modals
-  function showLoginModal() {
-    const modalAuth = document.querySelector('.modal-auth');
-    const modalOverlay = document.querySelector('.modal-overlay');
-    
-    // Подготовка элементов для анимации
-    const hero = modalAuth.querySelector('.auth-hero');
-    const heroLogo = modalAuth.querySelector('.auth-hero__logo');
-    const heroTagline = modalAuth.querySelector('.auth-hero__tagline');
-    const heroBackdrop = modalAuth.querySelector('.auth-hero__backdrop');
-    const forms = modalAuth.querySelector('.auth-forms');
-    const tabs = modalAuth.querySelector('.modal-auth__tabs');
-    
-    // Начальное состояние элементов для анимации
-    if (hero) hero.style.opacity = '0';
-    if (heroLogo) heroLogo.style.opacity = '0';
-    if (heroTagline) heroTagline.style.opacity = '0';
-    if (heroBackdrop) {
-      heroBackdrop.style.opacity = '0';
-      heroBackdrop.style.transform = 'scale(1.2)';
-    }
-    if (forms) {
-      forms.style.opacity = '0';
-      forms.style.transform = 'translateX(50px)';
-    }
-    if (tabs) {
-      tabs.style.opacity = '0';
-      tabs.style.transform = 'translateY(-20px)';
-    }
-    
-    // Show modal
-    modalAuth.style.display = 'flex';
-    modalAuth.setAttribute('aria-hidden', 'false');
-    
-    // Блокируем прокрутку основной страницы
-    document.body.style.overflow = 'hidden';
-    
-    // Make sure login tab is active
-    const loginTab = modalAuth.querySelector('.modal-auth__tab[data-tab="login"]');
-    const registerTab = modalAuth.querySelector('.modal-auth__tab[data-tab="register"]');
-    
-    if (loginTab && registerTab) {
-      loginTab.classList.add('active');
-      registerTab.classList.remove('active');
-    }
-    
-    // Display correct form
-    const loginForm = document.getElementById('login-form');
-    const registerForm = document.getElementById('register-form');
-    
-    if (loginForm && registerForm) {
-      loginForm.style.display = 'flex';
-      registerForm.style.display = 'none';
-    }
-    
-    // Position and animate
-    positionModalNearAccountMenu(modalAuth);
-    
-    // Последовательная анимация элементов с задержкой
-    setTimeout(() => {
-      if (hero) {
-        hero.style.transition = 'opacity 0.8s ease';
-        hero.style.opacity = '1';
-      }
-    }, 100);
-    
-    setTimeout(() => {
-      if (heroBackdrop) {
-        heroBackdrop.style.transition = 'opacity 1s ease, transform 1.5s ease';
-        heroBackdrop.style.opacity = '0.2';
-        heroBackdrop.style.transform = 'scale(1)';
-      }
-    }, 200);
-    
-    setTimeout(() => {
-      if (heroLogo) {
-        heroLogo.style.transition = 'opacity 0.8s ease';
-        heroLogo.style.opacity = '1';
-      }
-    }, 300);
-    
-    setTimeout(() => {
-      if (heroTagline) {
-        heroTagline.style.transition = 'opacity 0.8s ease';
-        heroTagline.style.opacity = '1';
-      }
-    }, 500);
-    
-    setTimeout(() => {
-      if (tabs) {
-        tabs.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-        tabs.style.opacity = '1';
-        tabs.style.transform = 'translateY(0)';
-      }
-    }, 600);
-    
-    setTimeout(() => {
-      if (forms) {
-        forms.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-        forms.style.opacity = '1';
-        forms.style.transform = 'translateX(0)';
-      }
-    }, 700);
-    
-    // Focus on first input
-    setTimeout(() => {
-      const firstInput = modalAuth.querySelector('input');
-      if (firstInput) firstInput.focus();
-    }, 1000);
-    
-    // Close account panel if open
-    const accountPanel = document.querySelector('.account-panel');
-    accountPanel.setAttribute('aria-hidden', 'true');
-    
-    // Добавим эффект появления для кнопки закрытия
-    const closeButton = modalAuth.querySelector('.modal-auth__close');
-    if (closeButton) {
-      closeButton.style.opacity = '0';
-      closeButton.style.transform = 'rotate(-90deg)';
-      
-      setTimeout(() => {
-        closeButton.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-        closeButton.style.opacity = '1';
-        closeButton.style.transform = 'rotate(0)';
-      }, 800);
-    }
-    
-    // Устанавливаем обработчики для кнопок "Показать пароль" и "Зарегистрироваться"
-    setTimeout(setupPasswordToggles, 1000);
-    setTimeout(setupRegisterButtonAnimation, 1000);
-  }
-
-  function showRegisterModal() {
-    const modalAuth = document.querySelector('.modal-auth');
-    
-    // Сначала покажем модальное окно как обычно
-    showLoginModal();
-    
-    // Затем переключимся на вкладку регистрации
-    setTimeout(() => {
-      const loginTab = modalAuth.querySelector('.modal-auth__tab[data-tab="login"]');
-      const registerTab = modalAuth.querySelector('.modal-auth__tab[data-tab="register"]');
-      
-      if (loginTab && registerTab) {
-        loginTab.classList.remove('active');
-        registerTab.classList.add('active');
-      }
-      
-      // Display correct form
-      const loginForm = document.getElementById('login-form');
-      const registerForm = document.getElementById('register-form');
-      
-      if (loginForm && registerForm) {
-        loginForm.style.display = 'none';
-        registerForm.style.display = 'flex';
-      }
-      
-      // Focus on first input
-      setTimeout(() => {
-        const firstInput = registerForm.querySelector('input');
-        if (firstInput) firstInput.focus();
-      }, 100);
-
-      // Инициализируем валидацию флажка согласия
-      setupTermsAgreementValidation();
-    }, 800);
-  }
-
-  function showProfileModal() {
-    const modalProfile = document.querySelector('.modal-profile');
-    
-    if (!modalProfile) return;
-    
-    // Заполняем данные пользователя
-    const profileName = document.getElementById('profile-name');
-    const profileEmail = document.getElementById('profile-email');
-    const profileDate = document.getElementById('profile-date');
-    
-    if (profileName && user) profileName.textContent = user.name;
-    if (profileEmail && user) profileEmail.textContent = user.email;
-    if (profileDate && user) profileDate.textContent = user.date || 'Не указано';
-    
-    // Добавим отображение способа авторизации, если пользователь авторизован через соцсеть
-    const profileInfoElement = modalProfile.querySelector('.profile-info');
-    
-    // Проверяем, есть ли уже поле с провайдером
-    const existingProviderField = modalProfile.querySelector('.profile-field-provider');
-    
-    if (user && user.provider && !existingProviderField) {
-      // Создаем новое поле для отображения провайдера
-      const providerField = document.createElement('div');
-      providerField.className = 'profile-field profile-field-provider';
-      
-      // Определяем название и иконку провайдера
-      let providerName = '';
-      let providerIcon = '';
-      
-      if (user.provider === 'google') {
-        providerName = 'Google';
-        providerIcon = '<i class="fab fa-google" style="color: #DB4437; margin-right: 5px;"></i>';
-      } else if (user.provider === 'vk') {
-        providerName = 'ВКонтакте';
-        providerIcon = '<i class="fab fa-vk" style="color: #4C75A3; margin-right: 5px;"></i>';
-      }
-      
-      providerField.innerHTML = `
-        <span class="profile-label">Способ входа:</span>
-        <span class="profile-value">${providerIcon} ${providerName}</span>
-      `;
-      
-      // Добавляем новое поле в информацию о профиле
-      profileInfoElement.appendChild(providerField);
-    } else if (!user.provider && existingProviderField) {
-      // Удаляем поле, если пользователь не авторизован через соцсеть
-      existingProviderField.remove();
-    }
-    
-    // Подготовка элементов для анимации
-    const hero = modalProfile.querySelector('.auth-hero');
-    const heroLogo = modalProfile.querySelector('.auth-hero__logo');
-    const heroTagline = modalProfile.querySelector('.auth-hero__tagline');
-    const heroBackdrop = modalProfile.querySelector('.auth-hero__backdrop');
-    const content = modalProfile.querySelector('.profile-content');
-    
-    // Начальное состояние элементов для анимации
-    if (hero) hero.style.opacity = '0';
-    if (heroLogo) heroLogo.style.opacity = '0';
-    if (heroTagline) heroTagline.style.opacity = '0';
-    if (heroBackdrop) {
-      heroBackdrop.style.opacity = '0';
-      heroBackdrop.style.transform = 'scale(1.2)';
-    }
-    if (content) {
-      content.style.opacity = '0';
-      content.style.transform = 'translateX(50px)';
-    }
-    
-    // Show modal
-    modalProfile.style.display = 'flex';
-    modalProfile.setAttribute('aria-hidden', 'false');
-    
-    // Блокируем прокрутку основной страницы
-    document.body.style.overflow = 'hidden';
-    
-    // Обновляем данные профиля
-    renderProfile();
-    
-    // Position and animate
-    positionModalNearAccountMenu(modalProfile);
-    
-    // Последовательная анимация элементов с задержкой
-    setTimeout(() => {
-      if (hero) {
-        hero.style.transition = 'opacity 0.8s ease';
-        hero.style.opacity = '1';
-      }
-    }, 100);
-    
-    setTimeout(() => {
-      if (heroBackdrop) {
-        heroBackdrop.style.transition = 'opacity 1s ease, transform 1.5s ease';
-        heroBackdrop.style.opacity = '0.2';
-        heroBackdrop.style.transform = 'scale(1)';
-      }
-    }, 200);
-    
-    setTimeout(() => {
-      if (heroLogo) {
-        heroLogo.style.transition = 'opacity 0.8s ease';
-        heroLogo.style.opacity = '1';
-      }
-    }, 300);
-    
-    setTimeout(() => {
-      if (heroTagline) {
-        heroTagline.style.transition = 'opacity 0.8s ease';
-        heroTagline.style.opacity = '1';
-      }
-    }, 500);
-    
-    setTimeout(() => {
-      if (content) {
-        content.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-        content.style.opacity = '1';
-        content.style.transform = 'translateX(0)';
-      }
-    }, 700);
-    
-    // Close account panel if open
-    const accountPanel = document.querySelector('.account-panel');
-    if (accountPanel) {
-    accountPanel.setAttribute('aria-hidden', 'true');
-    }
-  }
-
-  function showSettingsModal() {
-    const modalSettings = document.querySelector('.modal-settings');
-    
-    if (!modalSettings) return;
-    
-    // Подготовка элементов для анимации
-    const hero = modalSettings.querySelector('.auth-hero');
-    const heroLogo = modalSettings.querySelector('.auth-hero__logo');
-    const heroTagline = modalSettings.querySelector('.auth-hero__tagline');
-    const heroBackdrop = modalSettings.querySelector('.auth-hero__backdrop');
-    const content = modalSettings.querySelector('.settings-content');
-    
-    // Начальное состояние элементов для анимации
-    if (hero) hero.style.opacity = '0';
-    if (heroLogo) heroLogo.style.opacity = '0';
-    if (heroTagline) heroTagline.style.opacity = '0';
-    if (heroBackdrop) {
-      heroBackdrop.style.opacity = '0';
-      heroBackdrop.style.transform = 'scale(1.2)';
-    }
-    if (content) {
-      content.style.opacity = '0';
-      content.style.transform = 'translateX(50px)';
-    }
-    
-    // Show modal
-    modalSettings.style.display = 'flex';
-    modalSettings.setAttribute('aria-hidden', 'false');
-    
-    // Блокируем прокрутку основной страницы
-    document.body.style.overflow = 'hidden';
-    
-    // Обновляем статус настроек
-    updateSettingsMenu();
-    
-    // Position and animate
-    positionModalNearAccountMenu(modalSettings);
-    
-    // Последовательная анимация элементов с задержкой
-    setTimeout(() => {
-      if (hero) {
-        hero.style.transition = 'opacity 0.8s ease';
-        hero.style.opacity = '1';
-      }
-    }, 100);
-    
-    setTimeout(() => {
-      if (heroBackdrop) {
-        heroBackdrop.style.transition = 'opacity 1s ease, transform 1.5s ease';
-        heroBackdrop.style.opacity = '0.2';
-        heroBackdrop.style.transform = 'scale(1)';
-      }
-    }, 200);
-    
-    setTimeout(() => {
-      if (heroLogo) {
-        heroLogo.style.transition = 'opacity 0.8s ease';
-        heroLogo.style.opacity = '1';
-      }
-    }, 300);
-    
-    setTimeout(() => {
-      if (heroTagline) {
-        heroTagline.style.transition = 'opacity 0.8s ease';
-        heroTagline.style.opacity = '1';
-      }
-    }, 500);
-    
-    setTimeout(() => {
-      if (content) {
-        content.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-        content.style.opacity = '1';
-        content.style.transform = 'translateX(0)';
-      }
-    }, 700);
-    
-    // Close account panel if open
-    const accountPanel = document.querySelector('.account-panel');
-    if (accountPanel) {
-    accountPanel.setAttribute('aria-hidden', 'true');
-    }
-  }
-
-  function hideModal() {
-    // Восстанавливаем прокрутку основной страницы
-    document.body.style.overflow = '';
-    
-    // Restore visibility to original buttons
-    const loginButton = document.querySelector('.account-menu__item[data-action="login"]');
-    const registerButton = document.querySelector('.account-menu__item[data-action="register"]');
-    
-    if (loginButton) {
-      loginButton.style.opacity = '1';
-      loginButton.style.pointerEvents = 'auto';
-    }
-    
-    if (registerButton) {
-      registerButton.style.opacity = '1';
-      registerButton.style.pointerEvents = 'auto';
-    }
-    
-    // Hide all modals with animation
-    if (modalAuth) {
-      // Найдем все элементы для анимации
-      const modalContent = modalAuth.querySelector('.modal-auth__content');
-      const hero = modalAuth.querySelector('.auth-hero');
-      const forms = modalAuth.querySelector('.auth-forms');
-      const tabs = modalAuth.querySelector('.modal-auth__tabs');
-      const closeButton = modalAuth.querySelector('.modal-auth__close');
-      
-      // Анимируем закрытие кнопки
-      if (closeButton) {
-        closeButton.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-        closeButton.style.opacity = '0';
-        closeButton.style.transform = 'rotate(-90deg)';
-      }
-      
-      // Анимируем исчезновение табов
-      if (tabs) {
-        tabs.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-        tabs.style.opacity = '0';
-        tabs.style.transform = 'translateY(-20px)';
-      }
-      
-      // Анимируем исчезновение форм
-      setTimeout(() => {
-        if (forms) {
-          forms.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-          forms.style.opacity = '0';
-          forms.style.transform = 'translateX(30px)';
-        }
-      }, 100);
-      
-      // Анимируем исчезновение героя
-      setTimeout(() => {
-        if (hero) {
-          hero.style.transition = 'opacity 0.3s ease';
-          hero.style.opacity = '0';
-        }
-      }, 200);
-      
-      // Анимируем исчезновение контента
-      setTimeout(() => {
-        if (modalContent) {
-          modalContent.style.transition = 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s ease';
-          modalContent.style.transform = 'scale(0.9) translateY(20px)';
-          modalContent.style.opacity = '0';
-        }
-      }, 300);
-      
-      // Анимируем исчезновение фона
-      setTimeout(() => {
-        modalAuth.style.transition = 'opacity 0.4s ease';
-        modalAuth.style.opacity = '0';
-        modalAuth.style.backdropFilter = 'blur(0px)';
-      }, 400);
-      
-      // После завершения анимации скрываем модальное окно
-      setTimeout(() => {
-        modalAuth.setAttribute('aria-hidden', 'true');
-        modalAuth.style.display = 'none';
-        
-        // Сбрасываем стили для следующего открытия
-        if (modalContent) {
-          modalContent.style.transform = '';
-          modalContent.style.opacity = '';
-        }
-        
-        if (hero) {
-          hero.style.opacity = '';
-        }
-        
-        if (forms) {
-          forms.style.opacity = '';
-          forms.style.transform = '';
-        }
-        
-        if (tabs) {
-          tabs.style.opacity = '';
-          tabs.style.transform = '';
-        }
-        
-        if (closeButton) {
-          closeButton.style.opacity = '';
-          closeButton.style.transform = '';
-        }
-        
-        modalAuth.style.opacity = '';
-        modalAuth.style.backdropFilter = '';
-      }, 600);
-    }
-    
-    if (modalProfile) {
-      // Анимация закрытия для профиля
-      const profileContent = modalProfile.querySelector('.modal-profile__content');
-      
-      if (profileContent) {
-        profileContent.style.transition = 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s ease';
-        profileContent.style.transform = 'scale(0.9) translateY(20px)';
-        profileContent.style.opacity = '0';
-      }
-      
-      modalProfile.style.transition = 'opacity 0.4s ease';
-      modalProfile.style.opacity = '0';
-      
-      setTimeout(() => {
-        modalProfile.setAttribute('aria-hidden', 'true');
-        modalProfile.style.display = 'none';
-        
-        if (profileContent) {
-          profileContent.style.transform = '';
-          profileContent.style.opacity = '';
-        }
-        
-        modalProfile.style.opacity = '';
-      }, 400);
-    }
-    
-    if (modalSettings) {
-      // Анимация закрытия для настроек
-      const settingsContent = modalSettings.querySelector('.modal-settings__content');
-      
-      if (settingsContent) {
-        settingsContent.style.transition = 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s ease';
-        settingsContent.style.transform = 'scale(0.9) translateY(20px)';
-        settingsContent.style.opacity = '0';
-      }
-      
-      modalSettings.style.transition = 'opacity 0.4s ease';
-      modalSettings.style.opacity = '0';
-      
-      setTimeout(() => {
-        modalSettings.setAttribute('aria-hidden', 'true');
-        modalSettings.style.display = 'none';
-        
-        if (settingsContent) {
-          settingsContent.style.transform = '';
-          settingsContent.style.opacity = '';
-        }
-        
-        modalSettings.style.opacity = '';
-      }, 400);
-    }
-  }
-
-  // Function for switching between login and register forms
-  function switchForm(formType) {
-    if (!loginForm || !registerForm || !loginTab || !registerTab) return;
-
-    if (formType === 'login') {
-      loginTab.classList.add('active');
-      registerTab.classList.remove('active');
-      loginForm.style.display = 'flex';
-      registerForm.style.display = 'none';
-      
-      // Focus on first input of login form
-      setTimeout(() => {
-        const firstInput = loginForm.querySelector('input');
-        if (firstInput) firstInput.focus();
-      }, 10);
-    } else {
-      loginTab.classList.remove('active');
-      registerTab.classList.add('active');
-      loginForm.style.display = 'none';
-      registerForm.style.display = 'flex';
-      
-      // Focus on first input of register form
-      setTimeout(() => {
-        const firstInput = registerForm.querySelector('input');
-        if (firstInput) firstInput.focus();
-      }, 10);
-    }
-  }
-
-  // Добавляем обработчики для табов
-  if (loginTab) {
-    loginTab.addEventListener('click', () => switchForm('login'));
-  }
-  if (registerTab) {
-    registerTab.addEventListener('click', () => switchForm('register'));
-  }
-
-  // Обработчик закрытия модального окна
-  if (modalAuthClose) {
-    modalAuthClose.addEventListener('click', hideModal);
-  }
-
-  if (modalRegisterClose) {
-    modalRegisterClose.addEventListener('click', hideModal);
-  }
-
-  if (modalProfileClose) {
-    modalProfileClose.addEventListener('click', hideModal);
-  }
-
-  if (modalSettingsClose) {
-    modalSettingsClose.addEventListener('click', hideModal);
-  }
-
-  // Function to position modal near account menu
-  function positionModalNearAccountMenu(modal) {
-    const accountToggle = document.querySelector('.account-toggle');
-    const accountRect = accountToggle.getBoundingClientRect();
-    const modalContent = modal.querySelector('.modal-auth__content') || 
-                         modal.querySelector('.modal-register__content') ||
-                         modal.querySelector('.modal-profile__content') ||
-                         modal.querySelector('.modal-settings__content');
-
-    // Set position only for desktop sizes
-    if (window.innerWidth > 768) {
-      // Center horizontally
-      const windowWidth = window.innerWidth;
-      const modalWidth = modalContent.offsetWidth;
-      
-      // Calculate position to center the modal and adjust it slightly upward
-      modalContent.style.margin = '0 auto';
-      modalContent.style.marginTop = '-40px';
-    }
-  }
-
-  // Function to animate modal emergence from menu
-  function animateModalFromMenu(modal) {
-    // Add a class to trigger the animation
-    const modalContent = modal.querySelector('.modal-auth__content') || 
-                         modal.querySelector('.modal-register__content') ||
-                         modal.querySelector('.modal-profile__content') ||
-                         modal.querySelector('.modal-settings__content');
-    
-    // Reset animation
-    modalContent.style.animation = 'none';
-    
-    // Force reflow
-    void modalContent.offsetWidth;
-    
-    // Start animation
-    modalContent.style.animation = '';
-  }
-
-  // Function to attach tab switch listeners
-  function attachTabSwitchListeners() {
-    const loginTab = modalAuth.querySelector('.modal-auth__tab[data-tab="login"]');
-    const registerTab = modalAuth.querySelector('.modal-auth__tab[data-tab="register"]');
-    if (loginTab) {
-      loginTab.removeEventListener('click', switchToLoginTab);
-      loginTab.addEventListener('click', switchToLoginTab);
-      console.log('Listener attached to login tab');
-    } else {
-      console.error('Login tab not found for listener attachment');
-    }
-    if (registerTab) {
-      registerTab.removeEventListener('click', switchToRegisterTab);
-      registerTab.addEventListener('click', switchToRegisterTab);
-      console.log('Listener attached to register tab');
-    } else {
-      console.error('Register tab not found for listener attachment');
-    }
-  }
-
-  // Functions to handle tab switching
-  function switchToLoginTab() {
-    console.log('Switching to login tab');
-    const loginTab = modalAuth.querySelector('.modal-auth__tab[data-tab="login"]');
-    const registerTab = modalAuth.querySelector('.modal-auth__tab[data-tab="register"]');
-    if (loginTab && registerTab) {
-      loginTab.classList.add('active');
-      registerTab.classList.remove('active');
-    }
-    
-    // Плавное исчезновение и появление форм
-    registerForm.style.opacity = '0';
-    registerForm.style.transform = 'translateX(-20px)';
-    
-    setTimeout(() => {
-      loginForm.style.display = 'flex';
-      registerForm.style.display = 'none';
-      
-      // Сбрасываем стили для следующего перехода
-      registerForm.style.opacity = '';
-      registerForm.style.transform = '';
-      
-      // Анимация появления формы входа
-      loginForm.style.opacity = '0';
-      loginForm.style.transform = 'translateX(20px)';
-      
-      // Принудительный рефлоу для запуска анимации
-      void loginForm.offsetWidth;
-      
-      // Запускаем анимацию
-      loginForm.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-      loginForm.style.opacity = '1';
-      loginForm.style.transform = 'translateX(0)';
-      
-      // Анимируем поля ввода последовательно
-      const inputGroups = loginForm.querySelectorAll('.input-group');
-      inputGroups.forEach((group, index) => {
-        group.style.opacity = '0';
-        group.style.transform = 'translateY(20px)';
-        
-        setTimeout(() => {
-          group.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-          group.style.opacity = '1';
-          group.style.transform = 'translateY(0)';
-        }, 100 + (index * 100));
-      });
-      
-      // Анимируем остальные элементы
-      const otherElements = loginForm.querySelectorAll('.auth-options, .modal-auth__submit');
-      otherElements.forEach((el, index) => {
-        el.style.opacity = '0';
-        el.style.transform = 'translateY(20px)';
-        
-        setTimeout(() => {
-          el.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-          el.style.opacity = '1';
-          el.style.transform = 'translateY(0)';
-        }, 400 + (index * 100));
-      });
-      
-      // Focus on first input
-      setTimeout(() => {
-        const firstInput = loginForm.querySelector('input');
-        if (firstInput) firstInput.focus();
-      }, 10);
-    }, 200);
-    
-    console.log('Switched to login tab, form displays updated');
-  }
-
-  function switchToRegisterTab() {
-    console.log('Switching to register tab');
-    const loginTab = modalAuth.querySelector('.modal-auth__tab[data-tab="login"]');
-    const registerTab = modalAuth.querySelector('.modal-auth__tab[data-tab="register"]');
-    if (loginTab && registerTab) {
-      loginTab.classList.remove('active');
-      registerTab.classList.add('active');
-    }
-    
-    // Инициализируем валидацию флажка согласия сразу
-    setupTermsAgreementValidation();
-    
-    // Плавное исчезновение и появление форм
-    loginForm.style.opacity = '0';
-    loginForm.style.transform = 'translateX(-20px)';
-    
-    setTimeout(() => {
-      loginForm.style.display = 'none';
-      registerForm.style.display = 'flex';
-      
-      // Сбрасываем стили для следующего перехода
-      loginForm.style.opacity = '';
-      loginForm.style.transform = '';
-      
-      // Анимация появления формы регистрации
-      registerForm.style.opacity = '0';
-      registerForm.style.transform = 'translateX(20px)';
-      
-      // Принудительный рефлоу для запуска анимации
-      void registerForm.offsetWidth;
-      
-      // Запускаем анимацию
-      registerForm.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-      registerForm.style.opacity = '1';
-      registerForm.style.transform = 'translateX(0)';
-      
-      // Анимируем поля ввода последовательно
-      const inputGroups = registerForm.querySelectorAll('.input-group');
-      inputGroups.forEach((group, index) => {
-        group.style.opacity = '0';
-        group.style.transform = 'translateY(20px)';
-        
-        setTimeout(() => {
-          group.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-          group.style.opacity = '1';
-          group.style.transform = 'translateY(0)';
-        }, 50 + (index * 50));
-      });
-      
-      // Анимируем остальные элементы
-      const otherElements = registerForm.querySelectorAll('.terms-agreement, .modal-auth__submit');
-      otherElements.forEach((el, index) => {
-        el.style.opacity = '0';
-        el.style.transform = 'translateY(20px)';
-        
-        setTimeout(() => {
-          el.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-          el.style.opacity = '1';
-          el.style.transform = 'translateY(0)';
-        }, 200 + (index * 50));
-      });
-      
-      // Focus on first input
-      setTimeout(() => {
-        const firstInput = registerForm.querySelector('input');
-        if (firstInput) firstInput.focus();
-      }, 10);
-      
-      // Еще раз инициализируем валидацию флажка согласия
-      setupTermsAgreementValidation();
-    }, 150);
-    
-    console.log('Switched to register tab, form displays updated');
-  }
-
-  // Модифицируем функцию logoutUser для добавления подтверждения с расширенной функциональностью
-  function logoutUser() {
-    // Создаем модальное окно для подтверждения с анимированным стилем
-    const confirmModal = document.createElement('div');
-    confirmModal.className = 'modal-confirm logout-confirm';
-    confirmModal.setAttribute('aria-hidden', 'false');
-    
-    confirmModal.innerHTML = `
-      <div class="modal-confirm__content">
-        <div class="logout-header">
-          <i class="fas fa-sign-out-alt logout-icon"></i>
-          <h3>Выход из аккаунта</h3>
-        </div>
-        <div class="logout-message">
-          <p>Вы действительно хотите выйти из своего аккаунта?</p>
-          <div class="logout-details">
-            <div class="user-details">
-              <div class="user-avatar-container">
-                <img src="${user?.avatar || 'https://i.pravatar.cc/150?img=1'}" class="user-mini-avatar" alt="Avatar">
-              </div>
-              <div class="user-info">
-                <span class="user-name">${user?.name || 'Пользователь'}</span>
-                <span class="user-email">${user?.email || 'email@example.com'}</span>
-              </div>
-            </div>
-            <div class="session-info">
-              <div class="session-detail">
-                <i class="fas fa-clock"></i>
-                <span>Время сессии: ${formatSessionTime()}</span>
-              </div>
-              <div class="session-detail">
-                <i class="fas fa-shopping-cart"></i>
-                <span>Товаров в корзине: ${getCartItemsCount()}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="confirm-warning">
-          <i class="fas fa-exclamation-triangle"></i>
-          <span>После выхода несохранённые данные будут потеряны</span>
-        </div>
-        <div class="confirm-actions">
-          <button class="confirm-yes">
-            <i class="fas fa-sign-out-alt"></i>
-            <span>Выйти</span>
-          </button>
-          <button class="confirm-no">
-            <i class="fas fa-times"></i>
-            <span>Отмена</span>
-          </button>
-        </div>
-        <div class="confirm-options">
-          <label class="remember-device">
-            <input type="checkbox" id="remember-device">
-            <span>Запомнить устройство</span>
-          </label>
-          <a href="#" class="help-link">Нужна помощь?</a>
-        </div>
-      </div>
-    `;
-    
-    // Добавляем стили для модального окна выхода с улучшенным дизайном
-    const style = document.createElement('style');
-    style.textContent = `
-      .logout-confirm .modal-confirm__content {
-        max-width: 450px;
-        border-radius: 16px;
-        padding: 30px;
-        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.25);
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        border-top: 5px solid #e74c3c;
-      }
-      
-      body.dark .logout-confirm .modal-confirm__content {
-        background: #2a2a2a;
-        border-top: 5px solid #c0392b;
-        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
-      }
-      
-      .logout-header {
-        display: flex;
-        align-items: center;
-        margin-bottom: 20px;
-        padding-bottom: 15px;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-      }
-      
-      body.dark .logout-header {
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      }
-      
-      .logout-icon {
-        font-size: 24px;
-        color: #e74c3c;
-        margin-right: 15px;
-        animation: pulseIcon 1.5s infinite ease-in-out alternate;
-      }
-      
-      @keyframes pulseIcon {
-        0% { transform: scale(1); }
-        100% { transform: scale(1.15); }
-      }
-      
-      .logout-header h3 {
-        margin: 0;
-        font-size: 1.5rem;
-        font-weight: 600;
-        color: #333;
-      }
-      
-      body.dark .logout-header h3 {
-        color: #f0f0f0;
-      }
-      
-      .logout-message p {
-        margin-bottom: 15px;
-        font-size: 1.1rem;
-        color: #555;
-      }
-      
-      body.dark .logout-message p {
-        color: #ccc;
-      }
-      
-      .logout-details {
-        background: rgba(0, 0, 0, 0.03);
-        border-radius: 10px;
-        padding: 15px;
-        margin-bottom: 20px;
-      }
-      
-      body.dark .logout-details {
-        background: rgba(255, 255, 255, 0.05);
-      }
-      
-      .user-details {
-        display: flex;
-        align-items: center;
-        margin-bottom: 15px;
-        padding-bottom: 15px;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-      }
-      
-      body.dark .user-details {
-        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-      }
-      
-      .user-avatar-container {
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        overflow: hidden;
-        margin-right: 15px;
-        border: 2px solid #f0f0f0;
-        position: relative;
-      }
-      
-      .user-mini-avatar {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-      }
-      
-      .user-info {
-        display: flex;
-        flex-direction: column;
-      }
-      
-      .user-name {
-        font-weight: 600;
-        font-size: 1rem;
-        color: #333;
-        margin-bottom: 5px;
-      }
-      
-      body.dark .user-name {
-        color: #f0f0f0;
-      }
-      
-      .user-email {
-        font-size: 0.85rem;
-        color: #777;
-      }
-      
-      body.dark .user-email {
-        color: #aaa;
-      }
-      
-      .session-info {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-      }
-      
-      .session-detail {
-        display: flex;
-        align-items: center;
-        font-size: 0.9rem;
-        color: #666;
-      }
-      
-      body.dark .session-detail {
-        color: #bbb;
-      }
-      
-      .session-detail i {
-        margin-right: 10px;
-        color: #888;
-      }
-      
-      body.dark .session-detail i {
-        color: #999;
-      }
-      
-      .confirm-warning {
-        display: flex;
-        align-items: center;
-        padding: 10px 15px;
-        background-color: rgba(231, 76, 60, 0.1);
-        border-left: 3px solid #e74c3c;
-        border-radius: 5px;
-        margin-bottom: 20px;
-        font-size: 0.9rem;
-        color: #c0392b;
-      }
-      
-      body.dark .confirm-warning {
-        background-color: rgba(231, 76, 60, 0.2);
-        color: #e74c3c;
-      }
-      
-      .confirm-warning i {
-        margin-right: 10px;
-        font-size: 1rem;
-      }
-      
-      .confirm-actions {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 20px;
-      }
-      
-      .confirm-yes, .confirm-no {
-        padding: 12px 20px;
-        border: none;
-        border-radius: 8px;
-        font-size: 1rem;
-        font-weight: 600;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.2s ease;
-        width: 48%;
-      }
-      
-      .confirm-yes i, .confirm-no i {
-        margin-right: 8px;
-      }
-      
-      .confirm-yes {
-        background-color: #e74c3c;
-        color: white;
-        box-shadow: 0 4px 12px rgba(231, 76, 60, 0.25);
-      }
-      
-      .confirm-yes:hover {
-        background-color: #c0392b;
-        transform: translateY(-3px);
-        box-shadow: 0 6px 15px rgba(231, 76, 60, 0.35);
-      }
-      
-      .confirm-yes:active {
-        transform: translateY(-1px);
-      }
-      
-      .confirm-no {
-        background-color: #f0f0f0;
-        color: #333;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      }
-      
-      .confirm-no:hover {
-        background-color: #e0e0e0;
-        transform: translateY(-3px);
-        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
-      }
-      
-      .confirm-no:active {
-        transform: translateY(-1px);
-      }
-      
-      body.dark .confirm-no {
-        background-color: #444;
-        color: #f0f0f0;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-      }
-      
-      body.dark .confirm-no:hover {
-        background-color: #555;
-        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
-      }
-      
-      .confirm-options {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        font-size: 0.85rem;
-      }
-      
-      .remember-device {
-        display: flex;
-        align-items: center;
-        cursor: pointer;
-        color: #666;
-      }
-      
-      body.dark .remember-device {
-        color: #bbb;
-      }
-      
-      .remember-device input {
-        margin-right: 8px;
-      }
-      
-      .help-link {
-        color: #3498db;
-        text-decoration: none;
-        transition: all 0.2s ease;
-      }
-      
-      .help-link:hover {
-        color: #2980b9;
-        text-decoration: underline;
-      }
-      
-      body.dark .help-link {
-        color: #5dade2;
-      }
-      
-      body.dark .help-link:hover {
-        color: #7fb3d5;
-      }
-      
-      @keyframes modalFadeIn {
-        0% { opacity: 0; transform: translateY(20px); }
-        100% { opacity: 1; transform: translateY(0); }
-      }
-      
-      .logout-confirm .modal-confirm__content {
-        animation: modalFadeIn 0.3s forwards;
-      }
-    `;
-    
-    document.head.appendChild(style);
-    document.body.appendChild(confirmModal);
-    
-    // Получаем количество товаров в корзине
-    function getCartItemsCount() {
-      const cart = JSON.parse(localStorage.getItem('cart')) || [];
-      return cart.length;
-    }
-    
-    // Форматируем время сессии
-    function formatSessionTime() {
-      const user = JSON.parse(localStorage.getItem('user'));
-      if (!user || !user.loginTime) {
-        // Устанавливаем текущее время, если нет времени входа
-        const now = new Date().getTime();
-        user.loginTime = now;
-        localStorage.setItem('user', JSON.stringify(user));
-        return '< 1 минуты';
-      }
-      
-      const now = new Date().getTime();
-      const loginTime = user.loginTime;
-      const diffMs = now - loginTime;
-      
-      // Преобразуем миллисекунды в минуты
-      const diffMins = Math.floor(diffMs / (1000 * 60));
-      
-      if (diffMins < 1) return '< 1 минуты';
-      if (diffMins < 60) return `${diffMins} ${formatMinutes(diffMins)}`;
-      
-      const hours = Math.floor(diffMins / 60);
-      const mins = diffMins % 60;
-      
-      if (hours < 24) {
-        if (mins === 0) return `${hours} ${formatHours(hours)}`;
-        return `${hours} ${formatHours(hours)} ${mins} ${formatMinutes(mins)}`;
-      }
-      
-      const days = Math.floor(hours / 24);
-      return `${days} ${formatDays(days)}`;
-      
-      function formatMinutes(num) {
-        if (num >= 11 && num <= 19) return 'минут';
-        const lastDigit = num % 10;
-        if (lastDigit === 1) return 'минута';
-        if (lastDigit >= 2 && lastDigit <= 4) return 'минуты';
-        return 'минут';
-      }
-      
-      function formatHours(num) {
-        if (num >= 11 && num <= 19) return 'часов';
-        const lastDigit = num % 10;
-        if (lastDigit === 1) return 'час';
-        if (lastDigit >= 2 && lastDigit <= 4) return 'часа';
-        return 'часов';
-      }
-      
-      function formatDays(num) {
-        if (num >= 11 && num <= 19) return 'дней';
-        const lastDigit = num % 10;
-        if (lastDigit === 1) return 'день';
-        if (lastDigit >= 2 && lastDigit <= 4) return 'дня';
-        return 'дней';
-      }
-    }
-    
-    // Анимируем появление модального окна
-    setTimeout(() => {
-      confirmModal.setAttribute('aria-hidden', 'false');
-    }, 10);
-    
-    // Обработчики для кнопок
-    const confirmYesBtn = confirmModal.querySelector('.confirm-yes');
-    const confirmNoBtn = confirmModal.querySelector('.confirm-no');
-    const rememberDeviceCheckbox = confirmModal.querySelector('#remember-device');
-    const helpLink = confirmModal.querySelector('.help-link');
-    
-    confirmYesBtn.addEventListener('click', function() {
-      // Анимируем кнопку
-      this.style.transform = 'scale(0.95)';
-      setTimeout(() => {
-        this.style.transform = 'scale(1)';
-      }, 100);
-      
-      // Запоминаем устройство, если чекбокс активирован
-      if (rememberDeviceCheckbox.checked) {
-        localStorage.setItem('rememberedDevice', navigator.userAgent);
-      }
-      
-      // Выполняем выход
-      setTimeout(() => {
-        localStorage.removeItem('user');
-        
-        // Обновляем меню аккаунта
-        renderAccountMenu();
-        
-        // Скрываем панель аккаунта
-        hideAccountPanel();
-        
-        // Удаляем модальное окно
-        confirmModal.setAttribute('aria-hidden', 'true');
-        setTimeout(() => {
-          document.body.removeChild(confirmModal);
-        }, 300);
-        
-        // Показываем уведомление
-        showNotification('Вы успешно вышли из аккаунта', 'success');
-      }, 300);
-    });
-    
-    confirmNoBtn.addEventListener('click', function() {
-      // Анимируем кнопку
-      this.style.transform = 'scale(0.95)';
-      setTimeout(() => {
-        this.style.transform = 'scale(1)';
-      }, 100);
-      
-      // Просто закрываем модальное окно
-      confirmModal.setAttribute('aria-hidden', 'true');
-      
-      setTimeout(() => {
-        document.body.removeChild(confirmModal);
-      }, 300);
-    });
-    
-    helpLink.addEventListener('click', function(e) {
-      e.preventDefault();
-      confirmModal.setAttribute('aria-hidden', 'true');
-      
-      setTimeout(() => {
-        document.body.removeChild(confirmModal);
-        
-        // Показываем информационное окно с помощью вместо стандартного
-        showHelpModal();
-      }, 300);
-    });
-    
-    // Закрытие по клику вне модального окна
-    confirmModal.addEventListener('click', function(e) {
-      if (e.target === confirmModal) {
-        confirmModal.setAttribute('aria-hidden', 'true');
-        
-        setTimeout(() => {
-          document.body.removeChild(confirmModal);
-        }, 300);
-      }
-    });
-  }
-
-  // Функция для показа вспомогательного окна
-  function showHelpModal() {
-    const helpModal = document.createElement('div');
-    helpModal.className = 'modal-help';
-    helpModal.setAttribute('aria-hidden', 'false');
-    
-    helpModal.innerHTML = `
-      <div class="modal-help__content">
-        <div class="help-header">
-          <i class="fas fa-question-circle"></i>
-          <h3>Помощь и поддержка</h3>
-        </div>
-        <div class="help-body">
-          <div class="help-section">
-            <h4>Часто задаваемые вопросы</h4>
-            <ul class="faq-list">
-              <li>
-                <div class="faq-question">Как сохранить мои данные при выходе?</div>
-                <div class="faq-answer">При выходе активируйте опцию "Запомнить устройство", чтобы сохранить часть информации для будущих сессий.</div>
-              </li>
-              <li>
-                <div class="faq-question">Будет ли сохранена моя корзина?</div>
-                <div class="faq-answer">Да, содержимое корзины сохраняется даже после выхода из аккаунта на этом устройстве.</div>
-              </li>
-              <li>
-                <div class="faq-question">Как обезопасить свой аккаунт?</div>
-                <div class="faq-answer">Не забывайте выходить из аккаунта на общедоступных устройствах и регулярно меняйте пароль.</div>
-              </li>
-            </ul>
-          </div>
-          <div class="help-section">
-            <h4>Контакты поддержки</h4>
-            <div class="support-contacts">
-              <div class="support-contact">
-                <i class="fas fa-envelope"></i>
-                <span>support@damax.com</span>
-              </div>
-              <div class="support-contact">
-                <i class="fas fa-phone"></i>
-                <span>+7 (999) 123-45-67</span>
-              </div>
-              <div class="support-contact">
-                <i class="fab fa-telegram"></i>
-                <span>@damax_support</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        <button class="help-close">
-          <i class="fas fa-times"></i>
-          <span>Закрыть</span>
-        </button>
-      </div>
-    `;
-    
-    // Добавляем стили для модального окна помощи
-    const style = document.createElement('style');
-    style.textContent = `
-      .modal-help {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.7);
-        z-index: 1000;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        opacity: 0;
-        visibility: hidden;
-        transition: opacity 0.3s ease, visibility 0.3s ease;
-      }
-      
-      .modal-help[aria-hidden="false"] {
-        opacity: 1;
-        visibility: visible;
-      }
-      
-      .modal-help__content {
-        background: #fff;
-        border-radius: 16px;
-        padding: 30px;
-        width: 90%;
-        max-width: 500px;
-        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.25);
-        transform: scale(0.8);
-        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        text-align: left;
-        border-top: 5px solid #3498db;
-        animation: modalFadeIn 0.3s forwards;
-      }
-      
-      body.dark .modal-help__content {
-        background: #2a2a2a;
-        color: #f0f0f0;
-        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
-        border-top: 5px solid #2980b9;
-      }
-      
-      .help-header {
-        display: flex;
-        align-items: center;
-        margin-bottom: 20px;
-        padding-bottom: 15px;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-      }
-      
-      body.dark .help-header {
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      }
-      
-      .help-header i {
-        font-size: 24px;
-        color: #3498db;
-        margin-right: 15px;
-      }
-      
-      .help-header h3 {
-        margin: 0;
-        font-size: 1.5rem;
-        font-weight: 600;
-        color: #333;
-      }
-      
-      body.dark .help-header h3 {
-        color: #f0f0f0;
-      }
-      
-      .help-body {
-        margin-bottom: 20px;
-      }
-      
-      .help-section {
-        margin-bottom: 20px;
-      }
-      
-      .help-section h4 {
-        margin: 0 0 15px;
-        color: #444;
-        font-size: 1.1rem;
-        font-weight: 600;
-      }
-      
-      body.dark .help-section h4 {
-        color: #ddd;
-      }
-      
-      .faq-list {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-      }
-      
-      .faq-list li {
-        margin-bottom: 15px;
-        border-bottom: 1px dotted #eee;
-        padding-bottom: 15px;
-      }
-      
-      body.dark .faq-list li {
-        border-bottom: 1px dotted #555;
-      }
-      
-      .faq-list li:last-child {
-        margin-bottom: 0;
-        border-bottom: none;
-        padding-bottom: 0;
-      }
-      
-      .faq-question {
-        font-weight: 600;
-        color: #3498db;
-        margin-bottom: 8px;
-        font-size: 0.95rem;
-      }
-      
-      body.dark .faq-question {
-        color: #5dade2;
-      }
-      
-      .faq-answer {
-        color: #666;
-        font-size: 0.9rem;
-        line-height: 1.5;
-      }
-      
-      body.dark .faq-answer {
-        color: #bbb;
-      }
-      
-      .support-contacts {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-      }
-      
-      .support-contact {
-        display: flex;
-        align-items: center;
-        font-size: 0.95rem;
-        color: #555;
-      }
-      
-      body.dark .support-contact {
-        color: #ccc;
-      }
-      
-      .support-contact i {
-        margin-right: 12px;
-        width: 20px;
-        text-align: center;
-        color: #3498db;
-      }
-      
-      body.dark .support-contact i {
-        color: #5dade2;
-      }
-      
-      .help-close {
-        margin-top: 15px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 100%;
-        padding: 12px;
-        background: #f0f0f0;
-        border: none;
-        border-radius: 8px;
-        font-size: 1rem;
-        font-weight: 600;
-        color: #333;
-        cursor: pointer;
-        transition: all 0.2s ease;
-      }
-      
-      .help-close:hover {
-        background: #e0e0e0;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      }
-      
-      .help-close:active {
-        transform: translateY(0);
-      }
-      
-      .help-close i {
-        margin-right: 8px;
-      }
-      
-      body.dark .help-close {
-        background: #444;
-        color: #f0f0f0;
-      }
-      
-      body.dark .help-close:hover {
-        background: #555;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-      }
-    `;
-    
-    document.head.appendChild(style);
-    document.body.appendChild(helpModal);
-    
-    // Обработчик для кнопки закрытия
-    const closeButton = helpModal.querySelector('.help-close');
-    closeButton.addEventListener('click', function() {
-      helpModal.setAttribute('aria-hidden', 'true');
-      setTimeout(() => {
-        document.body.removeChild(helpModal);
-      }, 300);
-    });
-    
-    // Закрытие по клику вне модального окна
-    helpModal.addEventListener('click', function(e) {
-      if (e.target === helpModal) {
-        helpModal.setAttribute('aria-hidden', 'true');
-        setTimeout(() => {
-          document.body.removeChild(helpModal);
-        }, 300);
-      }
-    });
-  }
-
-  // Initial Setup
-  renderAccountMenu();
-  hideAccountPanel(); // Сначала скрываем панель
-  
-  // Убедимся, что аккаунт-тогл виден
-  if (accountToggle) {
-    accountToggle.style.display = 'flex';
-    accountToggle.style.opacity = '1';
-  }
-  
-  console.log('Account panel initialized, aria-hidden:', accountPanel ? accountPanel.getAttribute('aria-hidden') : 'element not found');
-  console.log('Account toggle element:', accountToggle);
-
-  // Функции для работы с панелью аккаунта
-  function showAccountPanel() {
-    if (!accountPanel) return;
-    accountPanel.setAttribute('aria-hidden', 'false');
-    if (accountMenu) {
-      accountMenu.style.display = 'flex';
-      accountMenu.style.visibility = 'visible';
-    }
-    console.log('Account panel shown');
-  }
-
-  function hideAccountPanel() {
-    if (!accountPanel) return;
-    
-    // Начинаем анимацию исчезновения
-    accountPanel.setAttribute('aria-hidden', 'true');
-    
-    // Ждем окончания самой долгой анимации перед скрытием элемента
-    setTimeout(() => {
-      if (accountMenu) {
-        accountMenu.style.visibility = 'hidden';
-      }
-    }, 300); // Время немного больше, чем длительность анимации
-    console.log('Account panel hidden');
-  }
-
-  // Модифицируем функцию toggleAccountPanel для предотвращения немедленного закрытия
-  function toggleAccountPanel(e) {
-    if (e) {
-      e.preventDefault();
-      e.stopPropagation(); // Останавливаем всплытие события
-    }
-    
-    const accountPanel = document.querySelector('.account-panel');
-    const isHidden = accountPanel.getAttribute('aria-hidden') === 'true';
-    
-    if (isHidden) {
-      showAccountPanel();
-    } else {
-      hideAccountPanel();
-    }
-  }
-
-  // Обработчик для переключения меню аккаунта
-  if (accountToggle) {
-    // Сначала удалим все существующие обработчики
-    const newAccountToggle = accountToggle.cloneNode(true);
-    if (accountToggle.parentNode) {
-      accountToggle.parentNode.replaceChild(newAccountToggle, accountToggle);
-    }
-    
-    // Добавим новый обработчик
-    newAccountToggle.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      toggleAccountPanel();
-      console.log('Account toggle clicked, panel visibility:', accountPanel.getAttribute('aria-hidden') === 'false');
-    });
-    
-    console.log('New event listener attached to account toggle');
-  } else {
-    console.error('Account toggle element not found in DOM');
-  }
-
-  if (localStorage.getItem('theme') === 'dark') {
+  if (isDark) {
+    document.body.setAttribute('data-theme', 'dark');
+    document.documentElement.setAttribute('data-theme', 'dark');
     document.body.classList.add('dark');
+    document.body.classList.remove('light');
+    
+    // Принудительно обновляем отображение иконок
+    document.querySelectorAll('[data-action="toggle-theme"]').forEach(btn => {
+      const sunIcon = btn.querySelector('i.fa-sun');
+      const moonIcon = btn.querySelector('i.fa-moon');
+      
+      if (sunIcon && moonIcon) {
+        sunIcon.style.cssText = 'display: none !important';
+        moonIcon.style.cssText = 'display: inline-block !important';
+      }
+    });
+    
     updateSettingsMenu();
+  } else {
+    // Светлая тема
+    document.body.setAttribute('data-theme', 'light');
+    document.documentElement.setAttribute('data-theme', 'light');
+    document.body.classList.remove('dark');
+    document.body.classList.add('light');
   }
+  
   if (localStorage.getItem('sound') === 'muted') {
     document.body.classList.add('muted');
     updateSettingsMenu();
@@ -1937,75 +165,153 @@ document.addEventListener('DOMContentLoaded', () => {
   }, { threshold: 0.1 });
   observer.observe(footer);
 
-  accentButton.addEventListener('click', () => {
-    const isHidden = accentMenu.getAttribute('aria-hidden') === 'true';
-    accentMenu.setAttribute('aria-hidden', !isHidden);
+  // Обработчик клика для переключения меню
+  document.querySelector('.top-cloud__accent').addEventListener('click', function() {
+    const accentMenu = this.querySelector('.accent-menu');
+    const isHidden = accentMenu.hasAttribute('inert');
+    
+    if (isHidden) {
+      accentMenu.removeAttribute('inert');
+    } else {
+      accentMenu.setAttribute('inert', '');
+    }
   });
 
-  document.addEventListener('click', (e) => {
-    // Проверяем клик вне акцент-меню
-    if (accentButton && accentMenu && !accentButton.contains(e.target) && !accentMenu.contains(e.target)) {
-      accentMenu.setAttribute('aria-hidden', 'true');
-    }
-    
-    // Проверяем клик вне панели аккаунта
-    if (accountPanel && accountToggle && accountMenu) {
-      const isClickInside = accountToggle.contains(e.target) || 
-                           accountMenu.contains(e.target);
-                           
-      if (!isClickInside && accountPanel.getAttribute('aria-hidden') === 'false') {
-        hideAccountPanel();
-      }
-    }
-    
-    // Проверяем клик вне модальных окон
-    if (modalAuth && modalAuth.getAttribute('aria-hidden') === 'false') {
-      const modalContent = modalAuth.querySelector('.modal-auth__content');
-      if (modalContent && !modalContent.contains(e.target) && !accountToggle.contains(e.target)) {
-        hideModal();
-      }
-    }
-    
-    // То же самое для остальных модальных окон
-    if (modalProfile && modalProfile.getAttribute('aria-hidden') === 'false') {
-      const modalContent = modalProfile.querySelector('.modal-profile__content');
-      if (modalContent && !modalContent.contains(e.target) && !accountToggle.contains(e.target)) {
-        hideModal();
-      }
-    }
-    
-    if (modalSettings && modalSettings.getAttribute('aria-hidden') === 'false') {
-      const modalContent = modalSettings.querySelector('.modal-settings__content');
-      if (modalContent && !modalContent.contains(e.target) && !accountToggle.contains(e.target)) {
-        hideModal();
-      }
+  // Закрытие меню при клике вне его
+  document.addEventListener('click', function(event) {
+    if (!event.target.closest('.top-cloud__accent')) {
+      const accentMenu = document.querySelector('.accent-menu');
+      accentMenu.setAttribute('inert', '');
     }
   });
 
   // Остальные обработчики для элементов меню и т.д.
-  if (accentMenuItems) {
-    accentMenuItems.forEach(item => {
-      item.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const action = item.getAttribute('data-action');
-        if (action === 'toggle-theme') {
-          document.body.classList.toggle('dark');
-          localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light');
-          updateSettingsMenu();
-        } else if (action === 'toggle-sound') {
-          document.body.classList.toggle('muted');
-          localStorage.setItem('sound', document.body.classList.contains('muted') ? 'muted' : 'unmuted');
-          updateSettingsMenu();
-        } else if (action === 'scroll-top') {
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-      });
+  accentMenuItems.forEach(item => {
+    item.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const action = item.getAttribute('data-action');
+      console.log('DESKTOP.JS: Клик по кнопке меню, действие:', action);
+      
+      // Воспроизводим звук переключения
+      if (window.settingsModule && typeof window.settingsModule.playSound === 'function') {
+        window.settingsModule.playSound('switch');
+      }
+      
+      if (action === 'toggle-theme') {
+        // Плавное переключение темы с анимацией
+        toggleThemeWithAnimation();
+      } else if (action === 'toggle-sound') {
+        document.body.classList.toggle('muted');
+        localStorage.setItem('sound', document.body.classList.contains('muted') ? 'muted' : 'unmuted');
+        updateSettingsMenu();
+      } else if (action === 'scroll-top') {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else if (action === 'settings') {
+        // Открываем модальное окно настроек
+        showSettingsModal();
+      }
     });
+  });
+  
+  // Функция переключения темы с анимацией
+  function toggleThemeWithAnimation() {
+    // Создаем анимацию-вспышку перед сменой темы
+    const flashOverlay = document.createElement('div');
+    flashOverlay.className = 'theme-transition-overlay';
+    document.body.appendChild(flashOverlay);
+    
+    // Получаем текущую тему
+    const currentTheme = document.body.getAttribute('data-theme') || 'light';
+    const isDarkNow = currentTheme === 'dark';
+    
+    // Определяем новую тему
+    const newTheme = isDarkNow ? 'light' : 'dark';
+    
+    // Начинаем анимацию
+    setTimeout(() => {
+      flashOverlay.classList.add('active');
+      
+      // Меняем тему в середине анимации
+      setTimeout(() => {
+        // Устанавливаем атрибуты и классы для новой темы
+        document.body.setAttribute('data-theme', newTheme);
+        document.documentElement.setAttribute('data-theme', newTheme);
+        
+        // Меняем классы для обратной совместимости
+        if (newTheme === 'dark') {
+          document.body.classList.add('dark');
+          document.body.classList.remove('light');
+          document.documentElement.classList.add('dark');
+          document.documentElement.classList.remove('light');
+        } else {
+          document.body.classList.remove('dark');
+          document.body.classList.add('light');
+          document.documentElement.classList.remove('dark');
+          document.documentElement.classList.add('light');
+        }
+        
+        // Принудительно обновляем отображение иконок
+        document.querySelectorAll('[data-action="toggle-theme"]').forEach(btn => {
+          const sunIcon = btn.querySelector('i.fa-sun');
+          const moonIcon = btn.querySelector('i.fa-moon');
+          
+          if (sunIcon && moonIcon) {
+            if (newTheme === 'dark') {
+              sunIcon.style.cssText = 'display: none !important';
+              moonIcon.style.cssText = 'display: inline-block !important';
+            } else {
+              sunIcon.style.cssText = 'display: inline-block !important';
+              moonIcon.style.cssText = 'display: none !important';
+            }
+          }
+        });
+        
+        // Завершаем анимацию
+        setTimeout(() => {
+          flashOverlay.classList.remove('active');
+          setTimeout(() => {
+            document.body.removeChild(flashOverlay);
+          }, 300);
+        }, 300);
+        
+        // Сохраняем состояние темы
+        localStorage.setItem('theme', newTheme);
+        
+        // Обновляем настройки, если они поддерживаются
+        if (window.settingsModule) {
+          const settings = JSON.parse(localStorage.getItem('userSettings') || '{}');
+          settings.isDarkMode = newTheme === 'dark';
+          localStorage.setItem('userSettings', JSON.stringify(settings));
+        }
+        
+        // Обновляем меню настроек, если оно доступно
+        if (typeof updateSettingsMenu === 'function') {
+          updateSettingsMenu();
+        }
+        
+      }, 150);
+    }, 50);
   }
 
   function updateCartCount() {
     if (!cartCount) return;
-    cartCount.textContent = cartItems.length;
+    
+    const itemsCount = cartItems.length;
+    cartCount.textContent = itemsCount;
+    
+    // Update cart icon state
+    if (cartIcon) {
+      if (itemsCount > 0) {
+        cartIcon.classList.add('has-items');
+        // Add pulse animation if first item
+        if (itemsCount === 1) {
+          cartIcon.classList.add('pulse');
+          setTimeout(() => cartIcon.classList.remove('pulse'), 3000);
+        }
+      } else {
+        cartIcon.classList.remove('has-items');
+      }
+    }
   }
 
   if (cartIcon) {
@@ -2043,843 +349,361 @@ document.addEventListener('DOMContentLoaded', () => {
           id: Date.now(),
           title: titleEl.textContent,
           price: parseInt(priceEl.textContent.replace(/[^\d]/g, '')),
-          image: imgEl.src
+          image: imgEl.src,
+          quantity: 1
         };
-        cartItems.push(item);
+        
+        // Add flying product effect
+        createFlyingElement(imgEl, cartIcon);
+        
+        // Воспроизводим звук добавления в корзину
+        if (window.settingsModule && typeof window.settingsModule.playSound === 'function') {
+          window.settingsModule.playSound('add-to-cart');
+        }
+        
+        // Check if item already exists
+        const existingItemIndex = cartItems.findIndex(cartItem => cartItem.title === item.title);
+        
+        if (existingItemIndex !== -1) {
+          cartItems[existingItemIndex].quantity += 1;
+        } else {
+          cartItems.push(item);
+        }
+        
         localStorage.setItem('cartItems', JSON.stringify(cartItems));
         updateCartCount();
-        renderCartItems();
-        cartPanel.setAttribute('aria-hidden', 'false');
+        
+        // Add animation to cart icon
+        if (cartIcon) {
+          cartIcon.classList.add('item-added');
+          setTimeout(() => cartIcon.classList.remove('item-added'), 500);
+        }
+        
+        // Add animation to cart count
+        if (cartCount) {
+          cartCount.classList.add('updating');
+          setTimeout(() => cartCount.classList.remove('updating'), 500);
+        }
+        
+        showNotification(`Товар "${item.title}" добавлен в корзину`, 'success');
       });
     });
   }
-
-  // Update category button functionality to show all products by default
-  const categoryItems = document.querySelectorAll('.island__category');
-  if (categoryItems && categoryItems.length > 0) {
-    categoryItems.forEach(category => {
-      category.addEventListener('click', () => {
-        if (!productCards || productCards.length === 0) return;
-        
-        console.log('Category button clicked:', category.getAttribute('data-category')); // Debug log
-        
-        const activeCategory = document.querySelector('.island__category.active');
-        if (activeCategory) {
-          activeCategory.classList.remove('active');
-        }
-        
-        category.classList.add('active');
-        const cat = category.getAttribute('data-category');
-        
-        productCards.forEach((card, index) => {
-          card.classList.remove('visible');
-          setTimeout(() => {
-            if (cat === 'all') {
-              card.style.display = 'block';
-            } else {
-              card.style.display = card.getAttribute('data-category') === cat ? 'block' : 'none';
-            }
-            if (card.style.display === 'block') {
-              card.style.visibility = 'visible';
-              card.style.opacity = '1';
-              setTimeout(() => card.classList.add('visible'), index * 100);
-            } else {
-              card.style.visibility = 'hidden';
-              card.style.opacity = '0';
-            }
-          }, 200);
-        });
-      });
-    });
+  
+  // Function to create flying element animation
+  function createFlyingElement(sourceImg, targetElement) {
+    if (!sourceImg || !targetElement) return;
+    
+    // Create flying element
+    const flyingImg = document.createElement('div');
+    flyingImg.className = 'flying-product';
+    
+    // Get positions
+    const imgRect = sourceImg.getBoundingClientRect();
+    const targetRect = targetElement.getBoundingClientRect();
+    
+    // Set initial position and style
+    flyingImg.style.cssText = `
+      position: fixed;
+      z-index: 9999;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background-image: url(${sourceImg.src});
+      background-size: cover;
+      background-position: center;
+      top: ${imgRect.top + imgRect.height/2 - 25}px;
+      left: ${imgRect.left + imgRect.width/2 - 25}px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      transition: all 0.8s cubic-bezier(0.165, 0.84, 0.44, 1);
+      opacity: 0;
+      transform: scale(0.3);
+    `;
+    
+    document.body.appendChild(flyingImg);
+    
+    // Start animation after a small delay
+    setTimeout(() => {
+      flyingImg.style.opacity = '1';
+      flyingImg.style.transform = 'scale(1)';
+    }, 50);
+    
+    // Move to target
+    setTimeout(() => {
+      flyingImg.style.top = `${targetRect.top + targetRect.height/2 - 25}px`;
+      flyingImg.style.left = `${targetRect.left + targetRect.width/2 - 25}px`;
+      flyingImg.style.transform = 'scale(0.2)';
+      flyingImg.style.opacity = '0.8';
+    }, 100);
+    
+    // Remove element after animation completes
+    setTimeout(() => {
+      if (flyingImg.parentNode) {
+        flyingImg.parentNode.removeChild(flyingImg);
+      }
+    }, 1000);
   }
 
   function renderCartItems() {
-    const cartItemsList = document.querySelector('.cart-panel__items');
-    const totalElement = document.querySelector('.cart-panel__total span');
+    if (!cartItemsList || !cartPanel) return;
     
-    if (!cartItemsList || !totalElement) return;
-    
+    // Clear the list
     cartItemsList.innerHTML = '';
+    
+    // Get cart items from local storage
+    const items = JSON.parse(localStorage.getItem('cartItems')) || [];
+    
+    // Update the total
     let total = 0;
-
-    cartItems.forEach((item, index) => {
-      const li = document.createElement('li');
-      li.style.animationDelay = `${index * 0.1}s`;
-      li.innerHTML = `
-        <img src="${item.image}" alt="${item.title}">
-        <div class="cart-panel__item-info">
-          <span class="cart-panel__item-title">${item.title}</span>
-          <span class="cart-panel__item-price">${item.price} ₽</span>
-        </div>
-        <button>Удалить</button>
-      `;
-      li.querySelector('button').addEventListener('click', () => {
-        cartItems.splice(index, 1);
-        localStorage.setItem('cartItems', JSON.stringify(cartItems));
-        renderCartItems();
-        updateCartCount();
-      });
-      cartItemsList.appendChild(li);
-      total += item.price;
-    });
-
-    totalElement.textContent = `${total} ₽`;
-  }
-
-  // Profile Modal Logic
-  function renderProfile() {
-    const user = JSON.parse(localStorage.getItem('user'));
     
-    if (!user) return;
-    
-    // Обновляем имя пользователя
-    const profileName = document.getElementById('profile-name');
-    if (profileName) {
-      profileName.textContent = user.name || 'Не указано';
-    }
-    
-    // Обновляем email пользователя
-    const profileEmail = document.getElementById('profile-email');
-    if (profileEmail) {
-      profileEmail.textContent = user.email || 'Не указано';
-    }
-    
-    // Обновляем телефон пользователя
-    const profilePhone = document.getElementById('profile-phone');
-    if (profilePhone) {
-      profilePhone.textContent = user.phone || 'Не указано';
-    }
-    
-    // Обновляем адрес пользователя
-    const profileAddress = document.getElementById('profile-address');
-    if (profileAddress) {
-      profileAddress.textContent = user.address || 'Не указано';
-    }
-    
-    // Обновляем дату регистрации
-    const profileDate = document.getElementById('profile-date');
-    if (profileDate) {
-      profileDate.textContent = user.date || new Date().toLocaleDateString();
-    }
-    
-    // Добавляем информацию о способе регистрации
-    const profileInfo = document.querySelector('.profile-tab-content[data-tab-content="info"]');
-    if (profileInfo) {
-      // Проверяем, есть ли уже поле с информацией о способе регистрации
-      let authMethodField = profileInfo.querySelector('.profile-field[data-field="auth-method"]');
-      
-      if (!authMethodField) {
-        // Создаем новое поле для способа авторизации
-        authMethodField = document.createElement('div');
-        authMethodField.className = 'profile-field';
-        authMethodField.setAttribute('data-field', 'auth-method');
-        
-        const authMethodLabel = document.createElement('span');
-        authMethodLabel.className = 'profile-label';
-        authMethodLabel.textContent = 'Способ входа:';
-        
-        const authMethodValue = document.createElement('span');
-        authMethodValue.className = 'profile-value';
-        
-        // Определяем способ авторизации по данным пользователя
-        let authMethod = 'Email';
-        let authIcon = 'fa-envelope';
-        
-        if (user.provider === 'google') {
-          authMethod = 'Google';
-          authIcon = 'fa-google';
-        } else if (user.provider === 'vk') {
-          authMethod = 'ВКонтакте';
-          authIcon = 'fa-vk';
-        }
-        
-        authMethodValue.innerHTML = `<i class="fab ${authIcon}"></i> ${authMethod}`;
-        
-        authMethodField.appendChild(authMethodLabel);
-        authMethodField.appendChild(authMethodValue);
-        
-        // Добавляем поле в информацию профиля
-        profileInfo.appendChild(authMethodField);
-      } else {
-        // Обновляем существующее поле
-        const authMethodValue = authMethodField.querySelector('.profile-value');
-        
-        // Определяем способ авторизации по данным пользователя
-        let authMethod = 'Email';
-        let authIcon = 'fa-envelope';
-        
-        if (user.provider === 'google') {
-          authMethod = 'Google';
-          authIcon = 'fa-google';
-        } else if (user.provider === 'vk') {
-          authMethod = 'ВКонтакте';
-          authIcon = 'fa-vk';
-        }
-        
-        authMethodValue.innerHTML = `<i class="fab ${authIcon}"></i> ${authMethod}`;
-      }
-    }
-    
-    // Загружаем историю заказов, если есть
-    loadOrdersHistory();
-    
-    // Загружаем избранное, если есть
-    loadWishlist();
-  }
-
-  // Функция для загрузки истории заказов
-  function loadOrdersHistory() {
-    const user = JSON.parse(localStorage.getItem('user'));
-    if (!user) return;
-    
-    // Получаем историю заказов из localStorage
-    const orders = JSON.parse(localStorage.getItem('orders')) || [];
-    const userOrders = orders.filter(order => order.userEmail === user.email);
-    
-    const ordersTabContent = document.querySelector('.profile-tab-content[data-tab-content="orders"]');
-    if (!ordersTabContent) return;
-    
-    // Если у пользователя нет заказов, показываем пустое состояние
-    if (userOrders.length === 0) {
-      ordersTabContent.innerHTML = `
-        <div class="orders-empty">
-          <i class="fas fa-shopping-bag"></i>
-          <p>У вас пока нет заказов</p>
-          <button class="btn-start-shopping">Начать покупки</button>
-        </div>
-      `;
-      
-      // Добавляем обработчик для кнопки
-      const startShoppingBtn = ordersTabContent.querySelector('.btn-start-shopping');
-      if (startShoppingBtn) {
-        startShoppingBtn.addEventListener('click', function() {
-          hideModal();
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        });
-      }
+    if (items.length === 0) {
+      // Show empty cart message with icon and animation
+      cartItemsList.innerHTML = `
+        <li class="cart-empty">
+          <div class="cart-empty__icon">
+            <i class="fas fa-shopping-basket"></i>
+          </div>
+          <p>Ваша корзина пуста</p>
+          <small>Добавьте товары, чтобы оформить заказ</small>
+        </li>`;
     } else {
-      // Если у пользователя есть заказы, показываем их список
-      ordersTabContent.innerHTML = `
-        <div class="orders-list">
-          <h3 class="orders-title">Ваши заказы</h3>
-          <div class="orders-container"></div>
-        </div>
-      `;
-      
-      const ordersContainer = ordersTabContent.querySelector('.orders-container');
-      
-      // Сортируем заказы по дате (самые новые сверху)
-      userOrders.sort((a, b) => new Date(b.date) - new Date(a.date));
-      
-      // Создаем элементы заказов
-      userOrders.forEach(order => {
-        const orderElement = document.createElement('div');
-        orderElement.className = 'order-item';
+      // Render each item with staggered animation
+      items.forEach((item, index) => {
+        const itemTotal = item.price * item.quantity;
+        total += itemTotal;
         
-        const formattedDate = new Date(order.date).toLocaleDateString('ru-RU', {
-          day: '2-digit',
-          month: '2-digit',
-          year: 'numeric'
-        });
+        const itemElement = document.createElement('li');
+        itemElement.className = 'cart-item';
+        itemElement.style.animationDelay = `${index * 0.1}s`;
         
-        const statusClass = getStatusClass(order.status);
-        
-        orderElement.innerHTML = `
-          <div class="order-header">
-            <div class="order-info">
-              <span class="order-number">Заказ №${order.id}</span>
-              <span class="order-date">${formattedDate}</span>
-            </div>
-            <div class="order-status ${statusClass}">
-              <span>${getStatusText(order.status)}</span>
-            </div>
-          </div>
-          <div class="order-products">
-            ${renderOrderProducts(order.items)}
-          </div>
-          <div class="order-footer">
-            <div class="order-total">
-              Итого: <span>${order.total} ₽</span>
-            </div>
-            <button class="order-details-btn" data-order-id="${order.id}">
-              <i class="fas fa-info-circle"></i>
-              <span>Подробнее</span>
-            </button>
-          </div>
-        `;
-        
-        ordersContainer.appendChild(orderElement);
-      });
-      
-      // Добавляем обработчики для кнопок "Подробнее"
-      const detailButtons = ordersTabContent.querySelectorAll('.order-details-btn');
-      detailButtons.forEach(button => {
-        button.addEventListener('click', function() {
-          const orderId = this.getAttribute('data-order-id');
-          const order = userOrders.find(o => o.id === orderId);
-          if (order) {
-            showOrderDetails(order);
-          }
-        });
-      });
-    }
-    
-    // Вспомогательная функция для рендеринга товаров заказа
-    function renderOrderProducts(items) {
-      // Ограничиваем количество отображаемых товаров
-      const displayItems = items.slice(0, 3);
-      const hiddenItems = items.length > 3 ? items.length - 3 : 0;
-      
-      let html = '';
-      
-      displayItems.forEach(item => {
-        html += `
-          <div class="order-product">
-            <img src="${item.image}" alt="${item.title}" class="order-product-image">
-            <div class="order-product-info">
-              <span class="order-product-title">${item.title}</span>
-              <span class="order-product-price">${item.price} ₽</span>
-            </div>
-            <span class="order-product-quantity">x${item.quantity}</span>
-          </div>
-        `;
-      });
-      
-      // Если есть скрытые товары, добавляем информацию о них
-      if (hiddenItems > 0) {
-        html += `
-          <div class="order-more-products">
-            <span>Ещё ${hiddenItems} ${formatProductsCount(hiddenItems)}</span>
-          </div>
-        `;
-      }
-      
-      return html;
-    }
-    
-    // Функция для форматирования количества товаров
-    function formatProductsCount(count) {
-      if (count >= 11 && count <= 19) return 'товаров';
-      const lastDigit = count % 10;
-      if (lastDigit === 1) return 'товар';
-      if (lastDigit >= 2 && lastDigit <= 4) return 'товара';
-      return 'товаров';
-    }
-    
-    // Функция для получения текста статуса
-    function getStatusText(status) {
-      switch(status) {
-        case 'new': return 'Новый';
-        case 'processing': return 'В обработке';
-        case 'shipped': return 'Отправлен';
-        case 'delivered': return 'Доставлен';
-        case 'completed': return 'Выполнен';
-        case 'cancelled': return 'Отменен';
-        default: return 'Неизвестно';
-      }
-    }
-    
-    // Функция для получения класса статуса
-    function getStatusClass(status) {
-      switch(status) {
-        case 'new': return 'status-new';
-        case 'processing': return 'status-processing';
-        case 'shipped': return 'status-shipped';
-        case 'delivered': return 'status-delivered';
-        case 'completed': return 'status-completed';
-        case 'cancelled': return 'status-cancelled';
-        default: return '';
-      }
-    }
-  }
-
-  // Функция для отображения подробностей заказа
-  function showOrderDetails(order) {
-    const orderDetailsModal = document.createElement('div');
-    orderDetailsModal.className = 'modal-order-details';
-    orderDetailsModal.setAttribute('aria-hidden', 'false');
-    
-    // Форматируем дату заказа
-    const orderDate = new Date(order.date).toLocaleDateString('ru-RU', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-    
-    // Создаем содержимое модального окна
-    orderDetailsModal.innerHTML = `
-      <div class="modal-order-details__content">
-        <div class="order-details-header">
-          <h3>Детали заказа №${order.id}</h3>
-          <button class="order-details-close">&times;</button>
-        </div>
-        <div class="order-details-info">
-          <div class="order-details-row">
-            <span class="order-details-label">Дата заказа:</span>
-            <span class="order-details-value">${orderDate}</span>
-          </div>
-          <div class="order-details-row">
-            <span class="order-details-label">Статус:</span>
-            <span class="order-details-value status-${order.status}">${getStatusText(order.status)}</span>
-          </div>
-          <div class="order-details-row">
-            <span class="order-details-label">Адрес доставки:</span>
-            <span class="order-details-value">${order.address || 'Не указан'}</span>
-          </div>
-          <div class="order-details-row">
-            <span class="order-details-label">Способ оплаты:</span>
-            <span class="order-details-value">${order.paymentMethod || 'Не указан'}</span>
-          </div>
-        </div>
-        <div class="order-details-products">
-          <h4>Товары</h4>
-          <div class="order-details-products-list">
-            ${renderDetailedProducts(order.items)}
-          </div>
-        </div>
-        <div class="order-details-summary">
-          <div class="order-summary-row">
-            <span>Стоимость товаров:</span>
-            <span>${calculateProductsTotal(order.items)} ₽</span>
-          </div>
-          <div class="order-summary-row">
-            <span>Доставка:</span>
-            <span>${order.shipping || '0'} ₽</span>
-          </div>
-          <div class="order-summary-row total">
-            <span>Итого:</span>
-            <span>${order.total} ₽</span>
-          </div>
-        </div>
-        <div class="order-details-actions">
-          <button class="order-repeat-btn" data-order-id="${order.id}">
-            <i class="fas fa-sync-alt"></i>
-            <span>Повторить заказ</span>
-          </button>
-          <button class="order-cancel-btn" data-order-id="${order.id}" ${order.status === 'cancelled' || order.status === 'completed' ? 'disabled' : ''}>
-            <i class="fas fa-times"></i>
-            <span>Отменить заказ</span>
-          </button>
-        </div>
-      </div>
-    `;
-    
-    document.body.appendChild(orderDetailsModal);
-    
-    // Добавляем обработчики событий
-    const closeButton = orderDetailsModal.querySelector('.order-details-close');
-    closeButton.addEventListener('click', function() {
-      orderDetailsModal.setAttribute('aria-hidden', 'true');
-      setTimeout(() => {
-        document.body.removeChild(orderDetailsModal);
-      }, 300);
-    });
-    
-    // Повторение заказа
-    const repeatButton = orderDetailsModal.querySelector('.order-repeat-btn');
-    repeatButton.addEventListener('click', function() {
-      // Получаем текущую корзину
-      const cart = JSON.parse(localStorage.getItem('cart')) || [];
-      
-      // Добавляем все товары из заказа в корзину
-      order.items.forEach(item => {
-        const existingItem = cart.find(cartItem => cartItem.id === item.id);
-        
-        if (existingItem) {
-          existingItem.quantity += item.quantity;
-        } else {
-          cart.push({...item});
-        }
-      });
-      
-      // Сохраняем обновленную корзину
-      localStorage.setItem('cart', JSON.stringify(cart));
-      
-      // Обновляем счетчик корзины
-      updateCartCount();
-      
-      // Показываем уведомление
-      showNotification('Товары добавлены в корзину', 'success');
-      
-      // Закрываем модальное окно
-      orderDetailsModal.setAttribute('aria-hidden', 'true');
-      setTimeout(() => {
-        document.body.removeChild(orderDetailsModal);
-      }, 300);
-    });
-    
-    // Отмена заказа
-    const cancelButton = orderDetailsModal.querySelector('.order-cancel-btn');
-    if (!cancelButton.disabled) {
-      cancelButton.addEventListener('click', function() {
-        // Запрашиваем подтверждение
-        if (confirm('Вы действительно хотите отменить заказ?')) {
-          // Получаем все заказы
-          const orders = JSON.parse(localStorage.getItem('orders')) || [];
-          
-          // Находим нужный заказ и меняем его статус
-          const orderIndex = orders.findIndex(o => o.id === order.id);
-          
-          if (orderIndex !== -1) {
-            orders[orderIndex].status = 'cancelled';
-            orders[orderIndex].cancelDate = new Date().toISOString();
-            
-            // Сохраняем обновленные заказы
-            localStorage.setItem('orders', JSON.stringify(orders));
-            
-            // Обновляем статус в модальном окне
-            const statusElement = orderDetailsModal.querySelector('.order-details-value.status-' + order.status);
-            
-            if (statusElement) {
-              statusElement.classList.remove('status-' + order.status);
-              statusElement.classList.add('status-cancelled');
-              statusElement.textContent = 'Отменен';
-            }
-            
-            // Отключаем кнопку отмены
-            cancelButton.disabled = true;
-            
-            // Показываем уведомление
-            showNotification('Заказ успешно отменен', 'success');
-            
-            // Обновляем список заказов
-            loadOrdersHistory();
-          }
-        }
-      });
-    }
-    
-    // Закрытие по клику вне модального окна
-    orderDetailsModal.addEventListener('click', function(e) {
-      if (e.target === orderDetailsModal) {
-        orderDetailsModal.setAttribute('aria-hidden', 'true');
-        setTimeout(() => {
-          document.body.removeChild(orderDetailsModal);
-        }, 300);
-      }
-    });
-    
-    // Функция для рендеринга товаров
-    function renderDetailedProducts(items) {
-      let html = '';
-      
-      items.forEach(item => {
-        html += `
-          <div class="order-details-product">
-            <img src="${item.image}" alt="${item.title}" class="order-details-product-image">
-            <div class="order-details-product-info">
-              <div class="order-details-product-title">${item.title}</div>
-              <div class="order-details-product-price">${item.price} ₽</div>
-            </div>
-            <div class="order-details-product-quantity">
-              <span>Количество: ${item.quantity}</span>
-            </div>
-            <div class="order-details-product-total">
-              <span>${item.price * item.quantity} ₽</span>
-            </div>
-          </div>
-        `;
-      });
-      
-      return html;
-    }
-    
-    // Функция для расчета общей стоимости товаров
-    function calculateProductsTotal(items) {
-      return items.reduce((total, item) => total + (item.price * item.quantity), 0);
-    }
-    
-    // Функция для получения текста статуса
-    function getStatusText(status) {
-      switch(status) {
-        case 'new': return 'Новый';
-        case 'processing': return 'В обработке';
-        case 'shipped': return 'Отправлен';
-        case 'delivered': return 'Доставлен';
-        case 'completed': return 'Выполнен';
-        case 'cancelled': return 'Отменен';
-        default: return 'Неизвестно';
-      }
-    }
-  }
-
-  // Функция для загрузки избранного
-  function loadWishlist() {
-    const user = JSON.parse(localStorage.getItem('user'));
-    if (!user) return;
-    
-    // Получаем список избранного из localStorage
-    const wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
-    const userWishlist = wishlist.filter(item => item.userEmail === user.email);
-    
-    const wishlistTabContent = document.querySelector('.profile-tab-content[data-tab-content="wishlist"]');
-    if (!wishlistTabContent) return;
-    
-    // Если у пользователя нет избранных товаров, показываем пустое состояние
-    if (userWishlist.length === 0) {
-      wishlistTabContent.innerHTML = `
-        <div class="wishlist-empty">
-          <i class="fas fa-heart"></i>
-          <p>Ваш список избранного пуст</p>
-          <button class="btn-browse-catalog">Перейти в каталог</button>
-        </div>
-      `;
-      
-      // Добавляем обработчик для кнопки
-      const browseCatalogBtn = wishlistTabContent.querySelector('.btn-browse-catalog');
-      if (browseCatalogBtn) {
-        browseCatalogBtn.addEventListener('click', function() {
-          hideModal();
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        });
-      }
-    } else {
-      // Если у пользователя есть избранные товары, показываем их список
-      wishlistTabContent.innerHTML = `
-        <div class="wishlist-list">
-          <h3 class="wishlist-title">Избранные товары</h3>
-          <div class="wishlist-container"></div>
-        </div>
-      `;
-      
-      const wishlistContainer = wishlistTabContent.querySelector('.wishlist-container');
-      
-      // Создаем элементы избранных товаров
-      userWishlist.forEach(item => {
-        const wishlistItem = document.createElement('div');
-        wishlistItem.className = 'wishlist-item';
-        
-        wishlistItem.innerHTML = `
-          <div class="wishlist-item-image">
+        itemElement.innerHTML = `
+          <div class="cart-item__image">
             <img src="${item.image}" alt="${item.title}">
           </div>
-          <div class="wishlist-item-info">
-            <div class="wishlist-item-title">${item.title}</div>
-            <div class="wishlist-item-price">${item.price} ₽</div>
-          </div>
-          <div class="wishlist-item-actions">
-            <button class="wishlist-add-to-cart" data-id="${item.id}">
-              <i class="fas fa-shopping-cart"></i>
-              <span>В корзину</span>
-            </button>
-            <button class="wishlist-remove" data-id="${item.id}">
-              <i class="fas fa-trash-alt"></i>
-            </button>
+          <div class="cart-item__content">
+            <div class="cart-item__top">
+              <h3 class="cart-item__title">${item.title}</h3>
+              <button class="cart-item__remove" data-id="${item.id}" title="Удалить товар">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+            <div class="cart-item__bottom">
+              <div class="cart-item__price">${item.price} ₽</div>
+              <div class="cart-item__quantity">
+                <button class="quantity-btn decrease" data-id="${item.id}">
+                  <i class="fas fa-minus"></i>
+                </button>
+                <span>${item.quantity}</span>
+                <button class="quantity-btn increase" data-id="${item.id}">
+                  <i class="fas fa-plus"></i>
+                </button>
+              </div>
+            </div>
+            <div class="cart-item__total">
+              Итого: <span>${itemTotal} ₽</span>
+            </div>
           </div>
         `;
         
-        wishlistContainer.appendChild(wishlistItem);
-      });
-      
-      // Добавляем обработчики для кнопок "В корзину"
-      const addToCartButtons = wishlistTabContent.querySelectorAll('.wishlist-add-to-cart');
-      addToCartButtons.forEach(button => {
-        button.addEventListener('click', function() {
-          const itemId = this.getAttribute('data-id');
-          
-          // Получаем информацию о товаре
-          const wishlistItem = userWishlist.find(item => item.id === itemId);
-          
-          if (wishlistItem) {
-            // Получаем текущую корзину
-            const cart = JSON.parse(localStorage.getItem('cart')) || [];
-            
-            // Проверяем, есть ли товар уже в корзине
-            const existingItem = cart.find(item => item.id === itemId);
-            
-            if (existingItem) {
-              // Если товар уже в корзине, увеличиваем количество
-              existingItem.quantity++;
-            } else {
-              // Если товара нет в корзине, добавляем его
-              cart.push({
-                id: wishlistItem.id,
-                title: wishlistItem.title,
-                price: wishlistItem.price,
-                image: wishlistItem.image,
-                quantity: 1
-              });
-            }
-            
-            // Сохраняем обновленную корзину
-            localStorage.setItem('cart', JSON.stringify(cart));
-            
-            // Обновляем счетчик корзины
-            updateCartCount();
-            
-            // Показываем уведомление
-            showNotification('Товар добавлен в корзину', 'success');
-          }
+        cartItemsList.appendChild(itemElement);
+        
+        // Add event listeners for quantity buttons with feedback effects
+        const decreaseBtn = itemElement.querySelector('.decrease');
+        const increaseBtn = itemElement.querySelector('.increase');
+        const removeBtn = itemElement.querySelector('.cart-item__remove');
+        
+        decreaseBtn.addEventListener('click', () => {
+          decreaseBtn.classList.add('clicked');
+          setTimeout(() => decreaseBtn.classList.remove('clicked'), 300);
+          updateItemQuantity(item.id, -1);
         });
-      });
-      
-      // Добавляем обработчики для кнопок удаления
-      const removeButtons = wishlistTabContent.querySelectorAll('.wishlist-remove');
-      removeButtons.forEach(button => {
-        button.addEventListener('click', function() {
-          const itemId = this.getAttribute('data-id');
-          
-          // Удаляем товар из избранного
-          const wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
-          const updatedWishlist = wishlist.filter(item => !(item.id === itemId && item.userEmail === user.email));
-          
-          localStorage.setItem('wishlist', JSON.stringify(updatedWishlist));
-          
-          // Обновляем интерфейс
-          loadWishlist();
-          
-          // Показываем уведомление
-          showNotification('Товар удален из избранного', 'success');
+        
+        increaseBtn.addEventListener('click', () => {
+          increaseBtn.classList.add('clicked');
+          setTimeout(() => increaseBtn.classList.remove('clicked'), 300);
+          updateItemQuantity(item.id, 1);
+        });
+        
+        removeBtn.addEventListener('click', () => {
+          itemElement.classList.add('removing');
+          setTimeout(() => {
+            removeItemFromCart(item.id);
+          }, 300);
         });
       });
     }
+    
+    // Update total display with animation
+    if (cartTotal) {
+      const oldTotal = parseInt(cartTotal.textContent.replace(/[^\d]/g, '')) || 0;
+      
+      if (oldTotal !== total) {
+        cartTotal.classList.add('updating');
+        setTimeout(() => {
+          cartTotal.textContent = `${total} ₽`;
+          cartTotal.classList.remove('updating');
+        }, 300);
+      } else {
+        cartTotal.textContent = `${total} ₽`;
+      }
+    }
+    
+    // Enable/disable checkout button
+    if (cartCheckout) {
+      cartCheckout.disabled = items.length === 0;
+      
+      // Add handler for the checkout button
+      cartCheckout.addEventListener('click', function(e) {
+        createRippleEffect(e);
+        showCheckoutModal();
+      });
+    }
+    
+    // Add ripple effect to buttons
+    function createRippleEffect(event) {
+      const button = event.currentTarget;
+      
+      const circle = document.createElement('span');
+      const diameter = Math.max(button.clientWidth, button.clientHeight);
+      
+      circle.style.width = circle.style.height = `${diameter}px`;
+      circle.style.left = `${event.clientX - button.getBoundingClientRect().left - diameter / 2}px`;
+      circle.style.top = `${event.clientY - button.getBoundingClientRect().top - diameter / 2}px`;
+      circle.classList.add('ripple');
+      
+      const ripple = button.querySelector('.ripple');
+      if (ripple) {
+        ripple.remove();
+      }
+      
+      button.appendChild(circle);
+    }
   }
 
-  // Settings Modal Logic
+  function updateItemQuantity(itemId, change) {
+    let items = JSON.parse(localStorage.getItem('cartItems')) || [];
+    
+    const itemIndex = items.findIndex(item => item.id === itemId);
+    if (itemIndex === -1) return;
+    
+    items[itemIndex].quantity += change;
+    
+    if (items[itemIndex].quantity <= 0) {
+      items.splice(itemIndex, 1);
+    }
+    
+    localStorage.setItem('cartItems', JSON.stringify(items));
+    cartItems = items;
+    updateCartCount();
+    renderCartItems();
+  }
+
+  function removeItemFromCart(itemId) {
+    let items = JSON.parse(localStorage.getItem('cartItems')) || [];
+    
+    const newItems = items.filter(item => item.id !== itemId);
+    
+    localStorage.setItem('cartItems', JSON.stringify(newItems));
+    cartItems = newItems;
+    updateCartCount();
+    renderCartItems();
+    
+    // Воспроизводим звук уведомления
+    if (window.settingsModule && typeof window.settingsModule.playSound === 'function') {
+      window.settingsModule.playSound('notification');
+    }
+    
+    showNotification('Товар удален из корзины', 'info');
+  }
+
   function updateSettingsMenu() {
-    if (!settingsMenuItems || settingsMenuItems.length === 0) return;
-    
-    // Заменяем содержимое
-    profileContent.innerHTML = '';
-    profileContent.appendChild(passwordForm);
-    
-    // Настраиваем функциональность переключателей паролей
-    setupPasswordToggles();
-    
-    // Настраиваем индикатор силы пароля
-    const newPasswordInput = document.getElementById('new-password');
-    const strengthBar = document.querySelector('.strength-bar span');
-    const strengthText = document.querySelector('.strength-text');
-    
-    if (newPasswordInput) {
-      newPasswordInput.addEventListener('input', function() {
-        updatePasswordStrength(this.value, strengthBar, strengthText);
-      });
-    }
-    
-    // Обработчик для кнопки сохранения пароля
-    const savePasswordButton = document.querySelector('.password-save-btn');
-    if (savePasswordButton) {
-      savePasswordButton.addEventListener('click', function() {
-        const currentPassword = document.getElementById('current-password').value;
-        const newPassword = document.getElementById('new-password').value;
-        const confirmPassword = document.getElementById('confirm-password').value;
+    // Используем модуль настроек, если он доступен
+    if (window.settingsModule && typeof window.settingsModule.loadSettings === 'function') {
+      const settings = window.settingsModule.loadSettings();
+      
+      // Обновляем элементы интерфейса в соответствии с текущими настройками
+      const menuThemeToggle = document.querySelector('.theme-toggle');
+      const menuSoundToggle = document.querySelector('.sound-toggle');
+      
+      if (menuThemeToggle) {
+        const sunIcon = menuThemeToggle.querySelector('.fa-sun');
+        const moonIcon = menuThemeToggle.querySelector('.fa-moon');
         
-        // Проверки
-        if (!currentPassword) {
-          showNotification('Введите текущий пароль', 'error');
-          return;
-        }
-        
-        if (!newPassword) {
-          showNotification('Введите новый пароль', 'error');
-          return;
-        }
-        
-        if (newPassword !== confirmPassword) {
-          showNotification('Пароли не совпадают', 'error');
-          return;
-        }
-        
-        // В реальном приложении здесь была бы проверка текущего пароля
-        
-        // Сохраняем новый пароль
-        if (user) {
-          const hashedPassword = hashPassword(newPassword);
-          
-          // Обновляем пароль в локальном хранилище
-          const users = JSON.parse(localStorage.getItem('users')) || [];
-          const userIndex = users.findIndex(u => u.email === user.email);
-          
-          if (userIndex !== -1) {
-            users[userIndex].password = hashedPassword;
-            localStorage.setItem('users', JSON.stringify(users));
-            
-            showNotification('Пароль успешно изменен', 'success');
-            
-            // Возвращаемся к профилю
-            setTimeout(() => {
-              profileContent.innerHTML = originalContent;
-              // Восстанавливаем обработчики
-              initProfileEditButtons();
-              initProfileTabs();
-            }, 1500);
+        if (settings.isDarkMode) {
+          menuThemeToggle.setAttribute('data-current', 'dark');
+          if (sunIcon && moonIcon) {
+            sunIcon.style.display = 'none';
+            moonIcon.style.display = 'inline-block';
+          }
+        } else {
+          menuThemeToggle.setAttribute('data-current', 'light');
+          if (sunIcon && moonIcon) {
+            sunIcon.style.display = 'inline-block';
+            moonIcon.style.display = 'none';
           }
         }
-      });
+      }
+      
+      if (menuSoundToggle) {
+        const volumeIcon = menuSoundToggle.querySelector('.fa-volume-up');
+        const muteIcon = menuSoundToggle.querySelector('.fa-volume-mute');
+        
+        if (settings.isSoundEnabled) {
+          menuSoundToggle.setAttribute('data-current', 'unmuted');
+          if (volumeIcon && muteIcon) {
+            volumeIcon.style.display = 'inline-block';
+            muteIcon.style.display = 'none';
+          }
+        } else {
+          menuSoundToggle.setAttribute('data-current', 'muted');
+          if (volumeIcon && muteIcon) {
+            volumeIcon.style.display = 'none';
+            muteIcon.style.display = 'inline-block';
+          }
+        }
+      }
+      
+      return;
     }
     
-    // Обработчик для кнопки отмены
-    const cancelPasswordButton = document.querySelector('.password-cancel-btn');
-    if (cancelPasswordButton) {
-      cancelPasswordButton.addEventListener('click', function() {
-        // Восстанавливаем первоначальное содержимое
-        profileContent.innerHTML = originalContent;
-        
-        // Восстанавливаем обработчики
-        initProfileEditButtons();
-        initProfileTabs();
-      });
-    }
-
-    // Обработчик для кнопки смены аватара
-    const avatarChangeButton = document.querySelector('.avatar-change');
-    if (avatarChangeButton) {
-      avatarChangeButton.addEventListener('click', function() {
-        // В реальном приложении здесь была бы логика загрузки изображения
-        showNotification('Функция смены аватара будет доступна в ближайшем обновлении', 'info');
-      });
-    }
+    // Резервная логика (старый код), если модуль настроек недоступен
+    // ... existing code ...
   }
 
-  // Улучшенные уведомления с анимацией и иконками
   function showNotification(message, type = 'info', duration = 3000) {
-    // Удаляем существующие уведомления для предотвращения наслоения
-    const existingNotifications = document.querySelectorAll('.notification');
-    existingNotifications.forEach(notification => {
-      notification.remove();
-    });
-    
-    // Создаем элемент уведомления
-    const notification = document.createElement('div');
-    notification.className = `notification notification-${type}`;
-    
-    // Определяем иконку в зависимости от типа уведомления
-    let icon = 'fa-info-circle';
-    switch (type) {
-      case 'success':
-        icon = 'fa-check-circle';
-        break;
-      case 'error':
-        icon = 'fa-exclamation-circle';
-        break;
-      case 'warning':
-        icon = 'fa-exclamation-triangle';
-        break;
+    // Воспроизводим звук уведомления
+    if (window.settingsModule && typeof window.settingsModule.playSound === 'function') {
+      if (type === 'error') {
+        window.settingsModule.playSound('error');
+      } else if (type === 'success') {
+        window.settingsModule.playSound('success');
+      } else {
+        window.settingsModule.playSound('notification');
+      }
     }
     
-    // Создаем содержимое уведомления
+    // Проверяем, существует ли уже функция showNotification в window
+    // и что это не текущая функция (чтобы избежать рекурсии)
+    if (typeof window.showNotification === 'function' && window.showNotification !== showNotification) {
+      window.showNotification(message, type, duration);
+      return;
+    }
+    
+    
+    // Если функция не существует, создаем свою реализацию
+    const notification = document.createElement('div');
+    notification.className = `notification notification--${type}`;
     notification.innerHTML = `
       <div class="notification__icon">
-        <i class="fas ${icon}"></i>
+        <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i>
       </div>
       <div class="notification__content">
-        <div class="notification__message">${message}</div>
-        <div class="notification__progress">
-          <div class="notification__progress-bar"></div>
-        </div>
+        <p>${message}</p>
       </div>
-      <button class="notification__close">
-        <i class="fas fa-times"></i>
-      </button>
+      <button class="notification__close">&times;</button>
     `;
     
-    // Добавляем уведомление в DOM
-    document.body.appendChild(notification);
-    
-    // Добавляем стили для уведомлений, если их еще нет
+    // Добавляем стили, если они еще не определены
     if (!document.getElementById('notification-styles')) {
       const style = document.createElement('style');
       style.id = 'notification-styles';
@@ -2888,1075 +712,3516 @@ document.addEventListener('DOMContentLoaded', () => {
           position: fixed;
           top: 20px;
           right: 20px;
-          max-width: 350px;
-          background-color: #fff;
-          border-radius: 8px;
-          box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
-          display: flex;
-          align-items: stretch;
-          overflow: hidden;
-          z-index: 1000;
-          opacity: 0;
-          transform: translateX(30px);
-          transition: opacity 0.3s ease, transform 0.3s ease;
-        }
-        
-        .notification.visible {
-          opacity: 1;
-          transform: translateX(0);
-        }
-        
-        body.dark .notification {
-          background-color: #2a2a2a;
-          box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
-        }
-        
-        .notification__icon {
           display: flex;
           align-items: center;
-          justify-content: center;
-          width: 50px;
-          padding: 0 5px;
-          font-size: 1.4rem;
+          padding: 15px 20px;
+          background: white;
+          border-radius: 12px;
+          box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+          z-index: 9999;
+          max-width: 350px;
+          transform: translateX(100%) scale(0.9);
+          animation: slide-in 0.5s forwards cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        
-        .notification-info .notification__icon {
-          background-color: #3498db;
-          color: white;
+        .notification--success {
+          border-left: 4px solid #4CAF50;
         }
-        
-        .notification-success .notification__icon {
-          background-color: #2ecc71;
-          color: white;
+        .notification--error {
+          border-left: 4px solid #F44336;
         }
-        
-        .notification-warning .notification__icon {
-          background-color: #f39c12;
-          color: white;
+        .notification--info {
+          border-left: 4px solid #2196F3;
         }
-        
-        .notification-error .notification__icon {
-          background-color: #e74c3c;
-          color: white;
+        .notification__icon {
+          margin-right: 15px;
+          font-size: 20px;
         }
-        
+        .notification--success .notification__icon {
+          color: #4CAF50;
+        }
+        .notification--error .notification__icon {
+          color: #F44336;
+        }
+        .notification--info .notification__icon {
+          color: #2196F3;
+        }
         .notification__content {
           flex: 1;
-          padding: 15px 15px 12px;
-          position: relative;
         }
-        
-        .notification__message {
+        .notification__content p {
+          margin: 0;
           color: #333;
-          margin-bottom: 8px;
-          font-size: 0.95rem;
         }
-        
-        body.dark .notification__message {
-          color: #f0f0f0;
-        }
-        
-        .notification__progress {
-          height: 3px;
-          background-color: rgba(0, 0, 0, 0.1);
-          border-radius: 3px;
-          overflow: hidden;
-        }
-        
-        body.dark .notification__progress {
-          background-color: rgba(255, 255, 255, 0.1);
-        }
-        
-        .notification__progress-bar {
-          height: 100%;
-          width: 100%;
-          border-radius: 3px;
-          transform-origin: left;
-          transform: scaleX(0);
-        }
-        
-        .notification-info .notification__progress-bar {
-          background-color: #3498db;
-        }
-        
-        .notification-success .notification__progress-bar {
-          background-color: #2ecc71;
-        }
-        
-        .notification-warning .notification__progress-bar {
-          background-color: #f39c12;
-        }
-        
-        .notification-error .notification__progress-bar {
-          background-color: #e74c3c;
-        }
-        
         .notification__close {
           background: none;
           border: none;
           color: #999;
-          font-size: 0.9rem;
-          padding: 8px;
           cursor: pointer;
-          align-self: flex-start;
-          margin: 5px 5px 0 0;
-          transition: color 0.2s ease;
+          font-size: 20px;
+          transition: color 0.2s;
         }
-        
         .notification__close:hover {
           color: #333;
         }
-        
-        body.dark .notification__close {
-          color: #777;
+        body.dark .notification {
+          background: #333;
+          box-shadow: 0 10px 25px rgba(0,0,0,0.4);
         }
-        
+        body.dark .notification__content p {
+          color: #f0f0f0;
+        }
+        body.dark .notification__close {
+          color: #aaa;
+        }
         body.dark .notification__close:hover {
           color: #f0f0f0;
         }
-        
-        @keyframes progressAnimation {
-          0% { transform: scaleX(1); }
-          100% { transform: scaleX(0); }
+        @keyframes slide-in {
+          to {
+            transform: translateX(0) scale(1);
+          }
+        }
+        @keyframes slide-out {
+          to {
+            transform: translateX(100%) scale(0.9);
+          }
         }
       `;
       document.head.appendChild(style);
     }
     
-    // Анимируем появление уведомления
-    setTimeout(() => {
-      notification.classList.add('visible');
-    }, 10);
+    document.body.appendChild(notification);
     
-    // Анимируем прогресс-бар
-    const progressBar = notification.querySelector('.notification__progress-bar');
-    progressBar.style.animation = `progressAnimation ${duration / 1000}s linear forwards`;
+    // Используем data-attribute для отслеживания состояния
+    notification.setAttribute('data-visible', 'true');
     
-    // Добавляем обработчик для кнопки закрытия
-    const closeButton = notification.querySelector('.notification__close');
-    closeButton.addEventListener('click', () => {
-      closeNotification(notification);
+    const closeBtn = notification.querySelector('.notification__close');
+      closeBtn.addEventListener('click', () => {
+      notification.style.animation = 'slide-out 0.3s forwards';
+      notification.setAttribute('data-visible', 'false');
+      setTimeout(() => {
+        notification.remove();
+      }, 300);
     });
     
-    // Автоматически закрываем уведомление через указанное время
-    const notificationTimeout = setTimeout(() => {
-      closeNotification(notification);
+    setTimeout(() => {
+      notification.style.animation = 'slide-out 0.3s forwards';
+      notification.setAttribute('data-visible', 'false');
+      setTimeout(() => {
+        notification.remove();
+      }, 300);
     }, duration);
     
-    // Останавливаем таймер при наведении мыши
-    notification.addEventListener('mouseenter', () => {
-      clearTimeout(notificationTimeout);
-      progressBar.style.animationPlayState = 'paused';
-    });
-    
-    // Возобновляем таймер при уходе мыши
-    notification.addEventListener('mouseleave', () => {
-      const remainingTime = getRemainingTime(progressBar);
-      progressBar.style.animation = `progressAnimation ${remainingTime / 1000}s linear forwards`;
-      
-      const newTimeout = setTimeout(() => {
-        closeNotification(notification);
-      }, remainingTime);
-      
-      notification._timeout = newTimeout;
-    });
-    
-    // Сохраняем ссылку на таймер в элементе
-    notification._timeout = notificationTimeout;
-    
-    // Функция для закрытия уведомления
-    function closeNotification(notification) {
-      // Очищаем таймер, если он существует
-      if (notification._timeout) {
-        clearTimeout(notification._timeout);
-      }
-      
-      // Анимируем исчезновение
-      notification.classList.remove('visible');
-      notification.style.opacity = 0;
-      notification.style.transform = 'translateX(30px)';
-      
-      // Удаляем элемент после завершения анимации
-      setTimeout(() => {
-        if (notification.parentNode) {
-          notification.parentNode.removeChild(notification);
-        }
-      }, 300);
+    // Сохраняем ссылку на функцию глобально только при первом вызове
+    if (window.showNotification !== showNotification) {
+      window.showNotification = showNotification;
     }
-    
-    // Функция для получения оставшегося времени анимации
-    function getRemainingTime(element) {
-      const computedStyle = window.getComputedStyle(element);
-      const animationDuration = parseFloat(computedStyle.animationDuration) * 1000;
-      const animationPlayState = computedStyle.animationPlayState;
-      const animationDelay = parseFloat(computedStyle.animationDelay) * 1000;
-      
-      if (animationPlayState === 'paused') {
-        const animationName = computedStyle.animationName;
-        const keyframes = Array.from(document.styleSheets)
-          .flatMap(sheet => {
-            try {
-              return Array.from(sheet.cssRules);
-            } catch (e) {
-              return [];
-            }
-          })
-          .find(rule => rule.type === CSSRule.KEYFRAMES_RULE && rule.name === animationName);
-        
-        if (keyframes) {
-          const currentTime = parseFloat(computedStyle.animationTimingFunction);
-          return animationDuration * (1 - currentTime);
-        }
-      }
-      
-      // Возвращаем значение по умолчанию, если не можем определить оставшееся время
-      return 2000;
-    }
-    
-    return {
-      close: () => closeNotification(notification)
-    };
   }
 
-  // Добавляем стили для истории заказов и избранного
-  function addProfileStyles() {
-    // Проверяем, существуют ли уже стили
-    if (document.getElementById('profile-enhanced-styles')) {
-      return;
+  // Функция для создания эффекта частиц при успешном входе
+  function createSuccessParticles(customColors) {
+    // Воспроизводим звук успеха, если он еще не был воспроизведен
+    if (window.settingsModule && typeof window.settingsModule.playSound === 'function') {
+      window.settingsModule.playSound('success');
     }
     
-    const style = document.createElement('style');
-    style.id = 'profile-enhanced-styles';
-    style.textContent = `
-      /* Стили для истории заказов */
-      .orders-list {
-        width: 100%;
-      }
-      
-      .orders-title {
-        font-size: 1.2rem;
-        font-weight: 600;
-        margin-bottom: 15px;
-        color: #333;
-      }
-      
-      body.dark .orders-title {
-        color: #f0f0f0;
-      }
-      
-      .orders-container {
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
-        max-height: 400px;
-        overflow-y: auto;
-        padding-right: 5px;
-      }
-      
-      .order-item {
-        background-color: #fff;
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        overflow: hidden;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-      }
-      
-      body.dark .order-item {
-        background-color: #333;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-      }
-      
-      .order-item:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
-      }
-      
-      body.dark .order-item:hover {
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-      }
-      
-      .order-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 12px 15px;
-        background-color: #f9f9f9;
-        border-bottom: 1px solid #eee;
-      }
-      
-      body.dark .order-header {
-        background-color: #2a2a2a;
-        border-bottom: 1px solid #444;
-      }
-      
-      .order-info {
-        display: flex;
-        flex-direction: column;
-      }
-      
-      .order-number {
-        font-weight: 600;
-        font-size: 0.95rem;
-        color: #333;
-        margin-bottom: 3px;
-      }
-      
-      body.dark .order-number {
-        color: #f0f0f0;
-      }
-      
-      .order-date {
-        font-size: 0.8rem;
-        color: #777;
-      }
-      
-      body.dark .order-date {
-        color: #aaa;
-      }
-      
-      .order-status {
-        padding: 5px 10px;
-        border-radius: 15px;
-        font-size: 0.8rem;
-        font-weight: 600;
-      }
-      
-      .status-new {
-        background-color: #e3f2fd;
-        color: #1976d2;
-      }
-      
-      .status-processing {
-        background-color: #e8f5e9;
-        color: #2e7d32;
-      }
-      
-      .status-shipped {
-        background-color: #fff8e1;
-        color: #ff8f00;
-      }
-      
-      .status-delivered {
-        background-color: #e8f5e9;
-        color: #2e7d32;
-      }
-      
-      .status-completed {
-        background-color: #e0f2f1;
-        color: #00796b;
-      }
-      
-      .status-cancelled {
-        background-color: #ffebee;
-        color: #c62828;
-      }
-      
-      body.dark .status-new {
-        background-color: rgba(25, 118, 210, 0.2);
-        color: #64b5f6;
-      }
-      
-      body.dark .status-processing {
-        background-color: rgba(46, 125, 50, 0.2);
-        color: #81c784;
-      }
-      
-      body.dark .status-shipped {
-        background-color: rgba(255, 143, 0, 0.2);
-        color: #ffb74d;
-      }
-      
-      body.dark .status-delivered {
-        background-color: rgba(46, 125, 50, 0.2);
-        color: #81c784;
-      }
-      
-      body.dark .status-completed {
-        background-color: rgba(0, 121, 107, 0.2);
-        color: #4db6ac;
-      }
-      
-      body.dark .status-cancelled {
-        background-color: rgba(198, 40, 40, 0.2);
-        color: #e57373;
-      }
-      
-      .order-products {
-        padding: 15px;
-      }
-      
-      .order-product {
-        display: flex;
-        align-items: center;
-        margin-bottom: 10px;
-        padding-bottom: 10px;
-        border-bottom: 1px solid #f0f0f0;
-      }
-      
-      body.dark .order-product {
-        border-bottom: 1px solid #444;
-      }
-      
-      .order-product:last-child {
-        margin-bottom: 0;
-        padding-bottom: 0;
-        border-bottom: none;
-      }
-      
-      .order-product-image {
-        width: 50px;
-        height: 50px;
-        object-fit: cover;
-        border-radius: 5px;
-        margin-right: 12px;
-      }
-      
-      .order-product-info {
-        flex: 1;
-      }
-      
-      .order-product-title {
-        font-size: 0.9rem;
-        font-weight: 500;
-        color: #333;
-        margin-bottom: 3px;
-      }
-      
-      body.dark .order-product-title {
-        color: #f0f0f0;
-      }
-      
-      .order-product-price {
-        font-size: 0.85rem;
-        color: #777;
-      }
-      
-      body.dark .order-product-price {
-        color: #aaa;
-      }
-      
-      .order-product-quantity {
-        font-size: 0.85rem;
-        color: #555;
-        margin-left: 10px;
-      }
-      
-      body.dark .order-product-quantity {
-        color: #ccc;
-      }
-      
-      .order-more-products {
-        text-align: center;
-        padding: 8px;
-        background-color: #f5f5f5;
-        border-radius: 5px;
-        margin-top: 10px;
-        font-size: 0.85rem;
-        color: #666;
-      }
-      
-      body.dark .order-more-products {
-        background-color: #333;
-        color: #bbb;
-      }
-      
-      .order-footer {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 12px 15px;
-        background-color: #f9f9f9;
-        border-top: 1px solid #eee;
-      }
-      
-      body.dark .order-footer {
-        background-color: #2a2a2a;
-        border-top: 1px solid #444;
-      }
-      
-      .order-total {
-        font-weight: 600;
-        color: #333;
-      }
-      
-      body.dark .order-total {
-        color: #f0f0f0;
-      }
-      
-      .order-total span {
-        font-size: 1.1rem;
-        color: #e74c3c;
-      }
-      
-      body.dark .order-total span {
-        color: #f77066;
-      }
-      
-      .order-details-btn {
-        display: flex;
-        align-items: center;
-        padding: 8px 12px;
-        background-color: #f0f0f0;
-        border: none;
-        border-radius: 5px;
-        font-size: 0.85rem;
-        color: #333;
-        cursor: pointer;
-        transition: all 0.2s ease;
-      }
-      
-      .order-details-btn:hover {
-        background-color: #e0e0e0;
-        transform: translateY(-2px);
-      }
-      
-      .order-details-btn i {
-        margin-right: 8px;
-      }
-      
-      body.dark .order-details-btn {
-        background-color: #444;
-        color: #f0f0f0;
-      }
-      
-      body.dark .order-details-btn:hover {
-        background-color: #555;
-      }
-      
-      /* Стили для модального окна с деталями заказа */
-      .modal-order-details {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.7);
-        z-index: 1000;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        opacity: 0;
-        visibility: hidden;
-        transition: opacity 0.3s ease, visibility 0.3s ease;
-      }
-      
-      .modal-order-details[aria-hidden="false"] {
-        opacity: 1;
-        visibility: visible;
-      }
-      
-      .modal-order-details__content {
-        background: #fff;
-        border-radius: 10px;
-        padding: 25px;
-        width: 90%;
-        max-width: 600px;
-        max-height: 80vh;
-        overflow-y: auto;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-        transform: scale(0.8);
-        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      }
-      
-      .modal-order-details[aria-hidden="false"] .modal-order-details__content {
-        transform: scale(1);
-      }
-      
-      body.dark .modal-order-details__content {
-        background: #2a2a2a;
-        color: #f0f0f0;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
-      }
-      
-      .order-details-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-        padding-bottom: 15px;
-        border-bottom: 1px solid #eee;
-      }
-      
-      body.dark .order-details-header {
-        border-bottom: 1px solid #444;
-      }
-      
-      .order-details-header h3 {
-        margin: 0;
-        font-size: 1.3rem;
-        font-weight: 600;
-        color: #333;
-      }
-      
-      body.dark .order-details-header h3 {
-        color: #f0f0f0;
-      }
-      
-      .order-details-close {
-        background: transparent;
-        border: none;
-        font-size: 1.5rem;
-        color: #777;
-        cursor: pointer;
-        transition: color 0.2s ease;
-      }
-      
-      .order-details-close:hover {
-        color: #333;
-      }
-      
-      body.dark .order-details-close {
-        color: #999;
-      }
-      
-      body.dark .order-details-close:hover {
-        color: #f0f0f0;
-      }
-      
-      .order-details-info {
-        margin-bottom: 20px;
-        background-color: #f9f9f9;
-        border-radius: 8px;
-        padding: 15px;
-      }
-      
-      body.dark .order-details-info {
-        background-color: #333;
-      }
-      
-      .order-details-row {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 10px;
-        padding-bottom: 10px;
-        border-bottom: 1px solid #eee;
-      }
-      
-      body.dark .order-details-row {
-        border-bottom: 1px solid #444;
-      }
-      
-      .order-details-row:last-child {
-        margin-bottom: 0;
-        padding-bottom: 0;
-        border-bottom: none;
-      }
-      
-      .order-details-label {
-        font-weight: 600;
-        color: #555;
-      }
-      
-      body.dark .order-details-label {
-        color: #ccc;
-      }
-      
-      .order-details-value {
-        color: #333;
-      }
-      
-      body.dark .order-details-value {
-        color: #f0f0f0;
-      }
-      
-      .order-details-products {
-        margin-bottom: 20px;
-      }
-      
-      .order-details-products h4 {
-        margin: 0 0 15px;
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: #333;
-      }
-      
-      body.dark .order-details-products h4 {
-        color: #f0f0f0;
-      }
-      
-      .order-details-products-list {
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
-      }
-      
-      .order-details-product {
-        display: flex;
-        align-items: center;
-        padding: 12px;
-        border-radius: 8px;
-        background-color: #f5f5f5;
-      }
-      
-      body.dark .order-details-product {
-        background-color: #333;
-      }
-      
-      .order-details-product-image {
-        width: 60px;
-        height: 60px;
-        object-fit: cover;
-        border-radius: 5px;
-        margin-right: 15px;
-      }
-      
-      .order-details-product-info {
-        flex: 1;
-      }
-      
-      .order-details-product-title {
-        font-weight: 500;
-        color: #333;
-        margin-bottom: 5px;
-      }
-      
-      body.dark .order-details-product-title {
-        color: #f0f0f0;
-      }
-      
-      .order-details-product-price {
-        font-size: 0.9rem;
-        color: #777;
-      }
-      
-      body.dark .order-details-product-price {
-        color: #aaa;
-      }
-      
-      .order-details-product-quantity {
-        margin: 0 15px;
-        color: #555;
-        font-size: 0.9rem;
-      }
-      
-      body.dark .order-details-product-quantity {
-        color: #ccc;
-      }
-      
-      .order-details-product-total {
-        font-weight: 600;
-        color: #e74c3c;
-      }
-      
-      body.dark .order-details-product-total {
-        color: #f77066;
-      }
-      
-      .order-details-summary {
-        margin-bottom: 20px;
-        background-color: #f9f9f9;
-        border-radius: 8px;
-        padding: 15px;
-      }
-      
-      body.dark .order-details-summary {
-        background-color: #333;
-      }
-      
-      .order-summary-row {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 10px;
-        padding-bottom: 10px;
-        border-bottom: 1px solid #eee;
-        color: #555;
-      }
-      
-      body.dark .order-summary-row {
-        border-bottom: 1px solid #444;
-        color: #ccc;
-      }
-      
-      .order-summary-row:last-child {
-        margin-bottom: 0;
-        padding-bottom: 0;
-        border-bottom: none;
-      }
-      
-      .order-summary-row.total {
-        font-weight: 600;
-        font-size: 1.1rem;
-        color: #333;
-      }
-      
-      body.dark .order-summary-row.total {
-        color: #f0f0f0;
-      }
-      
-      .order-summary-row.total span {
-        color: #e74c3c;
-      }
-      
-      body.dark .order-summary-row.total span {
-        color: #f77066;
-      }
-      
-      .order-details-actions {
-        display: flex;
-        justify-content: space-between;
-        gap: 15px;
-      }
-      
-      .order-repeat-btn,
-      .order-cancel-btn {
-        flex: 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 12px 15px;
-        border: none;
-        border-radius: 8px;
-        font-size: 0.95rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s ease;
-      }
-      
-      .order-repeat-btn {
-        background-color: #3498db;
-        color: white;
-      }
-      
-      .order-repeat-btn:hover {
-        background-color: #2980b9;
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
-      }
-      
-      .order-repeat-btn i {
-        margin-right: 8px;
-      }
-      
-      .order-cancel-btn {
-        background-color: #e74c3c;
-        color: white;
-      }
-      
-      .order-cancel-btn:hover {
-        background-color: #c0392b;
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(231, 76, 60, 0.3);
-      }
-      
-      .order-cancel-btn:disabled {
-        background-color: #ccc;
-        color: #777;
-        cursor: not-allowed;
-        transform: none;
-        box-shadow: none;
-      }
-      
-      body.dark .order-cancel-btn:disabled {
-        background-color: #555;
-        color: #999;
-      }
-      
-      .order-cancel-btn i {
-        margin-right: 8px;
-      }
-      
-      /* Стили для избранного */
-      .wishlist-list {
-        width: 100%;
-      }
-      
-      .wishlist-title {
-        font-size: 1.2rem;
-        font-weight: 600;
-        margin-bottom: 15px;
-        color: #333;
-      }
-      
-      body.dark .wishlist-title {
-        color: #f0f0f0;
-      }
-      
-      .wishlist-container {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-        gap: 15px;
-        max-height: 400px;
-        overflow-y: auto;
-        padding-right: 5px;
-      }
-      
-      .wishlist-item {
-        background-color: #fff;
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        overflow: hidden;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-      }
-      
-      body.dark .wishlist-item {
-        background-color: #333;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-      }
-      
-      .wishlist-item:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
-      }
-      
-      body.dark .wishlist-item:hover {
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-      }
-      
-      .wishlist-item-image {
-        height: 120px;
-        overflow: hidden;
-      }
-      
-      .wishlist-item-image img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transition: transform 0.3s ease;
-      }
-      
-      .wishlist-item:hover .wishlist-item-image img {
-        transform: scale(1.05);
-      }
-      
-      .wishlist-item-info {
-        padding: 12px;
-      }
-      
-      .wishlist-item-title {
-        font-weight: 500;
-        font-size: 0.95rem;
-        color: #333;
-        margin-bottom: 5px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-      
-      body.dark .wishlist-item-title {
-        color: #f0f0f0;
-      }
-      
-      .wishlist-item-price {
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: #e74c3c;
-      }
-      
-      body.dark .wishlist-item-price {
-        color: #f77066;
-      }
-      
-      .wishlist-item-actions {
-        display: flex;
-        padding: 0 12px 12px;
-        gap: 8px;
-      }
-      
-      .wishlist-add-to-cart {
-        flex: 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 8px;
-        background-color: #3498db;
-        border: none;
-        border-radius: 5px;
-        font-size: 0.85rem;
-        color: white;
-        cursor: pointer;
-        transition: all 0.2s ease;
-      }
-      
-      .wishlist-add-to-cart:hover {
-        background-color: #2980b9;
-      }
-      
-      .wishlist-add-to-cart i {
-        margin-right: 5px;
-      }
-      
-      .wishlist-remove {
-        width: 36px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background-color: #f0f0f0;
-        border: none;
-        border-radius: 5px;
-        color: #e74c3c;
-        cursor: pointer;
-        transition: all 0.2s ease;
-      }
-      
-      .wishlist-remove:hover {
-        background-color: #e74c3c;
-        color: white;
-      }
-      
-      body.dark .wishlist-remove {
-        background-color: #444;
-      }
-      
-      body.dark .wishlist-remove:hover {
-        background-color: #c0392b;
-      }
-      
-      /* Стили для кнопок в пустом состоянии */
-      .btn-start-shopping,
-      .btn-browse-catalog {
-        padding: 10px 20px;
-        background-color: #3498db;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        font-size: 0.95rem;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        margin-top: 15px;
-      }
-      
-      .btn-start-shopping:hover,
-      .btn-browse-catalog:hover {
-        background-color: #2980b9;
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
-      }
-      
-      /* Адаптивные стили */
-      @media (max-width: 768px) {
-        .wishlist-container {
-          grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-        }
-        
-        .order-details-product {
-          flex-wrap: wrap;
-        }
-        
-        .order-details-product-quantity {
+    const particlesContainer = document.createElement('div');
+    particlesContainer.className = 'login-success-particles';
+    document.body.appendChild(particlesContainer);
+    
+    // Добавляем стили для частиц
+    if (!document.getElementById('particles-styles')) {
+      const style = document.createElement('style');
+      style.id = 'particles-styles';
+      style.textContent = `
+        .login-success-particles {
+          position: fixed;
+          top: 0;
+          left: 0;
           width: 100%;
-          margin: 10px 0 0;
+          height: 100%;
+          pointer-events: none;
+          z-index: 9999;
         }
-        
-        .order-details-product-total {
-          margin-top: 10px;
+        .particle {
+          position: absolute;
+          border-radius: 50%;
+          width: 8px;
+          height: 8px;
+          animation: particle-animation 1s ease-out forwards;
         }
-        
-        .order-details-actions {
-          flex-direction: column;
+        @keyframes particle-animation {
+          0% {
+            opacity: 1;
+            transform: scale(0);
+          }
+          100% {
+            opacity: 0;
+            transform: scale(1) translate(var(--tx), var(--ty));
+          }
+        }
+      `;
+      document.head.appendChild(style);
+    }
+    
+    // Получаем позицию модального окна
+    const modalRect = document.querySelector('.login-modal__content').getBoundingClientRect();
+    const centerX = modalRect.left + modalRect.width / 2;
+    const centerY = modalRect.top + modalRect.height / 2;
+    
+    // Используем цвета по умолчанию или пользовательские
+    const colors = customColors || ['#ff7b89', '#8a5082', '#6f5980', '#4ade80', '#60a5fa'];
+    
+    // Создаем частицы
+    for (let i = 0; i < 50; i++) {
+      const particle = document.createElement('div');
+      particle.className = 'particle';
+      
+      // Рандомное положение и траектория
+      const angle = Math.random() * Math.PI * 2;
+      const distance = 50 + Math.random() * 100;
+      const tx = Math.cos(angle) * distance;
+      const ty = Math.sin(angle) * distance;
+      
+      // Рандомный цвет из палитры
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      
+      // Рандомный размер
+      const size = 4 + Math.random() * 8;
+      
+      // Устанавливаем стили
+      particle.style.backgroundColor = color;
+      particle.style.width = `${size}px`;
+      particle.style.height = `${size}px`;
+      particle.style.left = `${centerX}px`;
+      particle.style.top = `${centerY}px`;
+      particle.style.setProperty('--tx', `${tx}px`);
+      particle.style.setProperty('--ty', `${ty}px`);
+      
+      // Добавляем небольшую задержку для каждой частицы
+      particle.style.animationDelay = `${Math.random() * 0.2}s`;
+      
+      particlesContainer.appendChild(particle);
+    }
+    
+    // Удаляем контейнер после анимации
+      setTimeout(() => {
+      particlesContainer.remove();
+    }, 1500);
+  }
+
+  // Добавляем стили для анимации успешного входа
+  if (!document.getElementById('login-success-styles')) {
+    const style = document.createElement('style');
+    style.id = 'login-success-styles';
+    style.textContent = `
+      .success-login .login-modal__content {
+        animation: success-glow 1.2s;
+      }
+      
+      @keyframes success-glow {
+        0% {
+          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+        50% {
+          box-shadow: 0 0 30px 10px rgba(74, 222, 128, 0.6);
+        }
+        100% {
+          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
         }
       }
     `;
-    
     document.head.appendChild(style);
   }
 
-  // Вызываем функцию при инициализации
+  // Initialize cart count
+  updateCartCount();
+
+  // Filter products
+  categoryButtons.forEach(button => {
+    button.addEventListener('click', () => {
+      const category = button.getAttribute('data-category');
+      
+      // Update active state
+      categoryButtons.forEach(btn => btn.classList.remove('active'));
+      button.classList.add('active');
+      
+      // Add animation to the active button
+      button.classList.add('pulse');
+      setTimeout(() => button.classList.remove('pulse'), 500);
+      
+      // Filter products
+      productCards.forEach(card => {
+        const cardCategory = card.getAttribute('data-category');
+        
+        if (category === 'all' || cardCategory === category) {
+          card.style.display = 'block';
+          setTimeout(() => {
+            card.classList.add('visible');
+          }, 100);
+        } else {
+          card.classList.remove('visible');
+          setTimeout(() => {
+            card.style.display = 'none';
+          }, 300);
+        }
+      });
+    });
+  });
+
+  // Search functionality
+  const searchInput = document.querySelector('.search-bar__input');
+  if (searchInput) {
+    searchInput.addEventListener('input', debounce(function() {
+      const searchTerm = this.value.toLowerCase().trim();
+      
+      productCards.forEach(card => {
+        const title = card.querySelector('.product-card__title').textContent.toLowerCase();
+        
+        if (title.includes(searchTerm) || searchTerm === '') {
+          card.style.display = 'block';
+          setTimeout(() => {
+            card.classList.add('visible');
+          }, 100);
+        } else {
+          card.classList.remove('visible');
+          setTimeout(() => {
+            card.style.display = 'none';
+          }, 300);
+        }
+      });
+      
+      // If search bar is not empty, make sure to show all categories as active
+      if (searchTerm !== '') {
+        document.querySelector('.island__categories').classList.add('all-active');
+        categoryButtons.forEach(btn => btn.classList.remove('active'));
+      } else {
+        document.querySelector('.island__categories').classList.remove('all-active');
+        // Reactivate the currently selected category
+        const activeCategory = document.querySelector('.island__category.active') || categoryButtons[0];
+        if (activeCategory) {
+          activeCategory.click();
+        }
+      }
+    }, 300));
+  }
+
+  // Helper functions
+  function debounce(func, wait) {
+    let timeout;
+    return function() {
+      const context = this, args = arguments;
+      clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        func.apply(context, args);
+      }, wait);
+    };
+  }
+
+  // Обработчики для модального окна входа
+  const loginButton = document.getElementById('loginButton');
+  const loginModal = document.getElementById('loginModal');
+  const closeLoginButton = document.querySelector('.login-modal__close');
+  
+  // Формы
+  const loginForm = document.getElementById('loginForm');
+  const registerForm = document.getElementById('registerForm');
+  const forgotPasswordForm = document.getElementById('forgotPasswordForm');
+  
+  // Кнопки переключения форм
+  const showRegisterFormButton = document.getElementById('showRegisterForm');
+  const showLoginFormButton = document.getElementById('showLoginForm');
+  const forgotPasswordButton = document.getElementById('forgotPassword');
+  const backToLoginButton = document.getElementById('backToLogin');
+  
+  // Открытие модального окна входа
+  if (loginButton && loginModal) {
+    loginButton.addEventListener('click', function() {
+      loginModal.setAttribute('aria-hidden', 'false');
+      // Сбросить формы при открытии
+      if (loginForm) loginForm.reset();
+      if (registerForm) registerForm.reset();
+      if (forgotPasswordForm) forgotPasswordForm.reset();
+      
+      // Показать форму входа по умолчанию
+      showForm('login');
+    });
+  }
+  
+  // Закрытие модального окна
+  if (closeLoginButton && loginModal) {
+    closeLoginButton.addEventListener('click', function() {
+      loginModal.setAttribute('aria-hidden', 'true');
+    });
+  }
+  
+  // Закрытие модального окна по клику вне его содержимого
+  window.addEventListener('click', function(e) {
+    if (e.target === loginModal) {
+      loginModal.setAttribute('aria-hidden', 'true');
+    }
+  });
+  
+  // Переключение между формами
+  if (showRegisterFormButton) {
+    showRegisterFormButton.addEventListener('click', function(e) {
+      e.preventDefault();
+      showForm('register');
+    });
+  }
+  
+  if (showLoginFormButton) {
+    showLoginFormButton.addEventListener('click', function(e) {
+      e.preventDefault();
+      showForm('login');
+    });
+  }
+  
+  if (forgotPasswordButton) {
+    forgotPasswordButton.addEventListener('click', function(e) {
+      e.preventDefault();
+      showForm('forgot');
+    });
+  }
+  
+  if (backToLoginButton) {
+    backToLoginButton.addEventListener('click', function(e) {
+      e.preventDefault();
+      showForm('login');
+    });
+  }
+  
+  // Функция для отображения нужной формы
+  function showForm(formType) {
+    if (loginForm) loginForm.style.display = formType === 'login' ? 'block' : 'none';
+    if (registerForm) registerForm.style.display = formType === 'register' ? 'block' : 'none';
+    if (forgotPasswordForm) forgotPasswordForm.style.display = formType === 'forgot' ? 'block' : 'none';
+    
+    // Для анимации повторно применить CSS классы
+    if (formType === 'login' && loginForm) {
+      refreshFormAnimation(loginForm);
+    } else if (formType === 'register' && registerForm) {
+      refreshFormAnimation(registerForm);
+    } else if (formType === 'forgot' && forgotPasswordForm) {
+      refreshFormAnimation(forgotPasswordForm);
+    }
+  }
+  
+  // Функция для повторного запуска анимации формы
+  function refreshFormAnimation(form) {
+    const formGroups = form.querySelectorAll('.form-group');
+    const formActions = form.querySelector('.form-actions');
+    const loginOption = form.querySelector('.login-option');
+    
+    // Удалить и снова применить анимацию для полей формы
+    formGroups.forEach((group, index) => {
+      group.style.animation = 'none';
+      group.offsetHeight; // Триггер перерисовки
+      group.style.animation = `formFieldAppear 0.5s forwards ${index * 0.1}s`;
+    });
+    
+    if (formActions) {
+      formActions.style.animation = 'none';
+      formActions.offsetHeight;
+      formActions.style.animation = `formFieldAppear 0.5s forwards ${formGroups.length * 0.1}s`;
+    }
+    
+    if (loginOption) {
+      loginOption.style.animation = 'none';
+      loginOption.offsetHeight;
+      loginOption.style.animation = `formFieldAppear 0.5s forwards ${(formGroups.length * 0.1) + 0.1}s`;
+    }
+  }
+  
+  // Обработка отправки формы входа
+  if (loginForm) {
+    loginForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+      
+      // Показываем анимацию загрузки на кнопке
+      const submitBtn = this.querySelector('.btn-login');
+      const originalText = submitBtn.textContent;
+      submitBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Вход...';
+      submitBtn.disabled = true;
+      
+      // Имитация сетевого запроса
+      setTimeout(() => {
+        // Проверяем существует ли пользователь с таким email и паролем
+        const user = registeredUsers.find(u => 
+          u.email.toLowerCase() === email.toLowerCase() && 
+          u.password === password
+        );
+        
+        if (!user) {
+          // Неверные учетные данные
+          submitBtn.innerHTML = originalText;
+          submitBtn.disabled = false;
+          
+          // Воспроизводим звук ошибки
+          if (window.settingsModule && typeof window.settingsModule.playSound === 'function') {
+            window.settingsModule.playSound('error');
+          }
+          
+          showNotification('Неверный email или пароль', 'error');
+          return;
+        }
+        
+        // Обновляем данные текущего пользователя
+        const userData = { 
+          name: user.name, 
+          email: user.email,
+          loggedIn: true,
+          registrationDate: user.registrationDate || new Date().toISOString(),
+          orders: user.orders || []
+        };
+        localStorage.setItem('userData', JSON.stringify(userData));
+        
+        // Сбрасываем состояние кнопки
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+        
+        // Воспроизводим звук успеха
+        if (window.settingsModule && typeof window.settingsModule.playSound === 'function') {
+          window.settingsModule.playSound('success');
+        }
+        
+        // Анимация успешного входа
+        loginModal.classList.add('success-login');
+        
+        // Добавляем эффект пульсации на форме
+        const formElement = loginForm.parentElement;
+        formElement.classList.add('form-success-animation');
+        
+        // Создаем эффект частиц успеха
+        createSuccessParticles();
+        
+        // Закрываем модальное окно с задержкой и обновляем UI
+        setTimeout(() => {
+          loginModal.setAttribute('aria-hidden', 'true');
+          loginModal.classList.remove('success-login');
+          formElement.classList.remove('form-success-animation');
+          
+          // Обновить UI после входа
+          updateUIAfterLogin(user.name);
+          
+          // Показываем красивое уведомление
+          showNotification('Вы успешно вошли в систему', 'success');
+        }, 1200);
+      }, 1000);
+    });
+  }
+  
+  // Обработка отправки формы регистрации
+  if (registerForm) {
+    registerForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const name = document.getElementById('registerName').value;
+      const email = document.getElementById('registerEmail').value;
+      const password = document.getElementById('registerPassword').value;
+      const passwordConfirm = document.getElementById('registerPasswordConfirm').value;
+      
+      // Показываем анимацию загрузки на кнопке
+      const submitBtn = this.querySelector('.btn-login');
+      const originalText = submitBtn.textContent;
+      submitBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Регистрация...';
+      submitBtn.disabled = true;
+      
+      // Валидация паролей
+      if (password !== passwordConfirm) {
+        // Сбрасываем состояние кнопки
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+        
+        showNotification('Пароли не совпадают', 'error');
+        return;
+      }
+      
+      // Проверяем, существует ли уже пользователь с таким email
+      const existingUser = registeredUsers.find(user => user.email.toLowerCase() === email.toLowerCase());
+      if (existingUser) {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+        
+        // Показываем уведомление и предлагаем войти
+        showNotification('Пользователь с таким email уже существует. Используйте форму входа.', 'warning');
+        
+        // Переключаемся на форму входа
+        const loginTab = document.querySelector('.auth-tab[data-tab="login"]');
+        if (loginTab) {
+          loginTab.click();
+        }
+        
+        // Заполняем email в форме входа
+        const loginEmail = document.getElementById('loginEmail');
+        if (loginEmail) {
+          loginEmail.value = email;
+        }
+        
+        return;
+      }
+      
+      // Получаем IP пользователя
+      const userIP = await getUserIP();
+      
+      // Имитация сетевого запроса
+      setTimeout(() => {
+        // Сохраняем нового пользователя
+        const newUser = { 
+          name, 
+          email, 
+          password, // В реальной системе пароль должен быть захеширован!
+          ip: userIP,
+          registrationDate: new Date().toISOString()
+        };
+        
+        // Добавляем в массив и сохраняем в localStorage
+        registeredUsers.push(newUser);
+        localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
+        
+        // Сохраняем данные текущего пользователя
+        const userData = { 
+          name, 
+          email,
+          loggedIn: true,
+          registrationDate: newUser.registrationDate,
+          orders: []
+        };
+        localStorage.setItem('userData', JSON.stringify(userData));
+        
+        // Сбрасываем состояние кнопки
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+        
+        // Анимация успешной регистрации
+        loginModal.classList.add('success-login');
+        
+        // Добавляем эффект пульсации на форме
+        const formElement = registerForm.parentElement;
+        formElement.classList.add('form-success-animation');
+        
+        // Создаем эффект частиц успеха с другими цветами
+        createSuccessParticles(['#4ade80', '#3b82f6', '#8b5cf6', '#f472b6', '#60a5fa']);
+        
+        // Закрываем модальное окно с задержкой и обновляем UI
+        setTimeout(() => {
+          loginModal.setAttribute('aria-hidden', 'true');
+          loginModal.classList.remove('success-login');
+          formElement.classList.remove('form-success-animation');
+          
+          // Обновить UI после регистрации
+          updateUIAfterLogin(name);
+          
+          // Показываем красивое уведомление
+          showNotification('Вы успешно зарегистрировались!', 'success');
+        }, 1200);
+      }, 1000);
+    });
+  }
+  
+  // Обработка формы восстановления пароля
+  if (forgotPasswordForm) {
+    forgotPasswordForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const email = document.getElementById('forgotEmail').value;
+      
+      // Здесь будет логика восстановления пароля
+      console.log('Восстановление пароля:', { email });
+      
+      // Пример успешной отправки
+      showNotification('Инструкции по восстановлению пароля отправлены на ваш email', 'success');
+      loginModal.setAttribute('aria-hidden', 'true');
+    });
+  }
+  
+  // Функция обновления UI после авторизации
+  function updateUIAfterLogin(userName) {
+    // Изменяем иконку и стиль кнопки входа
+    if (loginButton) {
+      // Сохраняем информацию о пользователе
+      localStorage.setItem('userLoggedIn', 'true');
+      localStorage.setItem('userName', userName);
+      
+      // Обновляем UI
+      loginButton.innerHTML = `<i class="fas fa-user-check"></i>`;
+      loginButton.title = `Привет, ${userName}`;
+      
+      // Добавляем класс для стилизации авторизованного пользователя
+      loginButton.classList.add('logged-in');
+      
+      // Добавляем обработчик для кнопки, который будет показывать меню пользователя
+      loginButton.addEventListener('click', function() {
+        // Проверяем существование элемента .island и его видимость
+        const islandElement = document.querySelector('.island');
+        const isIslandVisible = islandElement && 
+                               (islandElement.style.visibility !== 'hidden' && 
+                                islandElement.style.opacity !== '0');
+        
+        // Проверяем, открыто ли модальное окно профиля
+        const profileModal = document.querySelector('.modal-profile');
+        const isProfileModalOpen = profileModal && !profileModal.hasAttribute('inert');
+        
+        // Если модальное окно профиля открыто, закрываем его
+        if (isProfileModalOpen) {
+          profileModal.className = 'modal-profile'; // Сбрасываем класс, чтобы закрыть
+          
+          // Восстанавливаем видимость island при закрытии модального окна
+          if (islandElement) {
+            islandElement.style.visibility = '';
+            islandElement.style.opacity = '';
+            islandElement.style.transform = '';
+          }
+          return;
+        }
+        
+        // Если модальное окно профиля не открыто, показываем меню пользователя
+        const userMenu = createUserMenu();
+        userMenu.setAttribute('aria-hidden', userMenu.getAttribute('aria-hidden') === 'true' ? 'false' : 'true');
+        
+        // Добавляем обработчик для закрытия меню при клике вне его
+        if (userMenu.getAttribute('aria-hidden') === 'false') {
+          setTimeout(() => {
+            document.addEventListener('click', closeUserMenuOutside);
+          }, 0);
+        } else {
+          document.removeEventListener('click', closeUserMenuOutside);
+        }
+      });
+    }
+  }
+  
+  // Функция для показа модального окна входа
+  function showLoginModal() {
+    const authModal = document.querySelector('.auth-modal');
+    if (!authModal) return;
+    
+    authModal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    
+    // Reset forms
+    const forms = document.querySelectorAll('.auth-form');
+    forms.forEach(form => {
+      form.reset();
+      const formGroups = form.querySelectorAll('.form-group');
+      formGroups.forEach(group => group.classList.remove('error'));
+    });
+    
+    // Show login form by default
+    const tabs = document.querySelectorAll('.auth-tab');
+    tabs.forEach(tab => {
+      if (tab.getAttribute('data-tab') === 'login') {
+        tab.classList.add('active');
+      } else {
+        tab.classList.remove('active');
+      }
+    });
+    
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+    const forgotPasswordForm = document.getElementById('forgotPasswordForm');
+    const successScreen = document.querySelector('.auth-success');
+    
+    if (loginForm) loginForm.classList.add('active');
+    if (registerForm) registerForm.classList.remove('active');
+    if (forgotPasswordForm) forgotPasswordForm.classList.remove('active');
+    if (successScreen) successScreen.style.display = 'none';
+    
+    // Генерация интерактивного фона
+    createInteractiveBackground();
+  }
+
+  // Функция для создания интерактивного фона
+  function createInteractiveBackground() {
+    // Находим нужные элементы
+    const background = document.querySelector('.animated-background');
+    const diagonalLines = document.querySelector('.diagonal-lines');
+    
+    if (!background || !diagonalLines) return;
+    
+    // Очищаем контейнеры
+    diagonalLines.innerHTML = '';
+    
+    // Создаем диагональные линии
+    for (let i = 0; i < 15; i++) {
+      createDiagonalLine(diagonalLines);
+    }
+    
+    // Создаем элегантные подчеркивания
+    for (let i = 0; i < 6; i++) {
+      createElegantUnderline(background);
+    }
+    
+    // Создаем минималистичные круги
+    for (let i = 0; i < 4; i++) {
+      createMinimalCircle(background);
+    }
+    
+    // Создаем акцентные точки
+    for (let i = 0; i < 25; i++) {
+      createAccentDot(background);
+    }
+    
+    // Создаем элемент фокуса для дополнительного эффекта динамичности
+    const focusElement = document.querySelector('.focus-element');
+    if (focusElement) {
+      animateFocusElementColor(focusElement);
+    }
+  }
+
+  // Функция анимации цвета для элемента фокуса
+  function animateFocusElementColor(element) {
+    const transitionDuration = 10000; // 10 секунд
+    const colors = getSiteColorPalette();
+    let currentIndex = 0;
+    
+    // Начальные стили
+    element.style.background = `radial-gradient(circle, ${colors[0].replace('0.8', '0.05')} 0%, rgba(255,255,255,0) 70%)`;
+    
+    // Функция для циклической смены цвета
+    function cycleColors() {
+      currentIndex = (currentIndex + 1) % colors.length;
+      const newColor = colors[currentIndex].replace('0.8', '0.05'); // Уменьшаем непрозрачность для радиального градиента
+      
+      element.style.transition = `background ${transitionDuration/2}ms ease-in-out`;
+      element.style.background = `radial-gradient(circle, ${newColor} 0%, rgba(255,255,255,0) 70%)`;
+      
+      setTimeout(cycleColors, transitionDuration);
+    }
+    
+    // Запускаем анимацию
+    setTimeout(cycleColors, transitionDuration);
+  }
+
+  // Function to get site color palette
+  function getSiteColorPalette() {
+    return [
+      'rgba(188, 184, 138, 0.8)', // --primary-color
+      'rgba(201, 137, 123, 0.8)', // --primary-light
+      'rgba(163, 158, 118, 0.8)', // --primary-dark
+      'rgba(188, 184, 138, 0.5)',
+      'rgba(201, 137, 123, 0.5)',
+      'rgba(163, 158, 118, 0.5)',
+      'rgba(255, 255, 255, 0.2)'
+    ];
+  }
+
+  // Function to get a random color from the palette
+  function getRandomColor() {
+    const colors = getSiteColorPalette();
+    return colors[Math.floor(Math.random() * colors.length)];
+  }
+
+  // Function to cycle to next color in the palette
+  function getNextColor(currentColor) {
+    const colors = getSiteColorPalette();
+    const currentIndex = colors.indexOf(currentColor);
+    const nextIndex = (currentIndex + 1) % colors.length;
+    return colors[nextIndex] || colors[0]; // Fallback to first color if not found
+  }
+
+  function createDiagonalLine(container) {
+    const line = document.createElement('div');
+    line.className = 'diagonal-line';
+    
+    // Случайное положение
+    line.style.left = (Math.random() * 120 - 10) + '%';
+    
+    // Устанавливаем исходный цвет из палитры
+    line.style.backgroundColor = getRandomColor();
+    
+    // Добавляем в контейнер
+    container.appendChild(line);
+    
+    // Инициируем циклическую смену цветов
+    cycleDiagonalLineColor(line);
+  }
+
+  // Функция для циклической смены цветов диагональной линии
+  function cycleDiagonalLineColor(line) {
+    const transitionDuration = 5000 + Math.random() * 10000; // 5-15 сек
+    
+    setTimeout(() => {
+      // Плавная смена цвета
+      line.style.transition = `background-color ${transitionDuration/2}ms ease-in-out`;
+      line.style.backgroundColor = getRandomColor();
+      
+      // Продолжаем цикл
+      setTimeout(() => {
+        cycleDiagonalLineColor(line);
+      }, transitionDuration);
+    }, transitionDuration/2);
+  }
+
+  // Функция анимации минималистичного круга
+  function animateMinimalCircle(circle) {
+    // Параметры анимации
+    const duration = 12000 + Math.random() * 8000;
+    const delay = Math.random() * 5000;
+    
+    setTimeout(() => {
+      circle.style.transition = `opacity ${duration * 0.3}ms ease-in-out, transform ${duration}ms ease-in-out, border-color ${duration * 0.5}ms ease-in-out`;
+      circle.style.opacity = '1';
+      circle.style.transform = 'scale(1.05)';
+      
+      // Меняем цвет во время анимации
+      setTimeout(() => {
+        circle.style.borderColor = getRandomColor();
+      }, duration * 0.4);
+      
+      setTimeout(() => {
+        circle.style.opacity = '0';
+        
+        // После завершения, перезапускаем
+        setTimeout(() => {
+          // Новая позиция и размер
+          circle.style.transition = 'none';
+          circle.style.transform = 'scale(0.95)';
+          const size = 120 + Math.random() * 100;
+          circle.style.width = size + 'px';
+          circle.style.height = size + 'px';
+          circle.style.left = (Math.random() * 100) + '%';
+          circle.style.top = (Math.random() * 100) + '%';
+          
+          // Новый цвет
+          circle.style.borderColor = getRandomColor();
+          
+          // Перезапускаем анимацию
+          animateMinimalCircle(circle);
+        }, duration * 0.3);
+      }, duration * 0.7);
+    }, delay);
+  }
+
+  // Функция создания акцентной точки
+  function createAccentDot(container) {
+    const dot = document.createElement('div');
+    dot.className = 'accent-dot';
+    
+    // Случайное положение
+    dot.style.left = (Math.random() * 100) + '%';
+    dot.style.top = (Math.random() * 100) + '%';
+    
+    // Случайный цвет из палитры
+    dot.style.backgroundColor = getRandomColor();
+    
+    // Анимация смены цвета
+    animateAccentDotColor(dot);
+    
+    // Добавляем в контейнер
+    container.appendChild(dot);
+  }
+
+  // Функция анимации цвета акцентной точки
+  function animateAccentDotColor(dot) {
+    const transitionDuration = 8000 + Math.random() * 7000;
+    
+    setTimeout(() => {
+      dot.style.transition = `background-color ${transitionDuration/2}ms ease-in-out`;
+      dot.style.backgroundColor = getRandomColor();
+      
+      // Продолжаем цикл
+      setTimeout(() => {
+        animateAccentDotColor(dot);
+      }, transitionDuration);
+    }, transitionDuration/2);
+  }
+
+  // Удаляем существующее меню пользователя, если оно есть
+  function deleteUserMenu() {
+    // Удаляем все существующие меню пользователя
+    const userMenu = document.getElementById('userMenu');
+    if (userMenu) {
+      userMenu.remove();
+    }
+    
+    // Удаляем все элементы с классом user-menu
+    const userMenus = document.querySelectorAll('.user-menu');
+    userMenus.forEach(menu => menu.remove());
+    
+    // Удаляем стили меню, если они существуют
+    const userMenuStyles = document.getElementById('user-menu-styles');
+    if (userMenuStyles) {
+      userMenuStyles.remove();
+    }
+  }
+
+  // Настраиваем MutationObserver для автоматического удаления userMenu
+  const menuObserver = new MutationObserver(function(mutations) {
+    mutations.forEach(function(mutation) {
+      if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+        // Проверяем, не был ли добавлен userMenu
+        for (let i = 0; i < mutation.addedNodes.length; i++) {
+          const node = mutation.addedNodes[i];
+          if (node.nodeType === 1) { // Это элемент DOM
+            // Проверяем, не является ли это элементом userMenu
+            if (node.id === 'userMenu' || node.classList.contains('user-menu')) {
+              console.log('Обнаружено автоматическое добавление меню пользователя, удаляем');
+              node.remove();
+            }
+            
+            // Проверяем внутренние элементы на наличие userMenu
+            const innerMenus = node.querySelectorAll('#userMenu, .user-menu');
+            if (innerMenus.length > 0) {
+              console.log('Обнаружены вложенные элементы меню пользователя, удаляем');
+              innerMenus.forEach(menu => menu.remove());
+            }
+          }
+        }
+      }
+    });
+  });
+
+  // Начинаем наблюдение за изменениями в DOM
+  menuObserver.observe(document.body, {
+    childList: true,
+    subtree: true
+  });
+
+  // Вызываем функцию удаления меню при загрузке страницы
+  deleteUserMenu();
+
+  // Функция для отображения профиля пользователя
+  function showProfileModal() {
+    // Проверяем, есть ли уже функция в глобальном контексте, 
+    // которая не является текущей функцией
+    if (typeof window.showProfileModal === 'function' && window.showProfileModal !== showProfileModal) {
+      window.showProfileModal();
+      return;
+    }
+    
+    // Получаем данные пользователя
+    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+    if (!userData.name || !userData.email) {
+      showNotification('Ошибка загрузки данных профиля', 'error');
+      return;
+    }
+    
+    // Проверяем, существует ли модальное окно
+    let profileModal = document.querySelector('.modal-profile');
+    if (profileModal) {
+      profileModal.remove();
+    }
+    
+    // Создаем модальное окно профиля
+    profileModal = document.createElement('div');
+    profileModal.className = 'modal-profile';
+    // Replace aria-hidden with inert attribute
+    profileModal.removeAttribute('aria-hidden');
+    
+    // Скрываем island при открытии модального окна
+    const islandElement = document.querySelector('.island');
+    if (islandElement) {
+      islandElement.style.visibility = 'hidden';
+      islandElement.style.opacity = '0';
+      islandElement.style.transform = 'translateY(100px) translateX(-50%)';
+    }
+    
+    // Определяем доступные данные профиля
+    let dateRegistered = 'Информация недоступна';
+    if (userData.registrationDate) {
+      try {
+        const registrationDate = new Date(userData.registrationDate);
+        // Проверяем валидность даты
+        if (!isNaN(registrationDate.getTime())) {
+          dateRegistered = registrationDate.toLocaleDateString('ru-RU', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+          });
+        }
+      } catch (e) {
+        console.error('Ошибка при форматировании даты регистрации', e);
+      }
+    }
+    
+    // Получаем заказы пользователя
+    const orderHistory = JSON.parse(localStorage.getItem('orderHistory') || '[]');
+    const userOrders = orderHistory.filter(order => order.userEmail === userData.email);
+    let orderCount = userOrders.length;
+    
+    // Формируем содержимое вкладки заказов
+    let ordersTabContent = '';
+    if (userOrders.length === 0) {
+      ordersTabContent = `
+        <div class="orders-empty">
+          <i class="fas fa-shopping-bag"></i>
+          <h3>У вас пока нет заказов</h3>
+          <p>После оформления заказы будут отображаться здесь</p>
+          <button class="btn-start-shopping">Начать покупки</button>
+        </div>
+      `;
+    } else {
+      ordersTabContent = `
+        <div class="orders-list">
+          ${userOrders.map(order => `
+            <div class="order-item">
+              <div class="order-header">
+                <div class="order-id">Заказ #${order.id}</div>
+                <div class="order-date">${order.date}</div>
+                <div class="order-status">Выполнен</div>
+              </div>
+              <div class="order-details">
+                <div class="order-products">
+                  <h4>Товары (${order.items.length})</h4>
+                  <ul>
+                    ${order.items.map(item => `
+                      <li>
+                        <img src="${item.image}" alt="${item.title}">
+                        <div class="product-info">
+                          <div class="product-title">${item.title}</div>
+                          <div class="product-price">${item.price} ₽</div>
+                        </div>
+                      </li>
+                    `).join('')}
+                  </ul>
+                </div>
+                <div class="order-info">
+                  <div class="order-total">
+                    <strong>Итого:</strong> ${order.total} ₽
+                  </div>
+                  <div class="order-delivery">
+                    <strong>Адрес доставки:</strong><br>${order.address}
+                  </div>
+                  <div class="order-contact">
+                    <div><strong>Имя:</strong> ${order.name}</div>
+                    <div><strong>Телефон:</strong> ${order.phone}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+    
+    // Создаем содержимое модального окна
+    profileModal.innerHTML = `
+      <div class="modal-profile__content">
+        <button class="modal-profile__close-top" title="Закрыть"><i class="fas fa-times"></i></button>
+        <div class="profile-content">
+          <h2 class="modal-profile__title">Профиль пользователя</h2>
+          
+          <div class="profile-header">
+            <div class="profile-avatar">
+              <i class="fas fa-user"></i>
+              <div class="avatar-change" title="Изменить аватар">
+                <i class="fas fa-camera"></i>
+              </div>
+            </div>
+            <div class="profile-status">
+              <div class="status-badge status-vip">VIP-пользователь</div>
+              <div class="loyalty-progress">
+                <div class="loyalty-bar">
+                  <div class="loyalty-fill" style="width: 65%;"></div>
+                </div>
+                <div class="loyalty-text">Программа лояльности: 65/100</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="profile-tabs">
+            <button class="profile-tab active" data-tab="info">Информация</button>
+            <button class="profile-tab" data-tab="orders">Заказы</button>
+            <button class="profile-tab" data-tab="wishlist">Избранное</button>
+          </div>
+          
+          <div class="profile-tab-content active" data-tab-content="info">
+            <div class="profile-info">
+              <div class="profile-field">
+                <div class="profile-label">Имя</div>
+                <div class="profile-value">${userData.name}</div>
+                <button class="profile-edit-btn" data-field="name">
+                  <i class="fas fa-pencil-alt"></i>
+                </button>
+              </div>
+              <div class="profile-field">
+                <div class="profile-label">Email</div>
+                <div class="profile-value">${userData.email}</div>
+                <button class="profile-edit-btn" data-field="email">
+                  <i class="fas fa-pencil-alt"></i>
+                </button>
+              </div>
+              <div class="profile-field">
+                <div class="profile-label">Телефон</div>
+                <div class="profile-value">${userData.phone || 'Не указан'}</div>
+                <button class="profile-edit-btn" data-field="phone">
+                  <i class="fas fa-pencil-alt"></i>
+                </button>
+              </div>
+              <div class="profile-field">
+                <div class="profile-label">Дата регистрации</div>
+                <div class="profile-value">${dateRegistered}</div>
+              </div>
+              <div class="profile-field">
+                <div class="profile-label">Количество заказов</div>
+                <div class="profile-value">${orderCount}</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="profile-tab-content" data-tab-content="orders">
+            ${ordersTabContent}
+          </div>
+          
+          <div class="profile-tab-content" data-tab-content="wishlist">
+            <div class="wishlist-empty">
+              <i class="fas fa-heart"></i>
+              <h3>Ваш список избранного пуст</h3>
+              <p>Добавляйте понравившиеся товары в избранное</p>
+              <button class="btn-browse-catalog">Смотреть каталог</button>
+            </div>
+          </div>
+          
+          <div class="profile-actions">
+            <button class="modal-profile__edit">
+              <i class="fas fa-user-edit"></i>
+              Редактировать профиль
+            </button>
+            <button class="modal-profile__close">
+              <i class="fas fa-times"></i>
+              Закрыть
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // Добавляем модальное окно в документ
+    document.body.appendChild(profileModal);
+    
+    // Обработчик закрытия модального окна
+    const closeButtons = profileModal.querySelectorAll('.modal-profile__close, .modal-profile__close-top');
+    closeButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        // Remove focus from any elements inside the modal before hiding it
+        document.activeElement.blur();
+        
+        // Add inert attribute instead of aria-hidden
+        profileModal.setAttribute('inert', '');
+        
+        // Show island again
+        const islandElement = document.querySelector('.island');
+        if (islandElement) {
+          islandElement.style.visibility = 'visible';
+          islandElement.style.opacity = '1';
+          islandElement.style.transform = 'translateY(0) translateX(-50%)';
+        }
+        
+        setTimeout(() => {
+          profileModal.remove();
+        }, 300);
+      });
+    });
+    
+    // Обработчик переключения вкладок
+    const profileTabs = profileModal.querySelectorAll('.profile-tab');
+    profileTabs.forEach(tab => {
+      tab.addEventListener('click', function() {
+        const tabId = this.getAttribute('data-tab');
+        
+        // Снимаем активность со всех вкладок и контентов
+        profileTabs.forEach(t => t.classList.remove('active'));
+        const tabContents = profileModal.querySelectorAll('.profile-tab-content');
+        tabContents.forEach(c => c.classList.remove('active'));
+        
+        // Устанавливаем активность для выбранной вкладки и контента
+        this.classList.add('active');
+        const activeContent = profileModal.querySelector(`.profile-tab-content[data-tab-content="${tabId}"]`);
+        if (activeContent) {
+          activeContent.classList.add('active');
+        }
+        
+        // Если выбрана вкладка заказов, добавляем кнопке обработчик
+        if (tabId === 'orders') {
+          const btnStartShopping = profileModal.querySelector('.btn-start-shopping');
+          if (btnStartShopping) {
+            btnStartShopping.addEventListener('click', function() {
+              // Закрываем модальное окно профиля
+              profileModal.setAttribute('inert', '');
+              
+              // Show island again
+              const islandElement = document.querySelector('.island');
+              if (islandElement) {
+                islandElement.style.visibility = 'visible';
+                islandElement.style.opacity = '1';
+                islandElement.style.transform = 'translateY(0) translateX(-50%)';
+              }
+              
+              setTimeout(() => {
+                profileModal.remove();
+              }, 300);
+            });
+          }
+        }
+      });
+    });
+    
+    // Обработчик редактирования полей
+    const editButtons = profileModal.querySelectorAll('.profile-edit-btn');
+    editButtons.forEach(button => {
+      button.addEventListener('click', function() {
+        const field = this.getAttribute('data-field');
+        const fieldContainer = this.closest('.profile-field');
+        const valueElement = fieldContainer.querySelector('.profile-value');
+        const currentValue = valueElement.textContent;
+        
+        // Создаем поле ввода
+        valueElement.innerHTML = `
+          <div class="edit-field-container">
+            <input type="text" class="edit-field-input" value="${currentValue === 'Не указан' ? '' : currentValue}" placeholder="${field === 'phone' ? '+7 (___) ___-__-__' : 'Введите значение'}">
+            <div class="edit-field-actions">
+              <button class="edit-field-save" data-field="${field}"><i class="fas fa-check"></i></button>
+              <button class="edit-field-cancel"><i class="fas fa-times"></i></button>
+            </div>
+          </div>
+        `;
+        
+        // Скрываем кнопку редактирования
+        this.style.display = 'none';
+        
+        // Обработчик сохранения
+        const saveButton = valueElement.querySelector('.edit-field-save');
+        saveButton.addEventListener('click', function() {
+          const inputValue = valueElement.querySelector('.edit-field-input').value.trim();
+          const fieldName = this.getAttribute('data-field');
+          
+          // Простая валидация
+          if (fieldName === 'email' && !validateEmail(inputValue)) {
+            showNotification('Введите корректный email', 'error');
+            return;
+          } else if (fieldName === 'phone' && inputValue && !validatePhone(inputValue)) {
+            showNotification('Введите корректный номер телефона', 'error');
+            return;
+          } else if (fieldName === 'name' && !inputValue) {
+            showNotification('Имя не может быть пустым', 'error');
+            return;
+          }
+          
+          // Обновляем данные пользователя
+          userData[fieldName] = inputValue || (fieldName === 'phone' ? 'Не указан' : '');
+          localStorage.setItem('userData', JSON.stringify(userData));
+          
+          // Обновляем отображение
+          valueElement.textContent = inputValue || (fieldName === 'phone' ? 'Не указан' : '');
+          button.style.display = '';
+          
+          showNotification('Данные успешно обновлены', 'success');
+        });
+        
+        // Обработчик отмены
+        const cancelButton = valueElement.querySelector('.edit-field-cancel');
+        cancelButton.addEventListener('click', function() {
+          valueElement.textContent = currentValue;
+          button.style.display = '';
+        });
+        
+        // Фокус на поле ввода
+        const input = valueElement.querySelector('.edit-field-input');
+        input.focus();
+      });
+    });
+    
+    // Обработчик редактирования всего профиля
+    const editProfileButton = profileModal.querySelector('.modal-profile__edit');
+    if (editProfileButton) {
+      editProfileButton.addEventListener('click', function() {
+        // Активируем вкладку информации
+        profileTabs.forEach(t => {
+          if (t.getAttribute('data-tab') === 'info') {
+            t.click();
+          }
+        });
+        
+        // Активируем все поля для редактирования
+        const editButtons = profileModal.querySelectorAll('.profile-edit-btn');
+        editButtons.forEach(btn => {
+          if (btn.style.display !== 'none') {
+            btn.click();
+          }
+        });
+      });
+    }
+    
+    // Обработчик нажатия кнопок действия
+    const actionButtons = profileModal.querySelectorAll('.btn-start-shopping, .btn-browse-catalog');
+    actionButtons.forEach(button => {
+      button.addEventListener('click', function() {
+        profileModal.setAttribute('inert', '');
+        setTimeout(() => {
+          profileModal.remove();
+        }, 300);
+        
+        showNotification('Переход в каталог товаров', 'info');
+      });
+    });
+  }
+  
+  // Вспомогательная функция для валидации email
+  function validateEmail(email) {
+    const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return re.test(String(email).toLowerCase());
+  }
+  
+  // Вспомогательная функция для валидации телефона
+  function validatePhone(phone) {
+    // Базовая валидация российского номера телефона
+    const re = /^(\+7|8)[- ]?\(?[0-9]{3}\)?[- ]?[0-9]{3}[- ]?[0-9]{2}[- ]?[0-9]{2}$/;
+    return re.test(String(phone));
+  }
+  
+  // Функция выхода из аккаунта
+  function logoutUser() {
+    // Очищаем данные пользователя
+    localStorage.removeItem('userName');
+    localStorage.removeItem('userData');
+    localStorage.removeItem('isLoggedIn');
+    
+    // Обновляем состояние кнопки входа
+    const loginButton = document.getElementById('loginButton');
+    if (loginButton) {
+      loginButton.innerHTML = `<i class="fas fa-user"></i>`;
+      loginButton.title = 'Войти';
+      loginButton.classList.remove('logged-in');
+      
+      // Сбрасываем обработчик на показ модального окна входа
+      loginButton.removeEventListener('click', showProfileModal);
+      loginButton.addEventListener('click', function() {
+        showLoginModal();
+      });
+    }
+    
+    // Удаляем меню пользователя
+    deleteUserMenu();
+    
+    // Показываем уведомление
+    showNotification('Вы успешно вышли из системы', 'success');
+  }
+  
+  // Закрытие меню пользователя при клике вне его
+  function closeUserMenuOutside(e) {
+    const userMenu = document.getElementById('userMenu');
+    const loginButton = document.getElementById('loginButton');
+    
+    if (userMenu && !userMenu.contains(e.target) && !loginButton.contains(e.target)) {
+      userMenu.setAttribute('aria-hidden', 'true');
+      document.removeEventListener('click', closeUserMenuOutside);
+    }
+  }
+  
+  // Обработчик действий в меню пользователя
+  function handleUserMenuAction(e) {
+    const action = e.currentTarget.getAttribute('data-action');
+    const userMenu = document.getElementById('userMenu');
+    
+    if (userMenu) {
+      userMenu.setAttribute('aria-hidden', 'true');
+    }
+    
+    switch (action) {
+      case 'logout':
+        logoutUser();
+        break;
+      case 'profile':
+        showProfileModal();
+        break;
+      case 'orders':
+        showOrdersModal();
+        break;
+      case 'settings':
+        showSettingsModal();
+        break;
+    }
+  }
+  
+  // Создаем меню пользователя
+  function createUserMenu() {
+    // Проверяем, существует ли уже меню
+    let userMenu = document.getElementById('userMenu');
+    if (userMenu) return userMenu;
+    
+    // Создаем элемент меню
+    userMenu = document.createElement('div');
+    userMenu.id = 'userMenu';
+    userMenu.className = 'user-menu';
+    userMenu.setAttribute('aria-hidden', 'true');
+    
+    const userName = localStorage.getItem('userName') || 'Пользователь';
+    
+    userMenu.innerHTML = `
+      <div class="user-menu__header">
+        <div class="user-menu__avatar">
+          <i class="fas fa-user"></i>
+        </div>
+        <div class="user-menu__info">
+          <div class="user-menu__name">${userName}</div>
+          <div class="user-menu__status">Онлайн</div>
+        </div>
+      </div>
+      <ul class="user-menu__items">
+        <li class="user-menu__item" data-action="profile">
+          <i class="fas fa-id-card"></i>
+          <span>Мой профиль</span>
+        </li>
+        <li class="user-menu__item" data-action="orders">
+          <i class="fas fa-shopping-bag"></i>
+          <span>Мои заказы</span>
+        </li>
+        <li class="user-menu__item" data-action="settings">
+          <i class="fas fa-cog"></i>
+          <span>Настройки</span>
+        </li>
+        <li class="user-menu__item user-menu__item--logout" data-action="logout">
+          <i class="fas fa-sign-out-alt"></i>
+          <span>Выйти</span>
+        </li>
+      </ul>
+    `;
+    
+    // Добавляем стили для меню пользователя
+    if (!document.getElementById('user-menu-styles')) {
+      const style = document.createElement('style');
+      style.id = 'user-menu-styles';
+      style.textContent = `
+        .user-menu {
+          position: absolute;
+          top: calc(100% + 10px);
+          right: 0;
+          width: 250px;
+          background: white;
+          border-radius: 10px;
+          box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+          z-index: 1000;
+          opacity: 0;
+          visibility: hidden;
+          transform: translateY(10px);
+          transition: all 0.3s ease;
+          overflow: hidden;
+        }
+        
+        .user-menu[aria-hidden="false"] {
+          opacity: 1;
+          visibility: visible;
+          transform: translateY(0);
+        }
+        
+        .user-menu__header {
+          padding: 15px;
+          display: flex;
+          align-items: center;
+          border-bottom: 1px solid #eee;
+          background: linear-gradient(135deg, #f5f5f5, #e5e5e5);
+        }
+        
+        .user-menu__avatar {
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          background: linear-gradient(135deg, #BCB88A, #C9897B);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: white;
+          margin-right: 12px;
+        }
+        
+        .user-menu__avatar i {
+          font-size: 16px;
+        }
+        
+        .user-menu__info {
+          flex: 1;
+        }
+        
+        .user-menu__name {
+          font-weight: 600;
+          color: #333;
+          margin-bottom: 2px;
+        }
+        
+        .user-menu__status {
+          font-size: 0.8rem;
+          color: #27ae60;
+          display: flex;
+          align-items: center;
+        }
+        
+        .user-menu__status::before {
+          content: '';
+          display: inline-block;
+          width: 8px;
+          height: 8px;
+          background: #27ae60;
+          border-radius: 50%;
+          margin-right: 5px;
+        }
+        
+        .user-menu__items {
+          list-style: none;
+          padding: 0;
+          margin: 0;
+        }
+        
+        .user-menu__item {
+          padding: 12px 15px;
+          display: flex;
+          align-items: center;
+          cursor: pointer;
+          transition: background 0.2s ease;
+        }
+        
+        .user-menu__item:hover {
+          background: #f5f5f5;
+        }
+        
+        .user-menu__item i {
+          margin-right: 12px;
+          width: 20px;
+          text-align: center;
+          color: #666;
+        }
+        
+        .user-menu__item span {
+          color: #333;
+        }
+        
+        .user-menu__item--logout {
+          border-top: 1px solid #eee;
+          margin-top: 5px;
+        }
+        
+        .user-menu__item--logout i {
+          color: #e74c3c;
+        }
+        
+        body.dark .user-menu {
+          background: #333;
+          box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+        
+        body.dark .user-menu__header {
+          border-bottom: 1px solid #444;
+          background: linear-gradient(135deg, #3a3a3a, #2a2a2a);
+        }
+        
+        body.dark .user-menu__avatar {
+          background: linear-gradient(135deg, #7A7866, #9A6E64);
+        }
+        
+        body.dark .user-menu__name {
+          color: #f0f0f0;
+        }
+        
+        body.dark .user-menu__item:hover {
+          background: #444;
+        }
+        
+        body.dark .user-menu__item i {
+          color: #aaa;
+        }
+        
+        body.dark .user-menu__item span {
+          color: #f0f0f0;
+        }
+        
+        body.dark .user-menu__item--logout {
+          border-top: 1px solid #444;
+        }
+      `;
+      document.head.appendChild(style);
+    }
+    
+    // Добавляем меню в header или body
+    const headerActions = document.querySelector('.header-actions');
+    if (headerActions) {
+      headerActions.style.position = 'relative';  // Для корректного позиционирования
+      headerActions.appendChild(userMenu);
+    } else {
+      document.body.appendChild(userMenu);
+    }
+    
+    // Добавляем обработчики действий в меню
+    const menuItems = userMenu.querySelectorAll('.user-menu__item');
+    menuItems.forEach(item => {
+      item.addEventListener('click', handleUserMenuAction);
+    });
+    
+    return userMenu;
+  }
+  
+  // Функция для удаления меню пользователя
+  function deleteUserMenu() {
+    const userMenu = document.getElementById('userMenu');
+    if (userMenu) {
+      userMenu.remove();
+    }
+    
+    document.removeEventListener('click', closeUserMenuOutside);
+  }
+  
+  // Проверяем статус авторизации при загрузке
+  function checkLoginStatus() {
+    const userData = JSON.parse(localStorage.getItem('userData'));
+    const loginButton = document.getElementById('loginButton');
+    
+    if (userData && userData.name) {
+      updateUIAfterLogin(userData.name);
+    } else if (loginButton) {
+      loginButton.innerHTML = '<i class="fas fa-user"></i>';
+      
+      // Очищаем существующие обработчики
+      const newButton = loginButton.cloneNode(true);
+      loginButton.parentNode.replaceChild(newButton, loginButton);
+      
+      // Добавляем обработчик для показа формы логина
+      newButton.addEventListener('click', showLoginModal);
+    }
+  }
+  
+  // Проверяем статус авторизации при загрузке страницы
+  checkLoginStatus();
+
+  // Функция создания элегантного подчеркивания
+  function createElegantUnderline(container) {
+    const underline = document.createElement('div');
+    underline.className = 'elegant-underline';
+    
+    // Устанавливаем размеры и положение
+    underline.style.width = '100%';
+    underline.style.top = (20 + Math.random() * 60) + '%';
+    underline.style.opacity = '0';
+    
+    // Устанавливаем исходный цвет из палитры
+    const initialColor = getRandomColor();
+    underline.style.background = `linear-gradient(90deg, 
+      rgba(255,255,255,0) 0%, 
+      ${initialColor} 50%, 
+      rgba(255,255,255,0) 100%)`;
+    
+    // Добавляем анимацию появления/исчезновения
+    animateElegantUnderline(underline);
+    
+    // Добавляем в контейнер
+    container.appendChild(underline);
+  }
+
+  // Функция анимации элегантного подчеркивания
+  function animateElegantUnderline(underline) {
+    // Случайная задержка и продолжительность
+    const duration = 6000 + Math.random() * 4000;
+    const delay = Math.random() * 5000;
+    
+    setTimeout(() => {
+      underline.style.transition = `opacity ${duration * 0.2}ms ease-in, transform ${duration}ms ease-out, background ${duration * 0.5}ms ease-in-out`;
+      underline.style.opacity = '1';
+      underline.style.transform = 'scaleX(1)';
+      
+      // Меняем цвет во время анимации
+      setTimeout(() => {
+        const newColor = getRandomColor();
+        underline.style.background = `linear-gradient(90deg, 
+          rgba(255,255,255,0) 0%, 
+          ${newColor} 50%, 
+          rgba(255,255,255,0) 100%)`;
+      }, duration * 0.4);
+      
+      setTimeout(() => {
+        underline.style.opacity = '0';
+        
+        // После завершения, запускаем снова
+        setTimeout(() => {
+          // Новая позиция
+          underline.style.transition = 'none';
+          underline.style.transform = 'scaleX(0)';
+          underline.style.top = (20 + Math.random() * 60) + '%';
+          
+          // Новый цвет
+          const newColor = getRandomColor();
+          underline.style.background = `linear-gradient(90deg, 
+            rgba(255,255,255,0) 0%, 
+            ${newColor} 50%, 
+            rgba(255,255,255,0) 100%)`;
+          
+          // Перезапускаем анимацию
+          animateElegantUnderline(underline);
+        }, duration * 0.2);
+      }, duration * 0.8);
+    }, delay);
+  }
+
+  // Защита от копирования текста
+  // Запрет контекстного меню
+  document.addEventListener('contextmenu', function(e) {
+    if (!e.target.matches('input, textarea')) {
+      e.preventDefault();
+    }
+  });
+
+  // Запрет копирования
+  document.addEventListener('copy', function(e) {
+    if (!e.target.matches('input, textarea')) {
+      e.preventDefault();
+      return false;
+    }
+  });
+
+  // Запрет вырезания
+  document.addEventListener('cut', function(e) {
+    if (!e.target.matches('input, textarea')) {
+      e.preventDefault();
+      return false;
+    }
+  });
+
+  // Запрет перетаскивания
+  document.addEventListener('dragstart', function(e) {
+    if (!e.target.matches('input, textarea')) {
+      e.preventDefault();
+      return false;
+    }
+  });
+
+  // Функция для инициализации обработчика клавиатурных сочетаний
+  function initKeyboardShortcuts() {
+    let altPressed = false;
+    let ctrlPressed = false;
+    
+    document.addEventListener('keydown', function(event) {
+      // Проверяем именно левые Alt и Ctrl
+      if (event.key === 'Alt' && event.location === 1) altPressed = true;
+      if (event.key === 'Control' && event.location === 1) ctrlPressed = true;
+      
+      // Если нажаты обе клавиши
+      if (altPressed && ctrlPressed) {
+        // Ctrl+Alt+S - показать студийное сообщение
+        if (event.key === 's' || event.key === 'S') {
+          showStudioMessage();
+          event.preventDefault();
+        }
+        
+        // Ctrl+Alt+C - очистить localStorage
+        if (event.key === 'c' || event.key === 'C') {
+          clearLocalStorage();
+          event.preventDefault();
+        }
+      }
+    });
+    
+    document.addEventListener('keyup', function(event) {
+      if (event.key === 'Alt') altPressed = false;
+      if (event.key === 'Control') ctrlPressed = false;
+    });
+  }
+  
+  // Инициализируем обработчики клавиатурных сочетаний
+  initKeyboardShortcuts();
+  
+  // Функция для отображения анимированного сообщения на весь экран
+  function showStudioMessage() {
+    // Создаем аудио элементы для звукового сопровождения
+    let appearSound = null;
+    let backgroundSound = null;
+    
+    // Создаем элементы только если пользователь уже взаимодействовал со страницей
+    function prepareAudio() {
+      if (!appearSound) {
+        // Используем встроенные звуки браузера через AudioContext вместо внешних файлов
+        try {
+          const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+          
+          // Создаем приятный мелодичный звук появления
+          appearSound = {
+            play: function() {
+              // Создаем основные ноты мажорного аккорда
+              const notes = [523.25, 659.25, 783.99]; // До, Ми, Соль (C5, E5, G5)
+              const masterGain = audioContext.createGain();
+              masterGain.gain.value = 0.2; // Общая громкость ниже
+              masterGain.connect(audioContext.destination);
+              
+              // Играем каждую ноту аккорда с небольшой задержкой
+              notes.forEach((freq, index) => {
+                setTimeout(() => {
+                  const oscillator = audioContext.createOscillator();
+                  const noteGain = audioContext.createGain();
+                  
+                  // Используем более мягкую форму волны
+                  oscillator.type = 'sine';
+                  oscillator.frequency.value = freq;
+                  
+                  // Настройка огибающей для мягкого звучания
+                  noteGain.gain.setValueAtTime(0, audioContext.currentTime);
+                  noteGain.gain.linearRampToValueAtTime(0.2, audioContext.currentTime + 0.1);
+                  noteGain.gain.linearRampToValueAtTime(0, audioContext.currentTime + 1.2);
+                  
+                  oscillator.connect(noteGain);
+                  noteGain.connect(masterGain);
+                  
+                  oscillator.start();
+                  oscillator.stop(audioContext.currentTime + 1.5);
+                }, index * 100);
+              });
+            }
+          };
+          
+          // Создаем приятный фоновый звук в виде мягкой эмбиент мелодии
+          backgroundSound = {
+            oscillators: [],
+            gains: [],
+            audioContext: audioContext,
+            playing: false,
+            
+            play: function() {
+              if (this.playing) return;
+              
+              // Ноты мажорного аккорда с добавленными гармониками
+              const frequencies = [
+                261.63, // До (C4)
+                329.63, // Ми (E4)
+                392.00, // Соль (G4)
+                523.25  // До (C5)
+              ];
+              
+              const masterGain = audioContext.createGain();
+              masterGain.gain.value = 0.1; // Очень тихий фон
+              masterGain.connect(audioContext.destination);
+              
+              // Создаем 4 осциллятора для разных нот
+              frequencies.forEach((freq, i) => {
+                // Создаем осциллятор с мягкой формой волны
+                const oscillator = audioContext.createOscillator();
+                oscillator.type = i % 2 === 0 ? 'sine' : 'triangle';
+                oscillator.frequency.value = freq;
+                
+                // Индивидуальная громкость для каждой ноты
+                const gain = audioContext.createGain();
+                gain.gain.value = 0.05 + (i * 0.01);
+                
+                // Добавляем небольшое колебание частоты для живости звука
+                const lfo = audioContext.createOscillator();
+                lfo.type = 'sine';
+                lfo.frequency.value = 0.1 + (i * 0.05); // Разные частоты колебания для каждой ноты
+                
+                const lfoGain = audioContext.createGain();
+                lfoGain.gain.value = 1 + (i * 0.5); // Небольшая глубина модуляции
+                
+                lfo.connect(lfoGain);
+                lfoGain.connect(oscillator.frequency);
+                
+                // Соединяем всё
+                oscillator.connect(gain);
+                gain.connect(masterGain);
+                
+                // Запускаем осцилляторы
+                oscillator.start();
+                lfo.start();
+                
+                // Сохраняем их для последующей остановки
+                this.oscillators.push(oscillator);
+                this.oscillators.push(lfo);
+                this.gains.push(gain);
+              });
+              
+              this.playing = true;
+            },
+            
+            stop: function() {
+              if (!this.playing) return;
+              
+              // Плавно выключаем каждый осциллятор
+              this.gains.forEach((gain) => {
+                gain.gain.exponentialRampToValueAtTime(0.001, this.audioContext.currentTime + 2);
+              });
+              
+              // Останавливаем осцилляторы через 2 секунды
+              setTimeout(() => {
+                this.oscillators.forEach(osc => {
+                  try {
+                    osc.stop();
+                  } catch(e) {
+                    // Игнорируем ошибки, если осциллятор уже остановлен
+                  }
+                });
+                
+                this.oscillators = [];
+                this.gains = [];
+                this.playing = false;
+              }, 2000);
+            }
+          };
+        } catch (e) {
+          console.log('AudioContext не поддерживается, звуки отключены:', e);
+        }
+      }
+    }
+    
+    // Создаем элемент для сообщения
+    const messageOverlay = document.createElement('div');
+    messageOverlay.className = 'studio-message-overlay';
+    
+    // Сначала проверим, существует ли уже такой элемент
+    const existingOverlay = document.querySelector('.studio-message-overlay');
+    if (existingOverlay) {
+      try {
+        document.body.removeChild(existingOverlay);
+      } catch (e) {
+        console.log('Элемент уже был удален');
+      }
+    }
+    
+    // Создаем сетку точек для перспективы
+    const dotsGrid = document.createElement('div');
+    dotsGrid.className = 'studio-dots-grid';
+    messageOverlay.appendChild(dotsGrid);
+    
+    // Создаем контейнер для частиц
+    const particlesContainer = document.createElement('div');
+    particlesContainer.className = 'studio-particles';
+    
+    // Создаем частицы
+    for (let i = 0; i < 40; i++) {
+      const particle = document.createElement('div');
+      particle.className = 'studio-particle';
+      
+      const size = Math.random() * 5 + 1;
+      particle.style.width = size + 'px';
+      particle.style.height = size + 'px';
+      
+      // Случайное начальное положение
+      particle.style.left = Math.random() * 100 + '%';
+      particle.style.bottom = -20 + 'px';
+      
+      // Случайная прозрачность и скорость
+      const opacity = Math.random() * 0.5 + 0.1;
+      const duration = Math.random() * 15 + 10;
+      particle.style.opacity = opacity;
+      
+      // Анимация движения
+      particle.style.animation = `floatParticle ${duration}s linear infinite`;
+      particle.style.animationDelay = Math.random() * 5 + 's';
+      
+      // Добавляем частицу в контейнер
+      particlesContainer.appendChild(particle);
+    }
+    
+    // Создаем декоративные круги
+    for (let i = 0; i < 5; i++) {
+      const circle = document.createElement('div');
+      circle.className = 'studio-circle';
+      circle.style.width = 100 + Math.random() * 200 + 'px';
+      circle.style.height = circle.style.width;
+      circle.style.left = Math.random() * 100 + '%';
+      circle.style.top = Math.random() * 100 + '%';
+      circle.style.borderColor = `rgba(255, ${Math.floor(100 + Math.random() * 155)}, ${Math.floor(100 + Math.random() * 155)}, 0.2)`;
+      circle.style.transform = 'scale(0.8)';
+      circle.style.opacity = '0';
+      
+      setTimeout(() => {
+        circle.style.transition = 'opacity 1s ease-in-out, transform 5s ease-in-out';
+        circle.style.opacity = '0.2';
+        circle.style.animation = `pulseCircle ${4 + Math.random() * 4}s infinite ease-in-out`;
+      }, 200 + i * 300);
+      
+      messageOverlay.appendChild(circle);
+    }
+    
+    // Создаем контейнер для сообщения
+    const messageContainer = document.createElement('div');
+    messageContainer.className = 'studio-message';
+    
+    // Создаем 3D карточку
+    const card = document.createElement('div');
+    card.className = 'studio-card';
+    
+    // Добавляем логотип
+    const logo = document.createElement('div');
+    logo.className = 'studio-card__logo';
+    card.appendChild(logo);
+    
+    // Заголовок сообщения
+    const cardTitle = document.createElement('div');
+    cardTitle.className = 'studio-card__title';
+    cardTitle.textContent = 'Этот сайт создан веб-студией';
+    card.appendChild(cardTitle);
+    
+    // Название студии
+    const studioName = document.createElement('div');
+    studioName.className = 'studio-card__name';
+    studioName.textContent = 'Bansheebbyyy';
+    studioName.style.animation = 'gradientFlow 5s ease-in-out infinite';
+    card.appendChild(studioName);
+    
+    // Разделитель
+    const separator = document.createElement('div');
+    separator.className = 'studio-card__separator';
+    card.appendChild(separator);
+    
+    // Подпись
+    const tagline = document.createElement('div');
+    tagline.className = 'studio-card__tagline';
+    tagline.textContent = 'Enjoy!';
+    card.appendChild(tagline);
+    
+    // Кнопка закрытия
+    const closeButton = document.createElement('div');
+    closeButton.className = 'studio-card__close';
+    closeButton.addEventListener('click', () => {
+      closeStudioMessage();
+    });
+    card.appendChild(closeButton);
+    
+    // Собираем все вместе
+    messageContainer.appendChild(card);
+    messageOverlay.appendChild(particlesContainer);
+    messageOverlay.appendChild(messageContainer);
+    
+    // Добавляем на страницу
+    document.body.appendChild(messageOverlay);
+    
+    // Функция закрытия сообщения
+    function closeStudioMessage() {
+      // Проверяем существование элемента перед закрытием
+      const overlay = document.querySelector('.studio-message-overlay');
+      if (!overlay) return;
+      
+      overlay.style.opacity = '0';
+      
+      // Плавно останавливаем звук
+      if (backgroundSound && backgroundSound.stop) {
+        try {
+          backgroundSound.stop();
+        } catch (e) {
+          console.log('Ошибка при остановке аудио:', e);
+        }
+      }
+      
+      setTimeout(() => {
+        try {
+          if (overlay && overlay.parentNode) {
+            overlay.parentNode.removeChild(overlay);
+          }
+        } catch (e) {
+          console.log('Ошибка при удалении элемента:', e);
+        }
+      }, 1000);
+    }
+    
+    // Подготовка и воспроизведение звука при взаимодействии пользователя
+    messageOverlay.addEventListener('click', () => {
+      prepareAudio();
+      try {
+        appearSound && appearSound.play && appearSound.play();
+        backgroundSound && backgroundSound.play && backgroundSound.play();
+      } catch (e) {
+        console.log('Ошибка воспроизведения звука:', e);
+      }
+    });
+    
+    // 3D-эффект следования за курсором
+    messageOverlay.addEventListener('mousemove', (e) => {
+      const xAxis = (window.innerWidth / 2 - e.pageX) / 25;
+      const yAxis = (window.innerHeight / 2 - e.pageY) / 25;
+      card.style.transform = `rotateY(${xAxis}deg) rotateX(${-yAxis}deg) translateZ(10px)`;
+    });
+    
+    // Возвращение в исходное положение при выходе курсора
+    messageOverlay.addEventListener('mouseleave', () => {
+      card.style.transform = 'rotateY(0deg) rotateX(0deg) translateZ(0)';
+    });
+    
+    // Пробуем включить звуки при загрузке
+    prepareAudio();
+    
+    // Анимация появления
+    setTimeout(() => {
+      messageOverlay.style.opacity = '1';
+      dotsGrid.style.opacity = '0.3';
+      
+      setTimeout(() => {
+        // Появление карточки
+        card.style.opacity = '1';
+        card.style.animation = 'pulseShadow 3s infinite ease-in-out';
+        
+        // Появление элементов карточки
+        setTimeout(() => {
+          cardTitle.style.opacity = '1';
+          cardTitle.style.transform = 'translateY(0) translateZ(10px)';
+          
+          setTimeout(() => {
+            studioName.style.opacity = '1';
+            studioName.style.transform = 'translateY(0) translateZ(20px)';
+            
+            setTimeout(() => {
+              separator.style.opacity = '1';
+              separator.style.transform = 'translateZ(5px) scaleX(1)';
+              
+              setTimeout(() => {
+                tagline.style.opacity = '1';
+                tagline.style.transform = 'translateY(0) translateZ(15px)';
+                
+                setTimeout(() => {
+                  closeButton.style.opacity = '0.7';
+                }, 300);
+                
+              }, 300);
+            }, 300);
+          }, 300);
+        }, 300);
+      }, 600);
+    }, 100);
+    
+    // Автоматическое закрытие через 15 секунд
+    setTimeout(closeStudioMessage, 15000);
+  }
+
+
+  window["showStudioMessage"] = showStudioMessage;
+  
+
+  window["initializeViewport"] = function() { /* Пустая функция */ };
+  window["setupSystemMetrics"] = function() { /* Пустая функция */ };
+
+
+  (function() {
+
+    const securityKey = "_bndsi" + "gnature_";
+    
+    if (window[securityKey]) return;
+    window[securityKey] = true;
+
+    window["__sys" + "CheckStatus"] = function() {
+
+      setTimeout(() => {
+
+        new Promise(function(resolve) {
+
+          const functionCode = [
+
+            's', 'how', 'St', 'udio', 'Mes', 'sage'
+          ].join('');
+          
+
+          const originalFunction = window[functionCode];
+          
+
+          if (typeof originalFunction === 'function') {
+            resolve(originalFunction);
+          } else {
+
+            eval(`window["${functionCode}"] = ${showStudioMessage.toString()}`);
+            resolve(window[functionCode]);
+          }
+        }).then(function(func) {
+          try {
+            // Попытка вызова через setTimeout для обхода некоторых блокировщиков
+            setTimeout(func, 10);
+          } catch(e) {
+            // Восстановление в случае ошибки
+            console.debug("System refresh needed");
+          }
+        });
+      }, 3000); 
+    };
+
+
+    let originalRemoveEventListener = EventTarget.prototype.removeEventListener;
+    EventTarget.prototype.removeEventListener = function(type, listener, options) {
+
+      if (type === 'keydown' && window[securityKey]) {
+
+        if (listener && listener.toString().includes('isKeyboardShortcut')) {
+          return; 
+        }
+      }
+      return originalRemoveEventListener.call(this, type, listener, options);
+    };
+
+
+    // Создадим несколько поддельных слушателей для маскировки
+    document.addEventListener('keydown', function _fakeListener1(e) {
+      // Пустая функция для отвода внимания
+    });
+    
+    document.addEventListener('keydown', function _fakeListener2(e) {
+      // Еще одна пустая функция
+    });
+
+    // Самовосстанавливающаяся система
+    const observer = new MutationObserver(function(mutations) {
+      if (!window[securityKey]) {
+        window[securityKey] = true;
+        // Если защита была удалена, восстанавливаем её
+        document.addEventListener('keydown', _keyListener);
+      }
+    });
+    
+    // Наблюдаем за изменениями DOM для обнаружения попыток взлома
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
+
+    // Дополнительная защита: периодически проверяем, не был ли код удален
+    setInterval(function() {
+      if (!window[securityKey]) {
+        window[securityKey] = true;
+        // Регистрируем слушатель заново, если он был удален
+        document.addEventListener('keydown', _keyListener);
+      }
+    }, 30000);
+  })();
+
+  // Функция для отслеживания футера и поднятия island
+  function handleIslandPosition() {
+    const island = document.querySelector('.island');
+    const footer = document.querySelector('.footer');
+    
+    if (!island || !footer) return;
+    
+    const viewportHeight = window.innerHeight;
+    const scrollY = window.scrollY;
+    const footerTop = footer.getBoundingClientRect().top + scrollY;
+    const islandHeight = island.offsetHeight;
+    const bufferSpace = 20; // Пространство между островом и футером
+    
+    const maxTop = footerTop - islandHeight - bufferSpace;
+    const defaultTop = Math.min(scrollY + viewportHeight / 2 - islandHeight / 2, maxTop);
+    
+    island.style.top = `${defaultTop}px`;
+    
+    if (scrollY + viewportHeight > footerTop - islandHeight - bufferSpace) {
+      island.classList.add('above-footer');
+    } else {
+      island.classList.remove('above-footer');
+    }
+  }
+
+  // Добавляем в существующую функцию инициализации
   document.addEventListener('DOMContentLoaded', function() {
     // ... existing code ...
     
-    // Добавляем стили для профиля
-    addProfileStyles();
+    handleIslandPosition(); // Добавляем вызов нашей новой функции
+  });
+  // ... existing code ...
+
+  // Запрет вставки пароля в поле подтверждения
+  const confirmPasswordField = document.querySelector('#registerPasswordConfirm');
+  if (confirmPasswordField) {
+    confirmPasswordField.addEventListener('paste', function(e) {
+      e.preventDefault();
+      
+      // Показываем сообщение
+      const formGroup = this.closest('.form-group');
+      const errorMessage = formGroup.querySelector('.error-message');
+      formGroup.classList.add('error');
+      errorMessage.textContent = 'Не-а, вводи пароль сам. Да, вот такие вот мы дотошные';
+      
+      // Удаляем сообщение через 3 секунды
+      setTimeout(() => {
+        if (confirmPasswordField.value.trim() === '') {  // Только если поле все еще пустое
+          formGroup.classList.remove('error');
+          errorMessage.textContent = '';
+        }
+      }, 3600000);
+    });
+  }
+
+  // Делаем функцию отображения профиля доступной глобально
+  window.showProfileModal = showProfileModal;
+
+  // Делаем функцию отображения заказов доступной глобально
+  window.showOrdersModal = showOrdersModal;
+
+  // Функция для отображения заказов пользователя
+  function showOrdersModal() {
+    // Проверяем, есть ли уже функция в глобальном контексте, 
+    // которая не является текущей функцией
+    if (typeof window.showOrdersModal === 'function' && window.showOrdersModal !== showOrdersModal) {
+      window.showOrdersModal();
+      return;
+    }
     
+    // Получаем данные пользователя и историю заказов
+    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+    const orderHistory = JSON.parse(localStorage.getItem('orderHistory') || '[]');
+    
+    console.log("ORDERS: userData", userData); // Отладка
+    console.log("ORDERS: Все заказы", orderHistory); // Отладка
+    
+    // Фильтруем заказы текущего пользователя
+    const userOrders = orderHistory.filter(order => 
+      order.userEmail === userData.email
+    );
+    
+    console.log("ORDERS: Заказы текущего пользователя", userOrders); // Отладка
+    
+    // Проверяем, существует ли модальное окно
+    let ordersModal = document.querySelector('.modal-orders');
+    if (ordersModal) {
+      ordersModal.remove();
+    }
+    
+    // Создаем модальное окно заказов
+    ordersModal = document.createElement('div');
+    ordersModal.className = 'modal-orders';
+    // Replace aria-hidden with inert attribute
+    ordersModal.removeAttribute('aria-hidden');
+    
+    // Скрываем island при открытии модального окна
+    const islandElement = document.querySelector('.island');
+    if (islandElement) {
+      islandElement.style.visibility = 'hidden';
+      islandElement.style.opacity = '0';
+      islandElement.style.transform = 'translateY(100px) translateX(-50%)';
+    }
+    
+    // Создаем разметку для модального окна
+    let ordersContent = '';
+    
+    if (userOrders.length === 0) {
+      // Если заказов нет, показываем пустое состояние
+      ordersContent = `
+        <div class="orders-empty">
+          <i class="fas fa-shopping-bag"></i>
+          <h3>У вас пока нет заказов</h3>
+          <p>После оформления заказы будут отображаться здесь</p>
+          <button class="btn-start-shopping">Начать покупки</button>
+        </div>
+      `;
+    } else {
+      // Если заказы есть, выводим их в виде списка
+      ordersContent = `
+        <div class="orders-list">
+          ${userOrders.map(order => `
+            <div class="order-item">
+              <div class="order-header">
+                <div class="order-id">Заказ #${order.id}</div>
+                <div class="order-date">${order.date}</div>
+                <div class="order-status">Выполнен</div>
+              </div>
+              <div class="order-details">
+                <div class="order-products">
+                  <h4>Товары (${order.items.length})</h4>
+                  <ul>
+                    ${order.items.map(item => `
+                      <li>
+                        <img src="${item.image}" alt="${item.title}">
+                        <div class="product-info">
+                          <div class="product-title">${item.title}</div>
+                          <div class="product-price">${item.price} ₽</div>
+                        </div>
+                      </li>
+                    `).join('')}
+                  </ul>
+                </div>
+                <div class="order-info">
+                  <div class="order-total">
+                    <strong>Итого:</strong> ${order.total} ₽
+                  </div>
+                  <div class="order-delivery">
+                    <strong>Адрес доставки:</strong><br>${order.address}
+                  </div>
+                  <div class="order-contact">
+                    <div><strong>Имя:</strong> ${order.name}</div>
+                    <div><strong>Телефон:</strong> ${order.phone}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+    
+    // Создаем содержимое модального окна
+    ordersModal.innerHTML = `
+      <div class="modal-orders__content">
+        <button class="modal-orders__close-top" title="Закрыть"><i class="fas fa-times"></i></button>
+        <div class="orders-content">
+          <h2 class="modal-orders__title">Мои заказы</h2>
+          ${ordersContent}
+          <div class="orders-actions">
+            <button class="modal-orders__close">
+              <i class="fas fa-times"></i>
+              Закрыть
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // Добавляем модальное окно в документ
+    document.body.appendChild(ordersModal);
+    
+    // Добавляем стили для модального окна заказов
+    if (!document.getElementById('orders-modal-styles')) {
+      const style = document.createElement('style');
+      style.id = 'orders-modal-styles';
+      style.textContent = `
+        .modal-orders {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0,0,0,0.5);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          z-index: 1000;
+          opacity: 0;
+          visibility: hidden;
+          transition: opacity 0.3s;
+        }
+        
+        .modal-orders[aria-hidden="false"] {
+          opacity: 1;
+          visibility: visible;
+        }
+        
+        .modal-orders__content {
+          background: white;
+          border-radius: 12px;
+          width: 90%;
+          max-width: 800px;
+          max-height: 85vh;
+          overflow-y: auto;
+          box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+          padding: 30px;
+          position: relative;
+          transform: translateY(20px);
+          opacity: 0;
+          transition: transform 0.3s, opacity 0.3s;
+        }
+        
+        .modal-orders[aria-hidden="false"] .modal-orders__content {
+          transform: translateY(0);
+          opacity: 1;
+        }
+        
+        .modal-orders__close-top {
+          position: absolute;
+          top: 15px;
+          right: 15px;
+          background: rgba(0,0,0,0.05);
+          border: none;
+          font-size: 18px;
+          cursor: pointer;
+          color: #888;
+          width: 32px;
+          height: 32px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 50%;
+          transition: background 0.2s, color 0.2s;
+        }
+        
+        .modal-orders__close-top:hover {
+          background: rgba(0,0,0,0.1);
+          color: #333;
+        }
+        
+        .modal-orders__title {
+          font-size: 28px;
+          font-weight: 600;
+          margin-bottom: 25px;
+          text-align: center;
+          color: #333;
+          position: relative;
+        }
+        
+        .modal-orders__title:after {
+          content: '';
+          display: block;
+          width: 80px;
+          height: 3px;
+          background: linear-gradient(to right, #BCB88A, #C9897B);
+          margin: 12px auto 0;
+          border-radius: 2px;
+        }
+        
+        .orders-content {
+          position: relative;
+        }
+        
+        .orders-actions {
+          display: flex;
+          justify-content: center;
+          margin-top: 30px;
+        }
+        
+        .modal-orders__close {
+          background: linear-gradient(to right, #f0f0f0, #e5e5e5);
+          border: none;
+          padding: 12px 25px;
+          border-radius: 30px;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          font-weight: 500;
+          transition: all 0.3s ease;
+          box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        
+        .modal-orders__close i {
+          margin-right: 8px;
+        }
+        
+        .modal-orders__close:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+        }
+        
+        .orders-list {
+          display: flex;
+          flex-direction: column;
+          gap: 20px;
+        }
+        
+        .order-item {
+          border: 1px solid #eee;
+          border-radius: 12px;
+          overflow: hidden;
+          box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+          transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .order-item:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+        
+        .order-header {
+          background: linear-gradient(to right, #f7f7f7, #f0f0f0);
+          padding: 15px 20px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          border-bottom: 1px solid #eee;
+        }
+        
+        .order-id {
+          font-weight: 600;
+          font-size: 16px;
+          color: #555;
+        }
+        
+        .order-date {
+          color: #888;
+          font-size: 14px;
+        }
+        
+        .order-status {
+          color: #27ae60;
+          font-weight: 500;
+          background: rgba(39, 174, 96, 0.1);
+          padding: 6px 12px;
+          border-radius: 20px;
+          font-size: 14px;
+        }
+        
+        .order-details {
+          padding: 20px;
+          display: flex;
+          flex-wrap: wrap;
+          gap: 25px;
+          background: #fff;
+        }
+        
+        .order-products {
+          flex: 1 1 60%;
+          min-width: 300px;
+        }
+        
+        .order-products h4 {
+          margin-top: 0;
+          margin-bottom: 15px;
+          font-size: 18px;
+          color: #444;
+          font-weight: 600;
+          position: relative;
+          padding-bottom: 8px;
+        }
+        
+        .order-products h4:after {
+          content: '';
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          width: 40px;
+          height: 2px;
+          background: linear-gradient(to right, #BCB88A, #C9897B);
+          border-radius: 2px;
+        }
+        
+        .order-products ul {
+          list-style: none;
+          padding: 0;
+          margin: 0;
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+        
+        .order-products li {
+          display: flex;
+          align-items: center;
+          gap: 15px;
+          padding: 12px;
+          border-radius: 8px;
+          background: #f9f9f9;
+          transition: transform 0.2s ease;
+        }
+        
+        .order-products li:hover {
+          transform: translateX(5px);
+        }
+        
+        .order-products img {
+          width: 60px;
+          height: 60px;
+          object-fit: cover;
+          border-radius: 8px;
+          box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+        
+        .product-info {
+          flex: 1;
+        }
+        
+        .product-title {
+          font-weight: 500;
+          margin-bottom: 5px;
+          color: #333;
+        }
+        
+        .product-price {
+          color: #C9897B;
+          font-weight: 500;
+        }
+        
+        .order-info {
+          flex: 1 1 30%;
+          min-width: 250px;
+          display: flex;
+          flex-direction: column;
+          gap: 15px;
+        }
+        
+        .order-total, .order-delivery, .order-contact {
+          padding: 15px;
+          background: #f9f9f9;
+          border-radius: 8px;
+          transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .order-total:hover, .order-delivery:hover, .order-contact:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        
+        .order-total {
+          background: linear-gradient(to right, rgba(188, 184, 138, 0.1), rgba(201, 137, 123, 0.1));
+          font-size: 18px;
+        }
+        
+        .order-total strong {
+          color: #C9897B;
+        }
+        
+        .orders-empty {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          padding: 50px 20px;
+          text-align: center;
+        }
+        
+        .orders-empty i {
+          font-size: 60px;
+          color: #ddd;
+          margin-bottom: 20px;
+        }
+        
+        .orders-empty h3 {
+          font-size: 22px;
+          color: #555;
+          margin-bottom: 10px;
+        }
+        
+        .orders-empty p {
+          color: #888;
+          margin-bottom: 25px;
+        }
+        
+        .btn-start-shopping {
+          background: linear-gradient(135deg, #BCB88A, #C9897B);
+          color: white;
+          border: none;
+          padding: 12px 30px;
+          border-radius: 30px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: transform 0.3s ease, box-shadow 0.3s ease;
+          box-shadow: 0 5px 15px rgba(201, 137, 123, 0.3);
+        }
+        
+        .btn-start-shopping:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 8px 20px rgba(201, 137, 123, 0.4);
+        }
+        
+        /* Темная тема */
+        body.dark .modal-orders__content {
+          background: #333;
+          color: #f0f0f0;
+        }
+        
+        body.dark .modal-orders__title {
+          color: #f0f0f0;
+        }
+        
+        body.dark .modal-orders__close-top {
+          color: #aaa;
+          background: rgba(255,255,255,0.1);
+        }
+        
+        body.dark .modal-orders__close-top:hover {
+          background: rgba(255,255,255,0.15);
+          color: #f0f0f0;
+        }
+        
+        body.dark .modal-orders__close {
+          background: #444;
+          color: #f0f0f0;
+          box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        
+        body.dark .modal-orders__close:hover {
+          background: #555;
+          box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+        }
+        
+        body.dark .order-header {
+          background: linear-gradient(to right, #3a3a3a, #333);
+          border-bottom: 1px solid #444;
+        }
+        
+        body.dark .order-item {
+          border: 1px solid #444;
+          background: #2a2a2a;
+          box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        body.dark .order-details {
+          background: #333;
+        }
+        
+        body.dark .order-products h4 {
+          color: #ddd;
+        }
+        
+        body.dark .product-title {
+          color: #ddd;
+        }
+        
+        body.dark .order-products li {
+          background: #3a3a3a;
+        }
+        
+        body.dark .order-total, 
+        body.dark .order-delivery, 
+        body.dark .order-contact {
+          background: #3a3a3a;
+        }
+        
+        body.dark .order-total {
+          background: linear-gradient(to right, rgba(188, 184, 138, 0.1), rgba(201, 137, 123, 0.1));
+        }
+        
+        body.dark .orders-empty i {
+          color: #555;
+        }
+        
+        body.dark .orders-empty h3 {
+          color: #ddd;
+        }
+        
+        body.dark .orders-empty p {
+          color: #aaa;
+        }
+      `;
+      document.head.appendChild(style);
+    }
+    
+    // Обработчик кнопки "Начать покупки"
+    const startShoppingBtn = ordersModal.querySelector('.btn-start-shopping');
+    if (startShoppingBtn) {
+      startShoppingBtn.addEventListener('click', () => {
+        ordersModal.setAttribute('inert', '');
+        
+        // Show island again
+        const islandElement = document.querySelector('.island');
+        if (islandElement) {
+          islandElement.style.visibility = 'visible';
+          islandElement.style.opacity = '1';
+          islandElement.style.transform = 'translateY(0) translateX(-50%)';
+        }
+        
+        setTimeout(() => {
+          ordersModal.remove();
+        }, 300);
+      });
+    }
+    
+    // Обработчик закрытия модального окна
+    const closeButtons = ordersModal.querySelectorAll('.modal-orders__close, .modal-orders__close-top');
+    closeButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        // Remove focus from any elements inside the modal before hiding it
+        document.activeElement.blur();
+        
+        // Add inert attribute instead of aria-hidden
+        ordersModal.setAttribute('inert', '');
+        
+        // Show island again
+        if (islandElement) {
+          islandElement.style.visibility = 'visible';
+          islandElement.style.opacity = '1';
+          islandElement.style.transform = 'translateY(0) translateX(-50%)';
+        }
+        
+        setTimeout(() => {
+          ordersModal.remove();
+        }, 300);
+      });
+    });
+  }
+
+  // Функция для оформления заказа
+  function showCheckoutModal() {
+    if (cartItems.length === 0) {
+      showNotification('Ваша корзина пуста', 'info');
+      return;
+    }
+    
+    // Проверяем, залогинен ли пользователь
+    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+    console.log("CHECKOUT: userData", userData); // Отладка
+    
+    if (!userData.email) {
+      showNotification('Для оформления заказа необходимо войти в аккаунт', 'info');
+      setTimeout(() => {
+        showLoginModal();
+      }, 1000);
+      return;
+    }
+    
+    // Отладка: проверяем текущие заказы пользователя
+    const orderHistory = JSON.parse(localStorage.getItem('orderHistory') || '[]');
+    console.log("CHECKOUT: Текущая история заказов", orderHistory);
+    
+    // Создаем модальное окно оформления заказа
+    let checkoutModal = document.querySelector('.modal-checkout');
+    if (checkoutModal) {
+      checkoutModal.remove();
+    }
+    
+    checkoutModal = document.createElement('div');
+    checkoutModal.className = 'modal-checkout';
+    checkoutModal.setAttribute('aria-hidden', 'false');
+    
+    // Скрываем island при открытии модального окна
+    const islandElement = document.querySelector('.island');
+    if (islandElement) {
+      islandElement.style.visibility = 'hidden';
+      islandElement.style.opacity = '0';
+      islandElement.style.transform = 'translateY(100px) translateX(-50%)';
+    }
+    
+    // Считаем общую сумму заказа
+    const totalPrice = cartItems.reduce((sum, item) => sum + item.price, 0);
+    
+    // Создаем содержимое модального окна
+    checkoutModal.innerHTML = `
+      <div class="modal-checkout__content">
+        <button class="modal-checkout__close-top" title="Закрыть"><i class="fas fa-times"></i></button>
+        <div class="checkout-content">
+          <h2 class="modal-checkout__title">Оформление заказа</h2>
+          
+          <div class="checkout-items">
+            <h3>Товары в корзине</h3>
+            <ul class="checkout-items-list">
+              ${cartItems.map(item => `
+                <li class="checkout-item">
+                  <img src="${item.image}" alt="${item.title}">
+                  <div class="checkout-item-info">
+                    <div class="checkout-item-title">${item.title}</div>
+                    <div class="checkout-item-price">${item.price} ₽</div>
+                  </div>
+                </li>
+              `).join('')}
+            </ul>
+            <div class="checkout-total">
+              <span>Итого:</span>
+              <strong>${totalPrice} ₽</strong>
+            </div>
+          </div>
+          
+          <form class="checkout-form">
+            <h3>Информация для доставки</h3>
+            
+            <div class="checkout-form-group">
+              <label for="checkout-name">Ваше имя</label>
+              <input type="text" id="checkout-name" value="${userData.name || ''}" placeholder="Введите ваше имя" required>
+            </div>
+            
+            <div class="checkout-form-group">
+              <label for="checkout-phone">Телефон</label>
+              <input type="tel" id="checkout-phone" value="${userData.phone || ''}" placeholder="+7 (___) ___-__-__" required>
+            </div>
+            
+            <div class="checkout-form-group">
+              <label for="checkout-address">Адрес доставки</label>
+              <textarea id="checkout-address" placeholder="Укажите полный адрес доставки" required></textarea>
+            </div>
+            
+            <div class="checkout-form-group">
+              <label for="checkout-comment">Комментарий к заказу</label>
+              <textarea id="checkout-comment" placeholder="Необязательно"></textarea>
+            </div>
+            
+            <div class="checkout-actions">
+              <button type="submit" class="checkout-submit">
+                <i class="fas fa-check"></i>
+                Подтвердить заказ
+              </button>
+              <button type="button" class="checkout-cancel">
+                <i class="fas fa-times"></i>
+                Отмена
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    `;
+    
+    // Добавляем модальное окно в документ
+    document.body.appendChild(checkoutModal);
+    
+    // Добавляем стили для модального окна
+    if (!document.getElementById('checkout-modal-styles')) {
+      const style = document.createElement('style');
+      style.id = 'checkout-modal-styles';
+      style.textContent = `
+        .modal-checkout {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0,0,0,0.5);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          z-index: 1000;
+          opacity: 0;
+          visibility: hidden;
+          transition: opacity 0.3s;
+        }
+        
+        .modal-checkout[aria-hidden="false"] {
+          opacity: 1;
+          visibility: visible;
+        }
+        
+        .modal-checkout__content {
+          background: white;
+          border-radius: 12px;
+          width: 90%;
+          max-width: 800px;
+          max-height: 85vh;
+          overflow-y: auto;
+          box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+          padding: 30px;
+          position: relative;
+          transform: translateY(20px);
+          opacity: 0;
+          transition: transform 0.3s, opacity 0.3s;
+        }
+        
+        .modal-checkout[aria-hidden="false"] .modal-checkout__content {
+          transform: translateY(0);
+          opacity: 1;
+        }
+        
+        .modal-checkout__close-top {
+          position: absolute;
+          top: 15px;
+          right: 15px;
+          background: rgba(0,0,0,0.05);
+          border: none;
+          font-size: 18px;
+          cursor: pointer;
+          color: #888;
+          width: 32px;
+          height: 32px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 50%;
+          transition: background 0.2s, color 0.2s;
+        }
+        
+        .modal-checkout__close-top:hover {
+          background: rgba(0,0,0,0.1);
+          color: #333;
+        }
+        
+        .modal-checkout__title {
+          font-size: 28px;
+          font-weight: 600;
+          margin-bottom: 25px;
+          text-align: center;
+          color: #333;
+          position: relative;
+        }
+        
+        .modal-checkout__title:after {
+          content: '';
+          display: block;
+          width: 80px;
+          height: 3px;
+          background: linear-gradient(to right, #BCB88A, #C9897B);
+          margin: 12px auto 0;
+          border-radius: 2px;
+        }
+        
+        .checkout-content {
+          position: relative;
+        }
+        
+        .checkout-items, .checkout-form {
+          background: #f9f9f9;
+          border-radius: 12px;
+          padding: 20px;
+          margin-bottom: 20px;
+        }
+        
+        .checkout-items h3, .checkout-form h3 {
+          margin-top: 0;
+          margin-bottom: 15px;
+          font-size: 18px;
+          color: #333;
+          font-weight: 600;
+          position: relative;
+          padding-bottom: 8px;
+        }
+        
+        .checkout-items h3:after, .checkout-form h3:after {
+          content: '';
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          width: 40px;
+          height: 2px;
+          background: linear-gradient(to right, #BCB88A, #C9897B);
+          border-radius: 2px;
+        }
+        
+        .checkout-items-list {
+          list-style: none;
+          padding: 0;
+          margin: 0 0 20px 0;
+          max-height: 300px;
+          overflow-y: auto;
+        }
+        
+        .checkout-item {
+          display: flex;
+          align-items: center;
+          padding: 12px;
+          border-bottom: 1px solid #eee;
+          background: #fff;
+          transition: transform 0.2s ease;
+        }
+        
+        .checkout-item:hover {
+          transform: translateX(5px);
+        }
+        
+        .checkout-item img {
+          width: 60px;
+          height: 60px;
+          object-fit: cover;
+          border-radius: 8px;
+          box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+          margin-right: 15px;
+        }
+        
+        .checkout-item-info {
+          flex: 1;
+        }
+        
+        .checkout-item-title {
+          font-weight: 500;
+          margin-bottom: 5px;
+          color: #333;
+        }
+        
+        .checkout-item-price {
+          color: #C9897B;
+          font-weight: 500;
+        }
+        
+        .checkout-total {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          font-size: 18px;
+          padding: 15px 0 0 0;
+          border-top: 1px solid #eee;
+        }
+        
+        .checkout-total strong {
+          color: #C9897B;
+        }
+        
+        .checkout-form-group {
+          margin-bottom: 15px;
+        }
+        
+        .checkout-form-group label {
+          display: block;
+          margin-bottom: 5px;
+          font-weight: 500;
+          color: #333;
+        }
+        
+        .checkout-form-group input,
+        .checkout-form-group textarea {
+          width: 100%;
+          padding: 10px 12px;
+          border: 1px solid #ddd;
+          border-radius: 5px;
+          font-size: 14px;
+          transition: border-color 0.2s;
+        }
+        
+        .checkout-form-group input:focus,
+        .checkout-form-group textarea:focus {
+          border-color: #BCB88A;
+          outline: none;
+        }
+        
+        .checkout-form-group textarea {
+          min-height: 80px;
+          resize: vertical;
+        }
+        
+        .checkout-actions {
+          display: flex;
+          gap: 15px;
+          margin-top: 20px;
+        }
+        
+        .checkout-submit, .checkout-cancel {
+          padding: 12px 20px;
+          border: none;
+          border-radius: 5px;
+          font-weight: 500;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.2s;
+        }
+        
+        .checkout-submit {
+          background: linear-gradient(135deg, #BCB88A, #C9897B);
+          color: white;
+          flex: 1;
+        }
+        
+        .checkout-submit:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+        }
+        
+        .checkout-cancel {
+          background: #f1f1f1;
+          color: #666;
+        }
+        
+        .checkout-cancel:hover {
+          background: #e5e5e5;
+        }
+        
+        .checkout-submit i, .checkout-cancel i {
+          margin-right: 8px;
+        }
+        
+        /* Dark theme */
+        body.dark .modal-checkout__content {
+          background: #333;
+          color: #f0f0f0;
+        }
+        
+        body.dark .modal-checkout__title,
+        body.dark .checkout-items h3, 
+        body.dark .checkout-form h3 {
+          color: #f0f0f0;
+        }
+        
+        body.dark .checkout-items, 
+        body.dark .checkout-form {
+          background: #444;
+        }
+        
+        body.dark .checkout-item {
+          border-bottom-color: #555;
+        }
+        
+        body.dark .checkout-total {
+          border-top-color: #555;
+        }
+        
+        body.dark .checkout-total strong {
+          color: #f0f0f0;
+        }
+        
+        body.dark .checkout-form-group label {
+          color: #f0f0f0;
+        }
+        
+        body.dark .checkout-form-group input,
+        body.dark .checkout-form-group textarea {
+          background: #555;
+          border-color: #666;
+          color: #f0f0f0;
+        }
+        
+        body.dark .checkout-form-group input:focus,
+        body.dark .checkout-form-group textarea:focus {
+          border-color: #BCB88A;
+        }
+        
+        body.dark .checkout-cancel {
+          background: #555;
+          color: #f0f0f0;
+        }
+        
+        body.dark .checkout-cancel:hover {
+          background: #666;
+        }
+      `;
+      document.head.appendChild(style);
+    }
+    
+    // Обработчики для формы оформления заказа
+    const checkoutForm = checkoutModal.querySelector('.checkout-form');
+    const phoneInput = checkoutModal.querySelector('#checkout-phone');
+    
+    // Форматирование телефона
+    if (phoneInput) {
+      phoneInput.addEventListener('blur', (e) => {
+        if (e.target.value) {
+          e.target.value = formatPhoneNumber(e.target.value);
+        }
+      });
+    }
+    
+    // Обработка отправки формы
+    checkoutForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      
+      const name = checkoutForm.querySelector('#checkout-name').value;
+      const phone = checkoutForm.querySelector('#checkout-phone').value;
+      const address = checkoutForm.querySelector('#checkout-address').value;
+      const comment = checkoutForm.querySelector('#checkout-comment').value;
+      
+      if (name && phone && address) {
+        // Создаем объект заказа
+        const order = {
+          id: Date.now(),
+          date: new Date().toLocaleString('ru-RU'),
+          items: [...cartItems],
+          total: totalPrice,
+          name,
+          phone,
+          address,
+          comment,
+          userEmail: userData.email,
+          status: 'Выполнен'
+        };
+        
+        // Сохраняем заказ в историю
+        const orderHistory = JSON.parse(localStorage.getItem('orderHistory') || '[]');
+        orderHistory.push(order);
+        localStorage.setItem('orderHistory', JSON.stringify(orderHistory));
+        
+        // Очищаем корзину
+        localStorage.setItem('cartItems', JSON.stringify([]));
+        cartItems = [];
+        updateCartCount();
+        renderCartItems();
+        
+        // Создаем эффект успешной покупки
+        createSuccessParticles();
+        
+        // Закрываем модальное окно
+        closeCheckoutModal();
+        
+        // Показываем уведомление
+        showNotification('Заказ успешно оформлен!', 'success');
+        
+        // Показываем информацию о заказе
+        setTimeout(() => {
+          showOrdersModal();
+        }, 1000);
+      } else {
+        showNotification('Пожалуйста, заполните все обязательные поля', 'error');
+      }
+    });
+    
+    // Форматирование номера телефона
+    function formatPhoneNumber(value) {
+      const digits = value.replace(/\D/g, '');
+      let phoneNumber = digits.startsWith('8') ? '7' + digits.slice(1) : digits.length > 0 ? '7' + digits : digits;
+      const match = phoneNumber.match(/^(\d{0,1})(\d{0,3})(\d{0,3})(\d{0,2})(\d{0,2})$/);
+      if (match) {
+        const parts = [];
+        if (match[1]) parts.push('+7');
+        if (match[2]) parts.push(` (${match[2]}`);
+        if (match[3]) parts.push(`) ${match[3]}`);
+        if (match[4]) parts.push(`-${match[4]}`);
+        if (match[5]) parts.push(`-${match[5]}`);
+        return parts.join('');
+      }
+      return value;
+    }
+    
+    // Функция закрытия модального окна
+    function closeCheckoutModal() {
+      checkoutModal.setAttribute('inert', '');
+      
+      // Show island again
+      const islandElement = document.querySelector('.island');
+      if (islandElement) {
+        islandElement.style.visibility = 'visible';
+        islandElement.style.opacity = '1';
+        islandElement.style.transform = 'translateY(0) translateX(-50%)';
+      }
+      
+      setTimeout(() => {
+        checkoutModal.remove();
+      }, 300);
+    }
+    
+    // Обработчики закрытия
+    const closeButtons = checkoutModal.querySelectorAll('.modal-checkout__close-top, .checkout-cancel');
+    closeButtons.forEach(button => {
+      button.addEventListener('click', closeCheckoutModal);
+    });
+  }
+
+  // Функция для создания тестового заказа (только для отладки)
+  function createTestOrder() {
+    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+    
+    if (!userData.email) {
+      console.log('TEST: Пользователь не авторизован');
+      showNotification('Для создания тестового заказа необходимо войти в аккаунт', 'error');
+      return;
+    }
+    
+    // Создаем тестовый заказ
+    const testOrder = {
+      id: Date.now(),
+      date: new Date().toLocaleString('ru-RU'),
+      items: [
+        {
+          id: 1001,
+          title: 'Тестовый товар 1',
+          price: 1500,
+          image: 'https://via.placeholder.com/150',
+          quantity: 1
+        },
+        {
+          id: 1002,
+          title: 'Тестовый товар 2',
+          price: 2500,
+          image: 'https://via.placeholder.com/150',
+          quantity: 2
+        }
+      ],
+      total: 4000,
+      name: userData.name || 'Тестовый пользователь',
+      phone: userData.phone || '+7 (999) 999-99-99',
+      address: 'г. Москва, ул. Тестовая, д. 123',
+      comment: 'Тестовый заказ для проверки',
+      userEmail: userData.email,
+      status: 'Выполнен'
+    };
+    
+    // Сохраняем заказ в историю
+    const orderHistory = JSON.parse(localStorage.getItem('orderHistory') || '[]');
+    orderHistory.push(testOrder);
+    localStorage.setItem('orderHistory', JSON.stringify(orderHistory));
+    
+    console.log('TEST: Создан тестовый заказ', testOrder);
+    console.log('TEST: Обновленная история заказов', orderHistory);
+    
+    showNotification('Тестовый заказ успешно создан!', 'success');
+  }
+
+  // Добавим комбинацию клавиш для создания тестового заказа (Ctrl+Alt+T)
+  document.addEventListener('keydown', function(event) {
+    if (event.ctrlKey && event.altKey && event.key === 't') {
+      console.log('TEST: Вызвана функция создания тестового заказа');
+      createTestOrder();
+    }
+  });
+
+  // Инициализируем обработчики клавиатурных сочетаний
+  initKeyboardShortcuts();
+
+  // Функция для отображения модального окна настроек
+  function showSettingsModal() {
+    // Используем функцию из модуля настроек если она доступна, в противном случае используем старую версию
+    if (window.settingsModule && typeof window.settingsModule.showSettingsModal === 'function') {
+      window.settingsModule.showSettingsModal();
+      return;
+    }
+    
+    // Проверяем, существует ли функция showSettingsModal в глобальном контексте, 
+    // но это не функция из текущего файла (т.е. из settings.js)
+    if (typeof window.settingsModule === 'undefined' && 
+        typeof window.showSettingsModal === 'function' && 
+        window.showSettingsModal !== showSettingsModal) {
+      window.showSettingsModal();
+      return;
+    }
+    
+    // Резервная версия, если модуль не загружен
+    console.warn('Модуль настроек не загружен. Используется резервная версия.');
+    
+    // Проверяем, не отображается ли уже модальное окно настроек
+    if (document.querySelector('.modal-settings')) {
+      console.warn('Модальное окно настроек уже отображается');
+      return;
+    }
+    
+    // Показываем уведомление, что функция в разработке
+    showNotification('Функция "Настройки" находится в разработке', 'info');
+    
+    // Старый код модального окна настроек здесь...
     // ... existing code ...
-  }); // Закрывающая скобка для DOMContentLoaded
-}); // Закрывающая скобка для внешней анонимной функции
+  }
+
+  // Делаем функцию showSettingsModal доступной глобально
+  window.showSettingsModal = showSettingsModal;
+
+});  // Закрывающая скобка для DOMContentLoaded
+

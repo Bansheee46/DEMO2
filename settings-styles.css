@@ -1,0 +1,1037 @@
+/* 
+ * Стили для модального окна настроек
+ */
+
+.modal-settings {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 990;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  backdrop-filter: blur(5px);
+  animation: modalFadeIn 0.4s ease-out forwards;
+}
+
+.modal-settings[aria-hidden="false"] {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal-settings.closing {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.modal-settings__content {
+  position: relative;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+  max-width: 600px;
+  width: 90%;
+  max-height: 85vh;
+  overflow-y: auto;
+  transform: scale(0.7) translateY(50px);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+  overflow: hidden;
+  padding: 30px;
+  opacity: 0;
+  animation: modalContentSlideIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  overscroll-behavior: contain;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-settings[aria-hidden="false"] .modal-settings__content {
+  transform: scale(1) translateY(0);
+  opacity: 1;
+}
+
+.modal-settings.closing .modal-settings__content {
+  transform: scale(0.7) translateY(50px);
+  opacity: 0;
+}
+
+/* Добавляем стиль для контейнера содержимого настроек */
+.settings-content {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 5px;
+  padding-bottom: 15px;
+  margin-bottom: 10px;
+}
+
+/* Закрепляем панель с кнопками внизу формы */
+.settings-actions {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 30px;
+  position: sticky;
+  bottom: 0;
+  background: white;
+  padding: 10px 0;
+  z-index: 10;
+  pointer-events: auto;
+  width: 100%;
+  box-shadow: 0 -5px 10px rgba(0, 0, 0, 0.05);
+}
+
+/* Для темной темы - нужно подправить цвет фона кнопок */
+body.dark .settings-actions {
+  background: #2a2a2a;
+  box-shadow: 0 -5px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Заголовок модального окна */
+.modal-settings__title {
+  font-size: 28px;
+  font-weight: 600;
+  margin-bottom: 25px;
+  text-align: center;
+  color: #333;
+  position: relative;
+}
+
+.modal-settings__title:after {
+  content: '';
+  display: block;
+  width: 80px;
+  height: 3px;
+  background: linear-gradient(to right, #BCB88A, #C9897B);
+  margin: 12px auto 0;
+  border-radius: 2px;
+}
+
+/* Кнопка закрытия вверху */
+.modal-settings__close-top {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: rgba(0,0,0,0.05);
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: #888;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background 0.2s, color 0.2s, transform 0.2s;
+  z-index: 5;
+}
+
+.modal-settings__close-top:hover {
+  background: rgba(0,0,0,0.1);
+  color: #333;
+  transform: rotate(90deg);
+}
+
+/* Секции настроек */
+.settings-section {
+  margin-bottom: 30px;
+}
+
+.settings-section h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 15px;
+  color: #444;
+  position: relative;
+  padding-bottom: 8px;
+}
+
+.settings-section h3:after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 40px;
+  height: 2px;
+  background: linear-gradient(to right, #BCB88A, #C9897B);
+  border-radius: 2px;
+}
+
+/* Опции настроек */
+.settings-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.settings-option:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+}
+
+.settings-option__info {
+  flex: 1;
+}
+
+.settings-option__title {
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 5px;
+}
+
+.settings-option__description {
+  color: #777;
+  font-size: 14px;
+}
+
+/* Переключатели */
+.settings-switch {
+  width: 50px;
+  height: 24px;
+  position: relative;
+  cursor: pointer;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.settings-switch__track {
+  width: 100%;
+  height: 100%;
+  background: #ddd;
+  border-radius: 12px;
+  transition: background 0.3s ease;
+}
+
+.settings-switch__thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  transition: left 0.3s ease, background 0.3s ease, transform 0.3s ease;
+}
+
+.settings-switch.active .settings-switch__track {
+  background: linear-gradient(to right, #BCB88A, #C9897B);
+}
+
+.settings-switch.active .settings-switch__thumb {
+  left: calc(100% - 22px);
+}
+
+.settings-switch:hover .settings-switch__thumb {
+  transform: scale(1.1);
+}
+
+/* Эффект ряби при клике на переключатель */
+.ripple-effect {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 50%;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  animation: ripple 0.6s linear;
+  z-index: 0;
+}
+
+@keyframes ripple {
+  0% {
+    width: 0;
+    height: 0;
+    opacity: 0.5;
+  }
+  100% {
+    width: 100px;
+    height: 100px;
+    opacity: 0;
+  }
+}
+
+/* Ползунок громкости */
+.settings-slider {
+  display: flex;
+  align-items: center;
+  width: 150px;
+}
+
+.settings-slider__input {
+  flex: 1;
+  height: 5px;
+  background: #ddd;
+  outline: none;
+  border-radius: 5px;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.settings-slider__input::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: linear-gradient(to right, #BCB88A, #C9897B);
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  transition: transform 0.2s ease;
+}
+
+.settings-slider__input::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+.settings-slider__value {
+  margin-left: 10px;
+  min-width: 40px;
+  text-align: right;
+  color: #777;
+  font-weight: 500;
+}
+
+/* Выпадающий список */
+.settings-select {
+  width: 150px;
+}
+
+.settings-select__input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  outline: none;
+  background: white;
+  color: #333;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.settings-select__input:hover {
+  border-color: #BCB88A;
+}
+
+.settings-select__input:focus {
+  border-color: #C9897B;
+  box-shadow: 0 0 0 2px rgba(201, 137, 123, 0.2);
+}
+
+/* Кнопки внизу */
+.modal-settings__save, 
+.modal-settings__close {
+  padding: 12px 25px;
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 5;
+}
+
+.modal-settings__save {
+  background: linear-gradient(to right, #BCB88A, #C9897B);
+  color: white;
+  box-shadow: 0 5px 15px rgba(201, 137, 123, 0.3);
+  pointer-events: auto !important;
+}
+
+.modal-settings__save:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(201, 137, 123, 0.4);
+}
+
+.modal-settings__close {
+  background: linear-gradient(to right, #f0f0f0, #e5e5e5);
+  color: #555;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.modal-settings__close:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+}
+
+.modal-settings__save i, 
+.modal-settings__close i {
+  margin-right: 8px;
+}
+
+/* Анимации для модального окна */
+@keyframes modalFadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes modalContentSlideIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.7) translateY(50px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Темная тема */
+body.dark .modal-settings__content {
+  background: #2a2a2a;
+  color: #f0f0f0;
+}
+
+body.dark .modal-settings__title {
+  color: #f0f0f0;
+}
+
+body.dark .modal-settings__title:after {
+  background: linear-gradient(to right, #BCB88A, #C9897B);
+}
+
+body.dark .modal-settings__close-top {
+  color: #aaa;
+  background: rgba(255,255,255,0.1);
+}
+
+body.dark .modal-settings__close-top:hover {
+  background: rgba(255,255,255,0.15);
+  color: #f0f0f0;
+}
+
+body.dark .settings-section h3 {
+  color: #ddd;
+}
+
+body.dark .settings-option {
+  background: #3a3a3a;
+}
+
+body.dark .settings-option__title {
+  color: #f0f0f0;
+}
+
+body.dark .settings-option__description {
+  color: #aaa;
+}
+
+body.dark .settings-switch__track {
+  background: #555;
+}
+
+body.dark .settings-switch__thumb {
+  background: #ddd;
+}
+
+body.dark .settings-switch.active .settings-switch__track {
+  background: linear-gradient(to right, #BCB88A, #C9897B);
+}
+
+body.dark .settings-slider__input {
+  background: #555;
+}
+
+body.dark .settings-select__input {
+  background: #444;
+  border-color: #555;
+  color: #f0f0f0;
+}
+
+body.dark .settings-select__input:hover {
+  border-color: #BCB88A;
+}
+
+body.dark .settings-select__input:focus {
+  border-color: #C9897B;
+  box-shadow: 0 0 0 2px rgba(201, 137, 123, 0.3);
+}
+
+body.dark .modal-settings__close {
+  background: #444;
+  color: #f0f0f0;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+body.dark .modal-settings__close:hover {
+  background: #555;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 600px) {
+  .modal-settings__content {
+    width: 95%;
+    padding: 20px;
+  }
+  
+  .settings-section h3 {
+    font-size: 16px;
+  }
+  
+  .settings-option {
+    padding: 12px;
+  }
+  
+  .settings-option__title {
+    font-size: 14px;
+  }
+  
+  .settings-option__description {
+    font-size: 12px;
+  }
+  
+  .settings-slider,
+  .settings-select {
+    width: 120px;
+  }
+  
+  .settings-actions {
+    flex-direction: column;
+  }
+  
+  .modal-settings__save,
+  .modal-settings__close {
+    width: 100%;
+    padding: 10px 15px;
+  }
+}
+
+/* Поддержка отключения анимаций */
+body.no-animations *,
+body.no-animations *:before,
+body.no-animations *:after {
+  animation-duration: 0s !important;
+  transition-duration: 0s !important;
+}
+
+/* Кнопка действия в настройках */
+.settings-button {
+  background: linear-gradient(to right, #BCB88A, #C9897B);
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.settings-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.settings-button i {
+  margin-right: 5px;
+}
+
+/* Стили для разных размеров шрифта */
+body.font-small {
+  --base-font-size: 0.9rem;
+}
+
+body.font-normal {
+  --base-font-size: 1rem;
+}
+
+body.font-large {
+  --base-font-size: 1.1rem;
+}
+
+/* Применение размера шрифта к элементам интерфейса */
+body.font-small p, body.font-small .body-text,
+body.font-normal p, body.font-normal .body-text,
+body.font-large p, body.font-large .body-text {
+  font-size: var(--base-font-size);
+}
+
+body.font-small h1, body.font-normal h1, body.font-large h1 {
+  font-size: calc(var(--base-font-size) * 2);
+}
+
+body.font-small h2, body.font-normal h2, body.font-large h2 {
+  font-size: calc(var(--base-font-size) * 1.8);
+}
+
+body.font-small h3, body.font-normal h3, body.font-large h3 {
+  font-size: calc(var(--base-font-size) * 1.5);
+}
+
+/* Стили для режима экономии ресурсов */
+body.low-resource-mode .animated-element {
+  animation: none !important;
+  transition: none !important;
+}
+
+body.low-resource-mode .heavy-effect {
+  display: none !important;
+}
+
+body.low-resource-mode .parallax-element {
+  transform: none !important;
+}
+
+/* Стили для редуцированных анимаций */
+body.reduced-animations * {
+  transition-duration: 0.1s !important;
+}
+
+body.reduced-animations .animated-element {
+  animation-duration: 0.2s !important;
+}
+
+/* Темная тема для новых компонентов */
+body.dark .settings-button {
+  background: linear-gradient(to right, #8a7c54, #a06b61);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+
+body.dark .settings-button:hover {
+  box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+}
+
+/* Адаптация для мобильных устройств */
+@media (max-width: 600px) {
+  .settings-button {
+    font-size: 13px;
+    padding: 6px 10px;
+  }
+}
+
+/* Стили для галереи тем */
+.theme-description {
+  color: #777;
+  font-size: 14px;
+  margin: 10px 0 20px;
+  text-align: center;
+  font-style: italic;
+}
+
+.theme-gallery {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.theme-preview {
+  width: 120px;
+  cursor: pointer;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 2px solid transparent;
+}
+
+.theme-preview:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.theme-preview.active {
+  border-color: var(--accent-primary, #BCB88A);
+}
+
+.theme-preview__sample {
+  width: 100%;
+  height: 80px;
+  border-radius: 6px 6px 0 0;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Стили для предпросмотра тем */
+.theme-preview__sample--default {
+  background-color: #fff;
+}
+
+.theme-preview__sample--dark {
+  background-color: #2a2a2a;
+}
+
+.theme-preview__sample--contrast {
+  background-color: #000;
+}
+
+.theme-preview__sample--elegant {
+  background-color: #f5f5f5;
+  background-image: linear-gradient(135deg, #f5f5f5 0%, #e6e6e6 100%);
+}
+
+.theme-preview__sample--nature {
+  background-color: #f0f5e9;
+  background-image: linear-gradient(135deg, #f0f5e9 0%, #e3efdc 100%);
+}
+
+.theme-preview__sample--neon {
+  background-color: #0d0221;
+  background-image: linear-gradient(135deg, #0d0221 0%, #150941 100%);
+}
+
+.theme-preview__sample--pastel {
+  background-color: #f8e9e9;
+  background-image: linear-gradient(135deg, #f8e9e9 0%, #f3e1f6 100%);
+}
+
+.theme-preview__sample--vintage {
+  background-color: #efe7d7;
+  background-image: linear-gradient(135deg, #efe7d7 0%, #e8d6c0 100%);
+}
+
+.theme-preview__sample--tech {
+  background-color: #eef2f5;
+  background-image: linear-gradient(135deg, #eef2f5 0%, #dde6ee 100%);
+}
+
+.theme-preview__name {
+  font-size: 12px;
+  text-align: center;
+  padding: 8px 0;
+  background: #f9f9f9;
+  color: #555;
+}
+
+/* Элементы внутри предпросмотра */
+.preview-header {
+  height: 20%;
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.preview-body {
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.preview-item {
+  height: 10px;
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 2px;
+}
+
+.theme-preview__sample--dark .preview-item,
+.theme-preview__sample--contrast .preview-item,
+.theme-preview__sample--neon .preview-item {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.preview-button {
+  height: 15px;
+  width: 70%;
+  margin-top: 5px;
+  border-radius: 2px;
+  background-color: var(--accent-primary, #BCB88A);
+}
+
+/* Стили для темной темы */
+body.dark .theme-description {
+  color: #bbb;
+}
+
+body.dark .theme-preview__name {
+  background: #3a3a3a;
+  color: #ddd;
+}
+
+/* Стили для выбора цветов акцента */
+.color-picker {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.color-preview {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid #ddd;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.color-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-width: 150px;
+  justify-content: flex-end;
+}
+
+.color-option {
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.color-option:hover {
+  transform: scale(1.1);
+}
+
+.color-option.active {
+  border-color: #555;
+  box-shadow: 0 0 0 2px rgba(0,0,0,0.1);
+}
+
+body.dark .color-option.active {
+  border-color: #ddd;
+  box-shadow: 0 0 0 2px rgba(255,255,255,0.2);
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 600px) {
+  .theme-gallery {
+    gap: 8px;
+  }
+
+  .theme-preview {
+    width: 85px;
+  }
+
+  .theme-preview__sample {
+    height: 60px;
+  }
+
+  .color-options {
+    max-width: 120px;
+  }
+
+  .color-option {
+    width: 20px;
+    height: 20px;
+  }
+
+  .color-preview {
+    width: 30px;
+    height: 30px;
+  }
+}
+
+/* Стили для разных тем */
+/* Тема по умолчанию - уже имеет базовые стили */
+body.theme-default {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8f8f8;
+  --text-primary: #333333;
+  --text-secondary: #666666;
+  --border-color: #e0e0e0;
+  --shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Темная тема */
+body.theme-dark {
+  --bg-primary: #1a1a1a;
+  --bg-secondary: #2a2a2a;
+  --text-primary: #f0f0f0;
+  --text-secondary: #b0b0b0;
+  --border-color: #444444;
+  --shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* Контрастная тема */
+body.theme-contrast {
+  --bg-primary: #000000;
+  --bg-secondary: #1a1a1a;
+  --text-primary: #ffffff;
+  --text-secondary: #dddddd;
+  --border-color: #555555;
+  --shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+}
+
+/* Элегантная тема */
+body.theme-elegant {
+  --bg-primary: #f5f5f5;
+  --bg-secondary: #e6e6e6;
+  --text-primary: #333333;
+  --text-secondary: #555555;
+  --border-color: #dddddd;
+  --shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  font-family: 'Georgia', serif;
+}
+
+/* Природная тема */
+body.theme-nature {
+  --bg-primary: #f0f5e9;
+  --bg-secondary: #e3efdc;
+  --text-primary: #3a5a40;
+  --text-secondary: #588157;
+  --border-color: #c3d5b4;
+  --shadow: 0 4px 15px rgba(58, 90, 64, 0.1);
+}
+
+/* Неоновая тема */
+body.theme-neon {
+  --bg-primary: #0d0221;
+  --bg-secondary: #150941;
+  --text-primary: #00ffff;
+  --text-secondary: #ff00ff;
+  --border-color: #3c096c;
+  --shadow: 0 4px 15px rgba(60, 9, 108, 0.5);
+}
+
+/* Пастельная тема */
+body.theme-pastel {
+  --bg-primary: #f8e9e9;
+  --bg-secondary: #f3e1f6;
+  --text-primary: #6c757d;
+  --text-secondary: #868e96;
+  --border-color: #e9d8e3;
+  --shadow: 0 4px 15px rgba(108, 117, 125, 0.1);
+}
+
+/* Винтажная тема */
+body.theme-vintage {
+  --bg-primary: #efe7d7;
+  --bg-secondary: #e8d6c0;
+  --text-primary: #73503c;
+  --text-secondary: #a8816e;
+  --border-color: #d8c3a5;
+  --shadow: 0 4px 15px rgba(115, 80, 60, 0.1);
+}
+
+/* Технологичная тема */
+body.theme-tech {
+  --bg-primary: #eef2f5;
+  --bg-secondary: #dde6ee;
+  --text-primary: #37474f;
+  --text-secondary: #546e7a;
+  --border-color: #cfd8dc;
+  --shadow: 0 4px 15px rgba(55, 71, 79, 0.1);
+}
+
+/* Темная версия для тем, если включен isDarkMode */
+body.theme-dark-mode.theme-default {
+  --bg-primary: #1a1a1a;
+  --bg-secondary: #2a2a2a;
+  --text-primary: #f0f0f0;
+  --text-secondary: #b0b0b0;
+  --border-color: #444444;
+  --shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+body.theme-dark-mode.theme-elegant {
+  --bg-primary: #2a2a2a;
+  --bg-secondary: #3a3a3a;
+  --text-primary: #f0f0f0;
+  --text-secondary: #d0d0d0;
+  --border-color: #555555;
+  --shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+body.theme-dark-mode.theme-nature {
+  --bg-primary: #1e2a23;
+  --bg-secondary: #2a3c30;
+  --text-primary: #b8d8c0;
+  --text-secondary: #8fbc94;
+  --border-color: #3a5a40;
+  --shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+body.theme-dark-mode.theme-pastel {
+  --bg-primary: #2d2c38;
+  --bg-secondary: #3c3948;
+  --text-primary: #d9c2d4;
+  --text-secondary: #b8a2b4;
+  --border-color: #524a6a;
+  --shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+body.theme-dark-mode.theme-vintage {
+  --bg-primary: #2d241e;
+  --bg-secondary: #3c2e27;
+  --text-primary: #d8c3a5;
+  --text-secondary: #b8a284;
+  --border-color: #73503c;
+  --shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+body.theme-dark-mode.theme-tech {
+  --bg-primary: #1c313a;
+  --bg-secondary: #263238;
+  --text-primary: #b0bec5;
+  --text-secondary: #90a4ae;
+  --border-color: #455a64;
+  --shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* Исправление для десктоп-версии */
+@media (min-width: 601px) {
+  .modal-settings__save,
+  .modal-settings__close {
+    min-width: 150px;
+    pointer-events: auto !important;
+  }
+  
+  .settings-actions {
+    padding-bottom: 10px;
+  }
+}
+
+/* Улучшенные стили кнопки сохранения для предотвращения конфликтов */
+.settings-actions .modal-settings__save {
+  appearance: auto;
+  -webkit-appearance: auto;
+  -moz-appearance: auto;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  background: linear-gradient(to right, #BCB88A, #C9897B) !important;
+  color: white !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  position: relative !important;
+  z-index: 20 !important;
+  cursor: pointer !important;
+  user-select: none !important;
+  font-weight: 500 !important;
+}
+
+.settings-actions .modal-settings__save:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 8px 20px rgba(201, 137, 123, 0.4) !important;
+  background: linear-gradient(to right, #c5c19c, #d09b8f) !important;
+}
+
+.settings-actions .modal-settings__save:active {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 10px rgba(201, 137, 123, 0.3) !important;
+}
+
+/* Улучшения для мобильных устройств */
+@media (max-width: 600px) {
+  .settings-actions .modal-settings__save,
+  .settings-actions .modal-settings__close {
+    width: 100% !important;
+    min-height: 44px !important; /* По рекомендациям для мобильных устройств */
+    margin-bottom: 5px !important;
+  }
+} 

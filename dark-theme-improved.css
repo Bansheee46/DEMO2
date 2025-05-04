@@ -1,0 +1,298 @@
+/* Улучшенные стили для темной темы */
+
+/* Основные цвета темной темы */
+:root {
+  --dark-bg-primary: #1a1a2e;
+  --dark-bg-secondary: #16213e;
+  --dark-bg-tertiary: #0f3460;
+  --dark-surface: #162447;
+  --dark-card: #1f4068;
+  --dark-text-primary: #e6e6e6;
+  --dark-text-secondary: #b8b8b8;
+  --dark-border: rgba(255, 255, 255, 0.12);
+  --dark-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+  --dark-highlight: rgba(255, 255, 255, 0.05);
+  --accent-warm: #e94560;
+  --accent-primary: #BCB88A;
+  --accent-secondary: #C9897B;
+}
+
+/* Основные элементы */
+body[data-theme="dark"], 
+body.dark {
+  background-color: var(--dark-bg-primary);
+  color: var(--dark-text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body[data-theme="dark"] .top-cloud,
+body.dark .top-cloud {
+  box-shadow: var(--dark-shadow);
+}
+
+/* Карточки товаров */
+body[data-theme="dark"] .product-card,
+body.dark .product-card {
+  background-color: var(--dark-surface);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--dark-border);
+}
+
+body[data-theme="dark"] .product-card:hover,
+body.dark .product-card:hover {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+  transform: translateY(-5px);
+}
+
+body[data-theme="dark"] .product-card__title,
+body.dark .product-card__title {
+  color: var(--dark-text-primary);
+}
+
+body[data-theme="dark"] .product-card__price,
+body.dark .product-card__price {
+  color: var(--accent-warm);
+}
+
+/* Корзина */
+body[data-theme="dark"] .cart-panel,
+body.dark .cart-panel {
+  background-color: var(--dark-bg-secondary);
+  box-shadow: -5px 0 20px rgba(0, 0, 0, 0.6);
+  border-left: 1px solid var(--dark-border);
+}
+
+body[data-theme="dark"] .cart-item,
+body.dark .cart-item {
+  background-color: var(--dark-card);
+  border: 1px solid var(--dark-border);
+}
+
+body[data-theme="dark"] .cart-item:hover,
+body.dark .cart-item:hover {
+  background-color: var(--dark-bg-tertiary);
+}
+
+body[data-theme="dark"] .cart-panel__footer,
+body.dark .cart-panel__footer {
+  background-color: var(--dark-bg-tertiary);
+  border-top: 1px solid var(--dark-border);
+}
+
+/* Модальные окна */
+body[data-theme="dark"] .modal-auth__content, 
+body[data-theme="dark"] .modal-register__content,
+body[data-theme="dark"] .modal-profile__content, 
+body[data-theme="dark"] .modal-settings__content,
+body[data-theme="dark"] .modal-password__content,
+body.dark .modal-auth__content, 
+body.dark .modal-register__content,
+body.dark .modal-profile__content, 
+body.dark .modal-settings__content,
+body.dark .modal-password__content {
+  background-color: var(--dark-bg-secondary);
+  box-shadow: var(--dark-shadow);
+  border: 1px solid var(--dark-border);
+}
+
+/* Поля ввода */
+body[data-theme="dark"] .modal-auth__input,
+body[data-theme="dark"] .modal-password__input,
+body[data-theme="dark"] .edit-field-input,
+body.dark .modal-auth__input,
+body.dark .modal-password__input,
+body.dark .edit-field-input {
+  background-color: var(--dark-bg-primary);
+  color: var(--dark-text-primary);
+  border: 1px solid var(--dark-border);
+}
+
+body[data-theme="dark"] .modal-auth__input:focus,
+body[data-theme="dark"] .modal-password__input:focus,
+body[data-theme="dark"] .edit-field-input:focus,
+body.dark .modal-auth__input:focus,
+body.dark .modal-password__input:focus,
+body.dark .edit-field-input:focus {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 2px rgba(188, 184, 138, 0.3);
+}
+
+/* Настройки */
+body[data-theme="dark"] .settings-option,
+body.dark .settings-option {
+  background-color: var(--dark-card);
+  border: 1px solid var(--dark-border);
+}
+
+body[data-theme="dark"] .settings-switch__track,
+body.dark .settings-switch__track {
+  background-color: var(--dark-bg-tertiary);
+}
+
+body[data-theme="dark"] .settings-switch.active .settings-switch__track,
+body.dark .settings-switch.active .settings-switch__track {
+  background: linear-gradient(to right, var(--accent-primary), var(--accent-secondary));
+}
+
+/* Футер */
+body[data-theme="dark"] .footer,
+body.dark .footer {
+  background-color: var(--dark-bg-secondary);
+  border-top: 1px solid var(--dark-border);
+}
+
+/* Кнопки и элементы взаимодействия */
+body[data-theme="dark"] .accent-menu__item,
+body.dark .accent-menu__item {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+body[data-theme="dark"] .accent-menu__item:hover,
+body.dark .accent-menu__item:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* Аватар и информация профиля */
+body[data-theme="dark"] .profile-field,
+body.dark .profile-field {
+  background-color: var(--dark-card);
+  border: 1px solid var(--dark-border);
+}
+
+body[data-theme="dark"] .profile-field:hover,
+body.dark .profile-field:hover {
+  background-color: var(--dark-bg-tertiary);
+}
+
+/* Полоса скролла */
+body[data-theme="dark"] ::-webkit-scrollbar-track,
+body.dark ::-webkit-scrollbar-track {
+  background-color: var(--dark-bg-primary);
+}
+
+body[data-theme="dark"] ::-webkit-scrollbar-thumb,
+body.dark ::-webkit-scrollbar-thumb {
+  background-color: var(--dark-bg-tertiary);
+  border: 2px solid var(--dark-bg-primary);
+}
+
+body[data-theme="dark"] ::-webkit-scrollbar-thumb:hover,
+body.dark ::-webkit-scrollbar-thumb:hover {
+  background-color: var(--accent-primary);
+}
+
+/* Эффекты наведения */
+body[data-theme="dark"] .btn-open-settings:hover,
+body[data-theme="dark"] .modal-settings__save:hover,
+body.dark .btn-open-settings:hover,
+body.dark .modal-settings__save:hover {
+  box-shadow: 0 6px 15px rgba(201, 137, 123, 0.6);
+}
+
+/* Иконки в темной теме */
+body[data-theme="dark"] .accent-menu__item i,
+body.dark .accent-menu__item i {
+  color: var(--dark-text-primary);
+}
+
+/* Стили для текстовых элементов */
+body[data-theme="dark"] h1, body[data-theme="dark"] h2, 
+body[data-theme="dark"] h3, body[data-theme="dark"] h4,
+body.dark h1, body.dark h2, body.dark h3, body.dark h4 {
+  color: var(--dark-text-primary);
+}
+
+body[data-theme="dark"] p,
+body.dark p {
+  color: var(--dark-text-secondary);
+}
+
+/* Обновленные стили "Island" */
+body[data-theme="dark"] .island,
+body.dark .island {
+  background-color: var(--dark-bg-secondary);
+  box-shadow: var(--dark-shadow);
+}
+
+/* Улучшенная читаемость цен и описаний */
+body[data-theme="dark"] .cart-item__total,
+body.dark .cart-item__total {
+  color: var(--accent-warm);
+}
+
+/* Стиль для выделения текущего состояния */
+body[data-theme="dark"] .profile-tab.active,
+body[data-theme="dark"] .settings-tab.active,
+body.dark .profile-tab.active,
+body.dark .settings-tab.active {
+  background: linear-gradient(to right, var(--accent-primary), var(--accent-secondary));
+  color: white;
+}
+
+/* Анимация перехода между темами */
+.theme-transition-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0);
+  pointer-events: none;
+  z-index: 9999;
+  transition: background-color 0.3s ease;
+}
+
+.theme-transition-overlay.active {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Анимация для темной темы */
+body.dark .theme-transition-overlay,
+body[data-theme="dark"] .theme-transition-overlay {
+  background-color: rgba(0, 0, 0, 0);
+}
+
+body.dark .theme-transition-overlay.active,
+body[data-theme="dark"] .theme-transition-overlay.active {
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+/* Плавное изменение для всех элементов */
+body, body *, 
+.product-card, .cart-panel, .footer, 
+.modal-auth__content, .modal-profile__content, 
+.settings-option, .profile-field, 
+.island, .search-bar__input, 
+.cart-item, .accent-menu__item {
+  transition: 
+    background-color 0.3s ease, 
+    color 0.3s ease, 
+    border-color 0.3s ease, 
+    box-shadow 0.3s ease;
+}
+
+/* Более эффектная анимация для кнопки темы */
+.accent-menu__item[data-action="toggle-theme"] {
+  position: relative;
+  overflow: hidden;
+}
+
+.accent-menu__item[data-action="toggle-theme"]::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0) 70%);
+  transform: scale(0);
+  opacity: 0;
+  transition: transform 0.5s ease, opacity 0.5s ease;
+  pointer-events: none;
+}
+
+.accent-menu__item[data-action="toggle-theme"]:active::before {
+  transform: scale(2);
+  opacity: 1;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+} 

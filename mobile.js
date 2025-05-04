@@ -270,6 +270,26 @@ document.addEventListener('DOMContentLoaded', () => {
       const editEmail = document.querySelector('#editEmail');
       const cancelEdit = document.querySelector('#cancelEdit');
       const ordersList = document.querySelector('#ordersList');
+      
+      // Запрет вставки пароля в поле подтверждения
+      const confirmPasswordField = document.querySelector('#registerPasswordConfirm');
+      if (confirmPasswordField) {
+        confirmPasswordField.addEventListener('paste', function(e) {
+          e.preventDefault();
+          
+          // Создаем уведомление об ошибке
+          const errorMessage = document.createElement('div');
+          errorMessage.className = 'error-notification';
+          errorMessage.textContent = 'Да, вот такие вот мы дотошные';
+          document.body.appendChild(errorMessage);
+          
+          // Удаляем уведомление после задержки
+          setTimeout(() => {
+            errorMessage.classList.add('hide');
+            setTimeout(() => errorMessage.remove(), 300);
+          }, 3000);
+        });
+      }
   
       // Функция для переключения форм с удалением фокуса
       function showForm(formToShow, formToHide) {
@@ -324,18 +344,60 @@ document.addEventListener('DOMContentLoaded', () => {
         const name = document.querySelector('#registerName').value;
         const email = document.querySelector('#registerEmail').value;
         const password = document.querySelector('#registerPassword').value;
-        if (users.some(u => u.email === email)) {
-          alert('Этот email уже зарегистрирован');
-        } else {
-          users.push({ name, email, password });
-          localStorage.setItem('users', JSON.stringify(users));
-          currentUser = { name, email };
-          localStorage.setItem('currentUser', JSON.stringify(currentUser));
-          showForm(profileSection, registerForm);
-          accountName.textContent = currentUser.name;
-          accountEmail.textContent = currentUser.email;
-          renderOrderHistory();
+        const passwordConfirm = document.querySelector('#registerPasswordConfirm').value;
+        
+        // Проверяем совпадение паролей
+        if (password !== passwordConfirm) {
+          const errorMessage = document.createElement('div');
+          errorMessage.className = 'error-notification';
+          errorMessage.textContent = 'Пароли не совпадают';
+          document.body.appendChild(errorMessage);
+          
+          setTimeout(() => {
+            errorMessage.classList.add('hide');
+            setTimeout(() => errorMessage.remove(), 300);
+          }, 3000);
+          
+          return;
         }
+        
+        // Проверяем, существует ли уже пользователь с таким email
+        if (users.some(u => u.email.toLowerCase() === email.toLowerCase())) {
+          // Улучшенное сообщение об ошибке
+          const errorMessage = document.createElement('div');
+          errorMessage.className = 'error-notification';
+          errorMessage.textContent = 'Пользователь с таким email уже зарегистрирован. Пожалуйста, войдите в систему.';
+          document.body.appendChild(errorMessage);
+          
+          // Показываем форму входа
+          showForm(loginForm, registerForm);
+          
+          // Заполняем email в форме входа
+          document.querySelector('#loginEmail').value = email;
+          
+          // Удаляем уведомление после задержки
+          setTimeout(() => {
+            errorMessage.classList.add('hide');
+            setTimeout(() => errorMessage.remove(), 300);
+          }, 3000);
+          
+          return;
+        }
+        
+        // Если email не существует, регистрируем пользователя
+        users.push({ 
+          name, 
+          email, 
+          password,
+          registrationDate: new Date().toISOString() 
+        });
+        localStorage.setItem('users', JSON.stringify(users));
+        currentUser = { name, email };
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        showForm(profileSection, registerForm);
+        accountName.textContent = currentUser.name;
+        accountEmail.textContent = currentUser.email;
+        renderOrderHistory();
       });
   
       editProfileButton.addEventListener('click', () => {
@@ -589,4 +651,75 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   
     updateCartCount();
+  
+    // Защита от копирования текста
+    // Запрет контекстного меню
+    document.addEventListener('contextmenu', function(e) {
+      if (!e.target.matches('input, textarea')) {
+        e.preventDefault();
+      }
+    });
+  
+    // Запрет копирования
+    document.addEventListener('copy', function(e) {
+      if (!e.target.matches('input, textarea')) {
+        e.preventDefault();
+        return false;
+      }
+    });
+  
+    // Запрет вырезания
+    document.addEventListener('cut', function(e) {
+      if (!e.target.matches('input, textarea')) {
+        e.preventDefault();
+        return false;
+      }
+    });
+  
+    // Запрет перетаскивания
+    document.addEventListener('dragstart', function(e) {
+      if (!e.target.matches('input, textarea')) {
+        e.preventDefault();
+        return false;
+      }
+    });
+  
+    // Обработчик клавиши ё для перехода на страницу пользователей
+    document.addEventListener('keydown', function(e) {
+      // Клавиша ё (код 192)
+      if (e.keyCode === 192) {
+        // Проверяем, авторизован ли пользователь
+        const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+        if (userData.loggedIn) {
+          window.location.href = 'users.html';
+        } else {
+          showNotification('Доступ запрещен. Авторизуйтесь для просмотра списка пользователей.', 'error');
+        }
+      }
+    });
+  
+    // Добавляем глобальную функцию showProfileModal
+    function showProfileModal() {
+      // Переиспользуем функцию из desktop.js, если она доступна
+      if (typeof window.showProfileModal === 'function') {
+        window.showProfileModal();
+        return;
+      }
+      
+      // Получаем данные пользователя
+      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+      if (!userData.name || !userData.email) {
+        alert('Ошибка загрузки данных профиля');
+        return;
+      }
+      
+      // Перенаправляем на страницу аккаунта, если она есть
+      if (window.location.pathname.includes('account.html')) {
+        // Уже на странице аккаунта
+        return;
+      }
+      
+      // Если у нас есть страница аккаунта, перенаправляем на нее
+      window.location.href = 'account.html';
+    }
   });

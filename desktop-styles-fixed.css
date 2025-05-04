@@ -1,0 +1,46 @@
+/* Этот файл заменяет правила для переключения темы, которые мешали работе JavaScript */
+
+/* Приоритет для атрибута данных темы - обновленные цвета темной темы */
+body[data-theme="dark"] {
+  background-color: var(--dark-bg-primary);
+  color: var(--dark-text-primary);
+}
+
+body[data-theme="light"] {
+  background-color: #fff;
+  color: #333;
+}
+
+/* Убираем мешающие стили CSS, теперь этим будет управлять JavaScript */
+body.dark .accent-menu__item[data-action="toggle-theme"] i.fa-sun,
+body:not(.dark) .accent-menu__item[data-action="toggle-theme"] i.fa-sun,
+body.dark .accent-menu__item[data-action="toggle-theme"] i.fa-moon,
+body:not(.dark) .accent-menu__item[data-action="toggle-theme"] i.fa-moon {
+  /* Отменяем все правила display, чтобы не конфликтовать с inline стилями */
+}
+
+/* Удаляем псевдоэлемент после кнопки темы в темной теме */
+body.dark .accent-menu__item[data-action="toggle-theme"]::after {
+  content: none !important; /* Отменяем добавление луны через ::after */
+}
+
+/* Блокируем все остальные правила, которые могут влиять на отображение иконок */
+.accent-menu__item[data-action="toggle-theme"] i,
+.accent-menu__item[data-action="toggle-theme"] i.fa-sun,
+.accent-menu__item[data-action="toggle-theme"] i.fa-moon {
+  /* Переопределение будет происходить через inline стили с !important */
+}
+
+/* Удаляем старые затемненные стили, теперь используем CSS Variables */
+body[data-theme="dark"] .top-cloud,
+body[data-theme="dark"] .product-card,
+body[data-theme="dark"] .footer,
+body[data-theme="dark"] .cart-panel,
+body[data-theme="dark"] .auth-modal__card,
+body[data-theme="dark"] .login-button,
+body[data-theme="dark"] .user-menu {
+  /* Переопределено в dark-theme-improved.css */
+}
+
+/* Импортируем улучшенный файл стилей для темной темы */
+@import url('dark-theme-improved.css'); 
