@@ -7,7 +7,24 @@
     <script>
         // Мгновенное определение устройства и перенаправление
         (function() {
-            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+            function isMobileDevice() {
+                // Проверка User-Agent
+                const userAgent = navigator.userAgent.toLowerCase();
+                const mobileDevices = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i;
+                
+                // Проверка размера экрана и наличия тачскрина
+                const hasTouchScreen = ('ontouchstart' in window) || 
+                                     (navigator.maxTouchPoints > 0) || 
+                                     (navigator.msMaxTouchPoints > 0);
+                
+                // Проверка размера экрана (только для мобильных устройств)
+                const isSmallScreen = window.innerWidth <= 768 && hasTouchScreen;
+                
+                // Определяем мобильное устройство
+                return mobileDevices.test(userAgent) || isSmallScreen;
+            }
+            
+            const isMobile = isMobileDevice();
             window.location.href = isMobile ? 'mobile.html' : 'desktop.html';
         })();
     </script>
@@ -81,7 +98,16 @@
         // Резервное перенаправление, если основное не сработало
         document.getElementById('redirectLink').addEventListener('click', function(e) {
             e.preventDefault();
-            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+            function isMobileDevice() {
+                const userAgent = navigator.userAgent.toLowerCase();
+                const mobileDevices = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i;
+                const hasTouchScreen = ('ontouchstart' in window) || 
+                                     (navigator.maxTouchPoints > 0) || 
+                                     (navigator.msMaxTouchPoints > 0);
+                const isSmallScreen = window.innerWidth <= 768 && hasTouchScreen;
+                return mobileDevices.test(userAgent) || isSmallScreen;
+            }
+            const isMobile = isMobileDevice();
             window.location.href = isMobile ? 'mobile.html' : 'desktop.html';
         });
     </script>
