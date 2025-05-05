@@ -3,8 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="refresh" content="0; url=desktop.html">
     <title>Chern2 - Перенаправление</title>
+    <script>
+        // Мгновенное определение устройства и перенаправление
+        (function() {
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+            window.location.href = isMobile ? 'mobile.html' : 'desktop.html';
+        })();
+    </script>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -68,12 +74,16 @@
         <h1>Перенаправление на основной сайт</h1>
         <p>Вы будете автоматически перенаправлены на основной сайт через несколько секунд.</p>
         <p>Если перенаправление не работает, пожалуйста, нажмите на ссылку ниже:</p>
-        <a href="desktop.html">Перейти на сайт</a>
+        <a href="#" id="redirectLink">Перейти на сайт</a>
     </div>
 
-    <!-- Подключение скриптов -->
     <script>
-        window.location.href = "desktop.html";
+        // Резервное перенаправление, если основное не сработало
+        document.getElementById('redirectLink').addEventListener('click', function(e) {
+            e.preventDefault();
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+            window.location.href = isMobile ? 'mobile.html' : 'desktop.html';
+        });
     </script>
 </body>
 </html> 
