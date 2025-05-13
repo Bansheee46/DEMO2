@@ -1,0 +1,128 @@
+/* Этот файл содержит исправленные стили для мобильного меню с улучшенной центрацией элементов */
+
+/* Extra header styles */
+.header__extra {
+  width: 100%;
+  height: 50px;
+  background: linear-gradient(135deg, #BCB88A 0%, #C9897B 100%);
+  position: absolute;
+  top: 50px;
+  left: 0;
+  opacity: 0;
+  transform: translateY(-50px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1001;
+  border-radius: 0;
+  pointer-events: none;
+  text-align: center;
+}
+
+.menu-icon:checked ~ .header__extra {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.menu-icon:not(:checked) ~ .header__extra {
+  opacity: 0;
+}
+
+/* Extra icons container */
+.header__extra-icons {
+  display: flex;
+  gap: 0;
+  align-items: center;
+  width: 100%;
+  justify-content: space-around;
+  position: relative;
+  left: 0;
+  transform: none !important;
+  padding: 0 5px;
+}
+
+/* Расположение элементов меню с центрацией - статическое */
+.header__extra .icon-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  transform: none !important;
+  flex: 1;
+  justify-content: center;
+}
+
+/* Стиль для ссылок - скрываем иконки */
+.header__extra .header__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  width: auto;
+  height: auto;
+  position: relative;
+  z-index: 2;
+}
+
+.header__extra .header__icon i {
+  display: none; /* Скрываем иконки */
+}
+
+/* Улучшенный стиль для фона */
+.icon-bg {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 110px !important;
+  height: 30px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 15px;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: -1;
+}
+
+/* Text inside background всегда видимый */
+.icon-text {
+  font-family: 'Lato', sans-serif;
+  color: #fff;
+  font-size: 14px;
+  margin-left: 0; /* Убираем отступ слева, так как иконки нет */
+  opacity: 1 !important;
+  width: auto !important;
+  overflow: hidden;
+  white-space: nowrap;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  text-align: center;
+}
+
+/* Убираем все анимации и переопределяем стили для любых состояний */
+.menu-icon:checked ~ .header__extra .header__extra-icons .header__icon,
+.menu-icon:not(:checked) ~ .header__extra .header__extra-icons .header__icon {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Переопределяем все селекторы, чтобы предотвратить разъезжание */
+.menu-icon:checked ~ .header__extra .header__extra-icons .icon-wrapper:nth-child(1),
+.menu-icon:checked ~ .header__extra .header__extra-icons .icon-wrapper:nth-child(2),
+.menu-icon:checked ~ .header__extra .header__extra-icons .icon-wrapper:nth-child(3),
+.menu-icon:not(:checked) ~ .header__extra .icon-wrapper {
+  transform: none !important;
+}
+
+/* Переопределяем анимации оригинального файла */
+.menu-icon:not(:checked) ~ .header__extra .icon-bg {
+  width: 110px !important;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 15px;
+}
+
+.menu-icon:not(:checked) ~ .header__extra .icon-text {
+  opacity: 1 !important;
+  width: auto !important;
+} 

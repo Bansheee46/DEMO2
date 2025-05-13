@@ -134,29 +134,6 @@
     align-items: center;
     width: 100%;
     justify-content: center;
-    transform: translateX(30px);
-    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  
-  .menu-icon:checked ~ .header__extra .header__extra-icons {
-    transform: translateX(-30px);
-  }
-  
-  /* Разъезжание иконок */
-  .menu-icon:checked ~ .header__extra .icon-wrapper:nth-child(1) {
-    transform: translateX(-60px);
-  }
-  
-  .menu-icon:checked ~ .header__extra .icon-wrapper:nth-child(2) {
-    transform: translateX(0);
-  }
-  
-  .menu-icon:checked ~ .header__extra .icon-wrapper:nth-child(3) {
-    transform: translateX(60px);
-  }
-  
-  .menu-icon:not(:checked) ~ .header__extra .icon-wrapper {
-    transform: translateX(0);
   }
   
   /* Icon wrapper styles */
