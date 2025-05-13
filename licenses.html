@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Лицензии - Damax</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='80' font-size='80' font-family='Cinzel'>D</text></svg>" type="image/svg+xml">
+    <link rel="stylesheet" href="desktop-styles.css">
+    <link rel="stylesheet" href="desktop-styles-fixed.css">
+    <link rel="stylesheet" href="dark-theme-improved.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lato:wght@400;700&family=Dancing+Script:wght@400&display=swap" rel="stylesheet">
+    <style>
+        .licenses {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: var(--bg-primary);
+            border-radius: var(--radius-large);
+            box-shadow: var(--shadow);
+        }
+
+        .licenses__header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding-bottom: 2rem;
+            border-bottom: 2px solid var(--accent-primary);
+        }
+
+        .licenses__title {
+            font-family: 'Cinzel', serif;
+            color: var(--text-primary);
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .licenses__date {
+            font-size: 1rem;
+            color: var(--text-secondary);
+        }
+
+        .licenses__section {
+            margin-bottom: 3rem;
+        }
+
+        .licenses__section-title {
+            font-family: 'Cinzel', serif;
+            color: var(--accent-primary);
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .licenses__section-title i {
+            margin-right: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .licenses__text {
+            color: var(--text-primary);
+            line-height: 1.8;
+            margin-bottom: 1.5rem;
+        }
+
+        .licenses__list {
+            list-style-type: none;
+            padding-left: 1.5rem;
+        }
+
+        .licenses__list-item {
+            position: relative;
+            padding-left: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .licenses__list-item::before {
+            content: "•";
+            color: var(--accent-primary);
+            position: absolute;
+            left: 0;
+            font-size: 1.5rem;
+        }
+
+        .licenses__certificate {
+            background: var(--bg-secondary);
+            padding: 2rem;
+            border-radius: var(--radius-medium);
+            margin: 2rem 0;
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .licenses__certificate-icon {
+            font-size: 3rem;
+            color: var(--accent-primary);
+        }
+
+        .licenses__certificate-content {
+            flex: 1;
+        }
+
+        .licenses__certificate-title {
+            font-family: 'Cinzel', serif;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .licenses__certificate-text {
+            color: var(--text-secondary);
+        }
+
+        .licenses__back-link {
+            display: inline-flex;
+            align-items: center;
+            color: var(--accent-primary);
+            text-decoration: none;
+            margin-top: 2rem;
+            transition: color var(--transition-fast);
+        }
+
+        .licenses__back-link:hover {
+            color: var(--accent-dark);
+        }
+
+        .licenses__back-link i {
+            margin-right: 0.5rem;
+        }
+
+        .licenses__grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .licenses__card {
+            background: var(--bg-secondary);
+            padding: 1.5rem;
+            border-radius: var(--radius-medium);
+            transition: transform var(--transition-fast);
+        }
+
+        .licenses__card:hover {
+            transform: translateY(-5px);
+        }
+
+        .licenses__card-title {
+            font-family: 'Cinzel', serif;
+            color: var(--accent-primary);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .licenses__card-text {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <div class="content-wrapper">
+            <div class="licenses" data-aos="fade-up">
+                <div class="licenses__header">
+                    <h1 class="licenses__title">Лицензии и сертификаты</h1>
+                    <p class="licenses__date">Последнее обновление: 1 марта 2025</p>
+                </div>
+
+                <div class="licenses__section">
+                    <h2 class="licenses__section-title">
+                        <i class="fas fa-info-circle"></i>
+                        Общие сведения
+                    </h2>
+                    <p class="licenses__text">
+                        ООО "Дамакс" (ИНН: 1650421897, ОГРН: 1231600009740) осуществляет деятельность на основании следующих лицензий и разрешений.
+                    </p>
+                </div>
+
+                <div class="licenses__section">
+                    <h2 class="licenses__section-title">
+                        <i class="fas fa-certificate"></i>
+                        Наши лицензии
+                    </h2>
+                    <p class="licenses__text">
+                        Компания Damax имеет все необходимые лицензии и сертификаты для осуществления своей деятельности:
+                    </p>
+                    <div class="licenses__grid">
+                        <div class="licenses__card">
+                            <h3 class="licenses__card-title">
+                                <i class="fas fa-store"></i>
+                                Торговая лицензия
+                            </h3>
+                            <p class="licenses__card-text">
+                                Лицензия на осуществление розничной торговли №123456(Нуждается в уточнении) от 01.01.2025<br>
+                                Выдана: Департамент торговли г. Москвы(Нуждается в уточнении)<br>
+                                Срок действия: до 01.01.2029(Нуждается в уточнении)
+                            </p>
+                        </div>
+                        <div class="licenses__card">
+                            <h3 class="licenses__card-title">
+                                <i class="fas fa-truck"></i>
+                                Транспортная лицензия
+                            </h3>
+                            <p class="licenses__card-text">
+                                Лицензия на перевозку грузов №789012 от 15.02.2024(Нуждается в уточнении)<br>
+                                Выдана: Ространснадзор(Нуждается в уточнении)<br>
+                                Срок действия: до 15.02.2029(Нуждается в уточнении)
+                            </p>
+                        </div>
+                        <div class="licenses__card">
+                            <h3 class="licenses__card-title">
+                                <i class="fas fa-shield-alt"></i>
+                                Сертификат соответствия
+                            </h3>
+                            <p class="licenses__card-text">
+                                Сертификат соответствия требованиям безопасности №345678 от 01.03.2024(Нуждается в уточнении)<br>
+                                Выдан: Росстандарт(Нуждается в уточнении)<br>
+                                Срок действия: до 01.03.2027(Нуждается в уточнении)
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="licenses__section">
+                    <h2 class="licenses__section-title">
+                        <i class="fas fa-sync-alt"></i>
+                        Порядок обновления лицензий
+                    </h2>
+                    <p class="licenses__text">
+                        Процедура обновления лицензий включает:
+                    </p>
+                    <ul class="licenses__list">
+                        <li class="licenses__list-item">Подачу заявления за 3 месяца до окончания срока</li>
+                        <li class="licenses__list-item">Предоставление необходимого пакета документов</li>
+                        <li class="licenses__list-item">Прохождение проверки соответствия требованиям</li>
+                        <li class="licenses__list-item">Получение новой лицензии</li>
+                    </ul>
+                </div>
+
+                <div class="licenses__section">
+                    <h2 class="licenses__section-title">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Приостановление действия лицензий
+                    </h2>
+                    <p class="licenses__text">
+                        Действие лицензий может быть приостановлено в случаях:
+                    </p>
+                    <ul class="licenses__list">
+                        <li class="licenses__list-item">Нарушения лицензионных требований</li>
+                        <li class="licenses__list-item">Невыполнения предписаний контролирующих органов</li>
+                        <li class="licenses__list-item">Наличия задолженности по обязательным платежам</li>
+                        <li class="licenses__list-item">По решению суда</li>
+                    </ul>
+                </div>
+
+                <div class="licenses__section">
+                    <h2 class="licenses__section-title">
+                        <i class="fas fa-award"></i>
+                        Награды и достижения
+                    </h2>
+
+
+                <div class="licenses__section">
+                    <h2 class="licenses__section-title">
+                        <i class="fas fa-handshake"></i>
+                        Партнерские программы
+                    </h2>
+                    <ul class="licenses__list">
+                        <li class="licenses__list-item">Официальный партнер ведущих производителей электроники</li>
+                        <li class="licenses__list-item">Участник программы лояльности "Премиум"</li>
+                        <li class="licenses__list-item">Член Российской ассоциации электронной торговли</li>
+                        <li class="licenses__list-item">Сертифицированный партнер программы "Эксперт"</li>
+                    </ul>
+                </div>
+
+                <div class="licenses__section">
+                    <h2 class="licenses__section-title">
+                        <i class="fas fa-file-alt"></i>
+                        Документы для проверки
+                    </h2>
+                    <p class="licenses__text">
+                        Для проверки подлинности лицензий и сертификатов:
+                    </p>
+                    <ul class="licenses__list">
+                        <li class="licenses__list-item">Обратитесь в соответствующий лицензирующий орган</li>
+                        <li class="licenses__list-item">Используйте реестр лицензий на сайте Росаккредитации</li>
+                        <li class="licenses__list-item">Запросите подтверждение по email: info@damax.ru(Нуждается в уточнении)</li>
+                        <li class="licenses__list-item">Позвоните по телефону: +7 (999) 123-45-67(Нуждается в уточнении)</li>
+                    </ul>
+                </div>
+
+                <a href="desktop.html" class="licenses__back-link">
+                    <i class="fas fa-arrow-left"></i>
+                    Вернуться на главную
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+    <script>
+        AOS.init({
+            duration: 800,
+            once: true
+        });
+    </script>
+</body>
+</html> 

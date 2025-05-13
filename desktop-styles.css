@@ -342,6 +342,35 @@ body.muted .accent-menu__item[data-action="toggle-sound"]::after {
   opacity: 0;
   transform: translateY(20px);
   transition: transform 0.3s ease, box-shadow 0.3s ease, opacity 0.5s ease, background 0.5s ease;
+  cursor: pointer;
+  position: relative;
+}
+
+.product-card.pulse::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(188, 184, 138, 0.2);
+  border-radius: 10px;
+  z-index: 1;
+  animation: cardPulse 0.6s ease-out;
+}
+
+@keyframes cardPulse {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.1);
+  }
 }
 
 body.dark .product-card {
@@ -5796,4 +5825,1349 @@ body.dark .order-contact {
 .modal-orders:not([inert]) .modal-orders__content {
   transform: translateY(0);
   opacity: 1;
+}
+
+/* Стили для модального окна товаров */
+.product-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.4s ease, visibility 0.4s ease;
+}
+
+.product-modal.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.product-modal__container {
+  width: 90%;
+  max-width: 900px;
+  background: #fff;
+  border-radius: 15px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  display: flex;
+  overflow: hidden;
+  transform: scale(0.8) translateY(30px);
+  opacity: 0;
+  transition: transform 0.5s cubic-bezier(0.165, 0.84, 0.44, 1), opacity 0.5s ease;
+}
+
+body.dark .product-modal__container {
+  background: #333;
+  color: #f0f0f0;
+}
+
+.product-modal.active .product-modal__container {
+  transform: scale(1) translateY(0);
+  opacity: 1;
+}
+
+.product-modal__image {
+  width: 40%;
+  padding: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.product-modal__image img {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  border-radius: 10px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+  transition: transform 0.5s ease;
+}
+
+.product-modal__content {
+  width: 60%;
+  padding: 30px;
+  position: relative;
+}
+
+.product-modal__title {
+  font-size: 28px;
+  font-family: 'Cinzel', serif;
+  color: #333;
+  margin-bottom: 15px;
+}
+
+body.dark .product-modal__title {
+  color: #f0f0f0;
+}
+
+.product-modal__price {
+  font-size: 24px;
+  color: #C9897B;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.product-modal__description {
+  font-size: 16px;
+  line-height: 1.6;
+  color: #666;
+  margin-bottom: 25px;
+  max-height: 200px;
+  overflow-y: auto;
+  padding-right: 10px;
+}
+
+body.dark .product-modal__description {
+  color: #ddd;
+}
+
+.product-modal__description::-webkit-scrollbar {
+  width: 6px;
+}
+
+.product-modal__description::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.product-modal__description::-webkit-scrollbar-thumb {
+  background: #BCB88A;
+  border-radius: 10px;
+}
+
+body.dark .product-modal__description::-webkit-scrollbar-track {
+  background: #444;
+}
+
+.product-modal__specs {
+  margin-bottom: 25px;
+}
+
+.product-modal__spec-item {
+  display: flex;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.product-modal__spec-label {
+  width: 120px;
+  color: #888;
+  font-weight: 600;
+}
+
+body.dark .product-modal__spec-label {
+  color: #aaa;
+}
+
+.product-modal__spec-value {
+  color: #333;
+  flex: 1;
+}
+
+body.dark .product-modal__spec-value {
+  color: #f0f0f0;
+}
+
+.product-modal__actions {
+  display: flex;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.product-modal__btn {
+  padding: 10px 25px;
+  border-radius: 30px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.3s ease, opacity 0.3s ease, background 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.product-modal__btn-cart {
+  background: linear-gradient(90deg, #BCB88A, #C9897B);
+  color: #fff;
+  border: none;
+}
+
+.product-modal__btn-cart:hover {
+  opacity: 0.9;
+  transform: translateY(-3px);
+}
+
+.product-modal__btn-close {
+  background: transparent;
+  border: 2px solid #BCB88A;
+  color: #BCB88A;
+}
+
+body.dark .product-modal__btn-close {
+  border-color: #C9897B;
+  color: #C9897B;
+}
+
+.product-modal__btn-close:hover {
+  background: rgba(188, 184, 138, 0.1);
+  transform: translateY(-3px);
+}
+
+.product-modal__close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #BCB88A, #C9897B);
+  color: #fff;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 14px;
+  transition: transform 0.3s ease, background 0.3s ease;
+}
+
+.product-modal__close:hover {
+  transform: rotate(90deg);
+}
+
+/* Адаптив для модального окна */
+@media (max-width: 768px) {
+  .product-modal__container {
+    flex-direction: column;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  
+  .product-modal__image, 
+  .product-modal__content {
+    width: 100%;
+    padding: 20px;
+  }
+  
+  .product-modal__title {
+    font-size: 24px;
+  }
+  
+  .product-modal__description {
+    max-height: none;
+    margin-bottom: 15px;
+  }
+}
+
+/* Анимация для появления модального окна */
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8) translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Анимация для изображения в модальном окне */
+@keyframes imageZoomIn {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.product-modal.active .product-modal__image img {
+  animation: imageZoomIn 0.6s 0.2s forwards;
+}
+
+/* Анимация для текста в модальном окне */
+@keyframes textFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.product-modal.active .product-modal__title,
+.product-modal.active .product-modal__price,
+.product-modal.active .product-modal__description,
+.product-modal.active .product-modal__specs,
+.product-modal.active .product-modal__actions {
+  opacity: 0;
+  animation: textFadeIn 0.5s forwards;
+}
+
+.product-modal.active .product-modal__title {
+  animation-delay: 0.3s;
+}
+
+.product-modal.active .product-modal__price {
+  animation-delay: 0.4s;
+}
+
+.product-modal.active .product-modal__description {
+  animation-delay: 0.5s;
+}
+
+.product-modal.active .product-modal__specs {
+  animation-delay: 0.6s;
+}
+
+.product-modal.active .product-modal__actions {
+  animation-delay: 0.7s;
+}
+
+/* Улучшенные стили для модального окна товаров */
+.product-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.6s ease, visibility 0.6s ease;
+  perspective: 1000px;
+}
+
+.product-modal.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.product-modal__container {
+  width: 90%;
+  max-width: 900px;
+  background: #fff;
+  border-radius: 15px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3), 
+              0 0 0 1px rgba(255, 255, 255, 0.1),
+              0 0 30px rgba(201, 137, 123, 0.3),
+              0 0 50px rgba(188, 184, 138, 0.2);
+  display: flex;
+  overflow: hidden;
+  transform: scale(0.8) translateY(30px) rotateX(10deg);
+  opacity: 0;
+  transition: transform 0.7s cubic-bezier(0.165, 0.84, 0.44, 1), opacity 0.7s ease;
+  transform-style: preserve-3d;
+  transform-origin: 50% 100%;
+}
+
+body.dark .product-modal__container {
+  background: #2a2a2a;
+  color: #f0f0f0;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 
+              0 0 0 1px rgba(255, 255, 255, 0.05),
+              0 0 30px rgba(201, 137, 123, 0.2),
+              0 0 50px rgba(188, 184, 138, 0.1);
+}
+
+.product-modal.active .product-modal__container {
+  transform: scale(1) translateY(0) rotateX(0);
+  opacity: 1;
+}
+
+.product-modal__container::before {
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: -5px;
+  right: -5px;
+  bottom: -5px;
+  background: linear-gradient(135deg, #BCB88A 0%, #C9897B 50%, transparent 50%);
+  border-radius: 20px;
+  z-index: -1;
+  opacity: 0.4;
+  filter: blur(10px);
+  animation: modalGlow 8s infinite alternate;
+}
+
+@keyframes modalGlow {
+  0% {
+    opacity: 0.2;
+    filter: blur(10px);
+    transform: scale(0.98);
+  }
+  50% {
+    opacity: 0.5;
+    filter: blur(15px);
+    transform: scale(1.02);
+  }
+  100% {
+    opacity: 0.3;
+    filter: blur(12px);
+    transform: scale(1);
+  }
+}
+
+.product-modal__image {
+  width: 40%;
+  padding: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  position: relative;
+}
+
+.product-modal__image::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at center, rgba(201, 137, 123, 0.1) 0%, rgba(188, 184, 138, 0.05) 50%, transparent 80%);
+  opacity: 0;
+  transform: scale(0.8);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.product-modal.active .product-modal__image::before {
+  opacity: 1;
+  transform: scale(1.2);
+  animation: pulseImageBackground 5s infinite alternate ease-in-out;
+}
+
+@keyframes pulseImageBackground {
+  0% {
+    opacity: 0.5;
+    transform: scale(1.1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.3);
+  }
+  100% {
+    opacity: 0.6;
+    transform: scale(1.2);
+  }
+}
+
+.product-modal__image img {
+  width: 100%;
+  height: auto;
+  max-height: 400px;
+  object-fit: contain;
+  border-radius: 10px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+  transition: transform 0.5s ease;
+  filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.15));
+  transform: translateZ(20px) scale(0.9);
+  opacity: 0;
+}
+
+.product-modal__image::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 60%;
+  height: 10px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 50%;
+  filter: blur(10px);
+  transform: translate(-50%, 160%) scale(0);
+  opacity: 0;
+  transition: transform 0.7s ease, opacity 0.7s ease;
+}
+
+.product-modal.active .product-modal__image::after {
+  transform: translate(-50%, 160%) scale(1);
+  opacity: 0.7;
+  animation: shadowPulse 3s infinite alternate ease-in-out;
+}
+
+@keyframes shadowPulse {
+  0% {
+    width: 60%;
+    filter: blur(10px);
+    opacity: 0.5;
+  }
+  100% {
+    width: 65%;
+    filter: blur(12px);
+    opacity: 0.7;
+  }
+}
+
+.product-modal.active .product-modal__image img {
+  animation: imageZoomIn 0.8s 0.2s forwards cubic-bezier(0.26, 0.86, 0.44, 1.4),
+             imageFloat 5s 1s infinite alternate ease-in-out;
+}
+
+@keyframes imageZoomIn {
+  from {
+    transform: translateZ(0) scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: translateZ(30px) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes imageFloat {
+  0% {
+    transform: translateZ(30px) translateY(0) rotate(0deg);
+  }
+  25% {
+    transform: translateZ(40px) translateY(-5px) rotate(1deg);
+  }
+  75% {
+    transform: translateZ(35px) translateY(5px) rotate(-1deg);
+  }
+  100% {
+    transform: translateZ(30px) translateY(0) rotate(0deg);
+  }
+}
+
+.product-modal__content {
+  width: 60%;
+  padding: 30px;
+  position: relative;
+  overflow: hidden;
+}
+
+.product-modal__content::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at top right, rgba(188, 184, 138, 0.1), transparent 70%);
+  opacity: 0;
+  transition: opacity 0.8s ease;
+}
+
+.product-modal.active .product-modal__content::before {
+  opacity: 1;
+}
+
+.product-modal__title {
+  font-size: 28px;
+  font-family: 'Cinzel', serif;
+  color: #333;
+  margin-bottom: 15px;
+  position: relative;
+  transform: translateY(20px);
+  opacity: 0;
+}
+
+.product-modal__title::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #BCB88A, #C9897B);
+  transition: width 1.2s ease;
+}
+
+.product-modal.active .product-modal__title::after {
+  width: 100%;
+}
+
+body.dark .product-modal__title {
+  color: #f0f0f0;
+}
+
+.product-modal__price {
+  font-size: 24px;
+  color: #C9897B;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transform: translateY(20px);
+  opacity: 0;
+  position: relative;
+}
+
+.product-modal__price i {
+  font-size: 0.8em;
+  animation: priceIconPulse 2s infinite alternate ease-in-out;
+}
+
+@keyframes priceIconPulse {
+  0% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(1.15);
+  }
+}
+
+.product-modal__description {
+  font-size: 16px;
+  line-height: 1.6;
+  color: #666;
+  margin-bottom: 25px;
+  max-height: 200px;
+  overflow-y: auto;
+  padding-right: 15px;
+  transform: translateY(20px);
+  opacity: 0;
+  text-align: justify;
+}
+
+.product-modal__description::first-letter {
+  font-size: 130%;
+  color: #C9897B;
+  font-weight: bold;
+}
+
+body.dark .product-modal__description {
+  color: #ddd;
+}
+
+.product-modal__description::-webkit-scrollbar {
+  width: 6px;
+}
+
+.product-modal__description::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.product-modal__description::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #BCB88A, #C9897B);
+  border-radius: 10px;
+}
+
+body.dark .product-modal__description::-webkit-scrollbar-track {
+  background: #444;
+}
+
+.product-modal__specs {
+  margin-bottom: 25px;
+  transform: translateY(20px);
+  opacity: 0;
+  background: rgba(188, 184, 138, 0.05);
+  padding: 15px;
+  border-radius: 10px;
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(188, 184, 138, 0.1);
+}
+
+body.dark .product-modal__specs {
+  background: rgba(188, 184, 138, 0.07);
+}
+
+.product-modal__spec-item {
+  display: flex;
+  margin-bottom: 10px;
+  font-size: 14px;
+  position: relative;
+  padding-left: 5px;
+}
+
+.product-modal__spec-item:not(:last-child) {
+  border-bottom: 1px dashed rgba(188, 184, 138, 0.3);
+  padding-bottom: 8px;
+}
+
+.product-modal__spec-item:hover {
+  background: rgba(201, 137, 123, 0.05);
+  border-radius: 5px;
+}
+
+.product-modal__spec-label {
+  width: 120px;
+  color: #888;
+  font-weight: 600;
+  position: relative;
+}
+
+.product-modal__spec-label::before {
+  content: '•';
+  position: absolute;
+  left: -5px;
+  color: #C9897B;
+  opacity: 0;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  transform: scale(0);
+}
+
+.product-modal__spec-item:hover .product-modal__spec-label::before {
+  opacity: 1;
+  transform: scale(1);
+}
+
+body.dark .product-modal__spec-label {
+  color: #aaa;
+}
+
+.product-modal__spec-value {
+  color: #333;
+  flex: 1;
+}
+
+body.dark .product-modal__spec-value {
+  color: #f0f0f0;
+}
+
+.product-modal__actions {
+  display: flex;
+  gap: 15px;
+  margin-top: 25px;
+  transform: translateY(20px);
+  opacity: 0;
+}
+
+.product-modal__btn {
+  padding: 10px 25px;
+  border-radius: 30px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.3s ease, opacity 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  overflow: hidden;
+}
+
+.product-modal__btn::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 70%);
+  opacity: 0;
+  transform: scale(0.5);
+  transition: transform 0.5s ease, opacity 0.5s ease;
+  pointer-events: none;
+}
+
+.product-modal__btn:hover::before {
+  opacity: 1;
+  transform: scale(1);
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translate(-50%, -50%) scale(0.8);
+    opacity: 0;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(0.8);
+    opacity: 0;
+  }
+}
+
+.product-modal__btn-cart {
+  background: linear-gradient(90deg, #BCB88A, #C9897B);
+  color: #fff;
+  border: none;
+  box-shadow: 0 4px 15px rgba(201, 137, 123, 0.3);
+}
+
+.product-modal__btn-cart:hover {
+  opacity: 0.9;
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(201, 137, 123, 0.4);
+}
+
+.product-modal__btn-cart i {
+  font-size: 0.8em;
+  animation: cartIconBounce 1.5s infinite alternate ease-in-out;
+}
+
+@keyframes cartIconBounce {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-3px);
+  }
+}
+
+.product-modal__btn-close {
+  background: transparent;
+  border: 2px solid #BCB88A;
+  color: #BCB88A;
+  box-shadow: 0 4px 15px rgba(188, 184, 138, 0.1);
+}
+
+body.dark .product-modal__btn-close {
+  border-color: #C9897B;
+  color: #C9897B;
+  box-shadow: 0 4px 15px rgba(201, 137, 123, 0.15);
+}
+
+.product-modal__btn-close:hover {
+  background: rgba(188, 184, 138, 0.1);
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(188, 184, 138, 0.2);
+}
+
+.product-modal__close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #BCB88A, #C9897B);
+  color: #fff;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 14px;
+  transition: transform 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 2px 10px rgba(201, 137, 123, 0.3);
+  z-index: 10;
+}
+
+.product-modal__close:hover {
+  transform: rotate(90deg);
+  box-shadow: 0 4px 15px rgba(201, 137, 123, 0.5);
+}
+
+/* Адаптив для модального окна */
+@media (max-width: 768px) {
+  .product-modal__container {
+    flex-direction: column;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  
+  .product-modal__image, 
+  .product-modal__content {
+    width: 100%;
+    padding: 20px;
+  }
+  
+  .product-modal__title {
+    font-size: 24px;
+  }
+  
+  .product-modal__description {
+    max-height: none;
+    margin-bottom: 15px;
+  }
+}
+
+/* Улучшенные анимации для текста в модальном окне */
+@keyframes textFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+    filter: blur(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+.product-modal.active .product-modal__title,
+.product-modal.active .product-modal__price,
+.product-modal.active .product-modal__description,
+.product-modal.active .product-modal__specs,
+.product-modal.active .product-modal__actions {
+  opacity: 0;
+  animation: textFadeIn 0.7s forwards cubic-bezier(0.26, 0.86, 0.44, 1);
+}
+
+.product-modal.active .product-modal__title {
+  animation-delay: 0.3s;
+}
+
+.product-modal.active .product-modal__price {
+  animation-delay: 0.5s;
+}
+
+.product-modal.active .product-modal__description {
+  animation-delay: 0.7s;
+}
+
+.product-modal.active .product-modal__specs {
+  animation-delay: 0.9s;
+}
+
+.product-modal.active .product-modal__actions {
+  animation-delay: 1.1s;
+}
+
+/* Анимация фоновых частиц для модального окна */
+.product-modal__particles {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.product-modal.active .product-modal__particles {
+  opacity: 1;
+}
+
+.product-modal__particle {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #BCB88A;
+  opacity: 0;
+  animation: particleFloat 5s infinite linear;
+}
+
+.product-modal__particle:nth-child(1) { 
+  top: 10%; left: 20%; animation-delay: 0s; 
+  background: rgba(201, 137, 123, 0.7);
+}
+.product-modal__particle:nth-child(2) { 
+  top: 60%; left: 80%; animation-delay: 0.7s; 
+  background: rgba(188, 184, 138, 0.7);
+}
+.product-modal__particle:nth-child(3) { 
+  top: 30%; left: 40%; animation-delay: 1.5s; 
+  background: rgba(201, 137, 123, 0.5);
+}
+.product-modal__particle:nth-child(4) { 
+  top: 70%; left: 10%; animation-delay: 2.3s; 
+  background: rgba(188, 184, 138, 0.5);
+}
+.product-modal__particle:nth-child(5) { 
+  top: 20%; left: 90%; animation-delay: 3.1s; 
+  background: rgba(201, 137, 123, 0.3);
+}
+.product-modal__particle:nth-child(6) { 
+  top: 80%; left: 50%; animation-delay: 3.8s; 
+  background: rgba(188, 184, 138, 0.3);
+}
+
+@keyframes particleFloat {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(-100px) scale(0);
+    opacity: 0;
+  }
+}
+
+/* Анимация за карточкой товара для привлечения внимания */
+.product-card {
+  position: relative;
+  overflow: visible;
+}
+
+.product-card::before {
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: -5px;
+  right: -5px;
+  bottom: -5px;
+  background: linear-gradient(135deg, #BCB88A, #C9897B);
+  border-radius: 15px;
+  z-index: -1;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.product-card:hover::before {
+  opacity: 0.3;
+  transform: scale(1.03);
+  animation: cardGlow 1.5s infinite alternate ease-in-out;
+}
+
+@keyframes cardGlow {
+  0% {
+    opacity: 0.2;
+    filter: blur(5px);
+  }
+  100% {
+    opacity: 0.4;
+    filter: blur(8px);
+  }
+}
+
+/* Добавляем иконку увеличительного стекла при наведении на карточку */
+.product-card::after {
+  content: '\f002';
+  font-family: 'Font Awesome 5 Free';
+  font-weight: 900;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  font-size: 24px;
+  color: white;
+  background: rgba(201, 137, 123, 0.8);
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  z-index: 1;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.product-card:hover::after {
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
+  animation: zoomIconPulse 1.5s infinite alternate ease-in-out;
+}
+
+@keyframes zoomIconPulse {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    box-shadow: 0 0 0 0 rgba(201, 137, 123, 0.3);
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.1);
+    box-shadow: 0 0 0 10px rgba(201, 137, 123, 0);
+  }
+}
+
+.product-card__image {
+  position: relative;
+  overflow: hidden;
+}
+
+.product-card:hover .product-card__image img {
+  transform: scale(1.1);
+  filter: brightness(0.8) blur(2px);
+}
+
+/* Стили для эффекта нажатия кнопки */
+.btn-pressed {
+  transform: scale(0.95) !important;
+  opacity: 0.8 !important;
+  transition: transform 0.1s ease, opacity 0.1s ease !important;
+}
+
+/* Стили для летящей карточки */
+.card-fly-effect {
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2) !important;
+  backface-visibility: hidden;
+}
+
+/* Стили для 3D-эффекта при наведении на карточку */
+.product-card {
+  transform-style: preserve-3d;
+  perspective: 1000px;
+  transition: transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.6s ease;
+}
+
+.product-card:hover {
+  transform: translateY(-15px) scale(1.03) rotateX(5deg);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2), 
+              0 0 0 1px rgba(255, 255, 255, 0.1),
+              0 10px 15px rgba(201, 137, 123, 0.2);
+  z-index: 10;
+}
+
+/* Анимация вращения для иконки увеличения */
+@keyframes rotateZoomIcon {
+  0% {
+    transform: translate(-50%, -50%) scale(1) rotate(0deg);
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.1) rotate(360deg);
+  }
+}
+
+.product-card:hover::after {
+  animation: zoomIconPulse 1.5s infinite alternate ease-in-out, 
+             rotateZoomIcon 8s linear infinite;
+}
+
+/* Дополнительные анимации для модального окна */
+.product-modal__btn-cart::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transform: translateX(-100%);
+  pointer-events: none;
+}
+
+.product-modal__btn-cart:hover::after {
+  animation: shimmerEffect 2s infinite;
+}
+
+@keyframes shimmerEffect {
+  0% {
+    transform: translateX(-100%);
+  }
+  50%, 100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Анимация для текста цены при наведении */
+.product-modal__price:hover span {
+  animation: priceJump 0.5s ease;
+}
+
+@keyframes priceJump {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+/* Стиль для заголовка при наведении */
+.product-modal__title:hover {
+  text-shadow: 0 0 8px rgba(201, 137, 123, 0.5);
+  color: #C9897B;
+  transition: all 0.3s ease;
+}
+
+/* Эффект наведения для спецификаций */
+.product-modal__spec-item:hover {
+  transform: translateX(5px);
+  transition: transform 0.3s ease;
+}
+
+/* Тень под изображением в модальном окне */
+.product-modal__image::after {
+  content: '';
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  width: 60%;
+  height: 20px;
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 50%;
+  filter: blur(8px);
+  transform: translateX(-50%);
+  z-index: -1;
+}
+
+/* Градиентная рамка для карточек при наведении */
+@keyframes borderGradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.product-card::before {
+  background-size: 300% 300%;
+  animation: borderGradient 4s ease infinite;
+}
+
+/* Эффект размытия при открытии модального окна */
+.product-modal.active ~ main {
+  filter: blur(5px);
+  transition: filter 0.5s ease;
+  pointer-events: none;
+}
+
+/* Убираем иконку увеличительного стекла при наведении на карточку */
+.product-card::after {
+  display: none;
+}
+
+/* Отменяем затемнение изображения при наведении */
+.product-card:hover .product-card__image img {
+  transform: scale(1.1);
+  filter: none;
+}
+
+/* Анимированный фон для модального окна */
+.product-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.6s ease, visibility 0.6s ease;
+  perspective: 1000px;
+  overflow: hidden;
+}
+
+/* Добавляем анимированный градиентный фон */
+.product-modal::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(
+    circle at center,
+    rgba(188, 184, 138, 0.2) 0%,
+    rgba(201, 137, 123, 0.15) 30%,
+    rgba(0, 0, 0, 0.7) 70%
+  );
+  z-index: -1;
+  animation: rotateBackground 20s infinite linear;
+}
+
+@keyframes rotateBackground {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Добавляем плавающие градиентные круги на фоне */
+.product-modal::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    radial-gradient(circle at 20% 30%, rgba(188, 184, 138, 0.15) 0%, transparent 20%),
+    radial-gradient(circle at 80% 20%, rgba(201, 137, 123, 0.15) 0%, transparent 25%),
+    radial-gradient(circle at 40% 80%, rgba(188, 184, 138, 0.1) 0%, transparent 30%),
+    radial-gradient(circle at 70% 90%, rgba(201, 137, 123, 0.1) 0%, transparent 20%);
+  z-index: -1;
+  animation: pulseBackgroundGradients 15s infinite alternate ease-in-out;
+}
+
+@keyframes pulseBackgroundGradients {
+  0% {
+    opacity: 0.5;
+    background-position: 0% 0%, 100% 0%, 0% 100%, 100% 100%;
+  }
+  50% {
+    opacity: 0.8;
+    background-position: 10% 10%, 90% 10%, 10% 90%, 90% 90%;
+  }
+  100% {
+    opacity: 0.5;
+    background-position: 0% 0%, 100% 0%, 0% 100%, 100% 100%;
+  }
+}
+
+/* Исправление проблемы с наложением текста в спецификациях */
+.product-modal__spec-item {
+  display: flex;
+  margin-bottom: 10px;
+  font-size: 14px;
+  position: relative;
+  padding-left: 5px;
+  flex-wrap: wrap; /* Позволяет переносить содержимое при необходимости */
+}
+
+.product-modal__spec-label {
+  width: 130px; /* Увеличиваем ширину для большего места */
+  min-width: 130px; /* Обеспечиваем минимальную ширину */
+  color: #888;
+  font-weight: 600;
+  position: relative;
+  margin-right: 10px; /* Добавляем отступ справа */
+  box-sizing: border-box;
+  flex-shrink: 0; /* Запрещаем сжиматься */
+}
+
+.product-modal__spec-value {
+  color: #333;
+  flex: 1;
+  padding-left: 5px; /* Добавляем отступ слева */
+  word-break: break-word; /* Разрешаем перенос слов */
+  text-align: left; /* Выравниваем по левому краю */
+}
+
+/* Исправление проблемы с красной точкой */
+.product-modal__spec-label::before {
+  content: '•';
+  position: absolute;
+  left: -15px; /* Смещаем точку дальше влево */
+  color: #C9897B;
+  opacity: 0;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  transform: scale(0);
+}
+
+/* Для мобильных устройств улучшаем отображение спецификаций */
+@media (max-width: 768px) {
+  .product-modal__spec-item {
+    flex-direction: column;
+    margin-bottom: 15px;
+  }
+  
+  .product-modal__spec-label {
+    width: 100%;
+    margin-bottom: 5px;
+  }
+  
+  .product-modal__spec-value {
+    width: 100%;
+    padding-left: 0;
+  }
+  
+  .product-modal__spec-label::before {
+    left: -10px;
+  }
 }

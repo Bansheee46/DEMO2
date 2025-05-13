@@ -18,6 +18,9 @@
   <!-- Подключение стилей настроек -->
   <link rel="stylesheet" href="settings-styles.css">
   
+  <!-- Подключение улучшенных стилей уведомлений -->
+  <link rel="stylesheet" href="notifications.css">
+  
   <style>
     /* Определение CSS-переменных для светлой и темной темы */
     :root {
@@ -540,11 +543,10 @@
       
       <div class="footer__section">
         <h4>Информация</h4>
-        <a href="#">О компании</a>
-        <a href="#">Доставка и оплата</a>
-        <a href="#">Гарантии и возврат</a>
-        <a href="#">Политика конфиденциальности</a>
-        <a href="#">Лицензии</a>
+        <a href="delivery-payment.html">Доставка и оплата</a>
+        <a href="warranty-return.html">Гарантии и возврат</a>
+        <a href="privacy-policy.html">Политика конфиденциальности</a>
+        <a href="licenses.html">Лицензии</a>
       </div>
       
       <div class="footer__section">
@@ -717,7 +719,7 @@
           <div class="form-group">
             <div class="agreement-checkbox">
               <input type="checkbox" id="termsAgreement" required>
-              <label for="termsAgreement">Я согласен с <a href="#">Условиями использования</a> и <a href="#">Политикой конфиденциальности</a></label>
+              <label for="termsAgreement">Я согласен с <a href="terms-of-use.html" target="_blank">Условиями использования</a> и <a href="privacy-consent.html" target="_blank">Политикой конфиденциальности</a></label>
             </div>
             <span class="error-message"></span>
           </div>
@@ -766,17 +768,67 @@
 </div>
 
 <link rel="stylesheet" href="login-system.css">
-  
+
+<script src="script-coordinator.js"></script>  
 <script src="desktop.js"></script>
 <script src="settings.js"></script>
 <script src="login-system.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+<script src="notification.js"></script>
+<script src="notification-examples.js"></script>
 <script>
   AOS.init({
     duration: 800,
     once: true
   });
 </script>
+
+<!-- Модальное окно товара -->
+<div class="product-modal">
+  <div class="product-modal__particles">
+    <div class="product-modal__particle"></div>
+    <div class="product-modal__particle"></div>
+    <div class="product-modal__particle"></div>
+    <div class="product-modal__particle"></div>
+    <div class="product-modal__particle"></div>
+    <div class="product-modal__particle"></div>
+  </div>
+  <div class="product-modal__container">
+    <div class="product-modal__image">
+      <img src="" alt="Изображение товара">
+    </div>
+    <div class="product-modal__content">
+      <h2 class="product-modal__title"></h2>
+      <p class="product-modal__price"><i class="fas fa-ruble-sign"></i> <span></span></p>
+      <div class="product-modal__description"></div>
+      <div class="product-modal__specs">
+        <div class="product-modal__spec-item">
+          <span class="product-modal__spec-label">Категория:</span>
+          <span class="product-modal__spec-value product-modal__category"></span>
+        </div>
+        <div class="product-modal__spec-item">
+          <span class="product-modal__spec-label">Артикул:</span>
+          <span class="product-modal__spec-value product-modal__sku"></span>
+        </div>
+        <div class="product-modal__spec-item">
+          <span class="product-modal__spec-label">Наличие:</span>
+          <span class="product-modal__spec-value product-modal__availability">В наличии</span>
+        </div>
+      </div>
+      <div class="product-modal__actions">
+        <button class="product-modal__btn product-modal__btn-cart">
+          <i class="fas fa-shopping-cart"></i> В корзину
+        </button>
+        <button class="product-modal__btn product-modal__btn-close">
+          <i class="fas fa-times"></i> Закрыть
+        </button>
+      </div>
+      <button class="product-modal__close">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+  </div>
+</div>
 
 <!-- Подключение скриптов -->
 </body>

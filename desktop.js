@@ -670,151 +670,58 @@ document.addEventListener('DOMContentLoaded', function() {
     // ... existing code ...
   }
 
+  // Функция showNotification заменена на импортированную из notification.js
   function showNotification(message, type = 'info', duration = 3000) {
-    // Воспроизводим звук уведомления
-    if (window.settingsModule && typeof window.settingsModule.playSound === 'function') {
-      if (type === 'error') {
-        window.settingsModule.playSound('error');
-      } else if (type === 'success') {
-        window.settingsModule.playSound('success');
-      } else {
-        window.settingsModule.playSound('notification');
-      }
-    }
-    
-    // Проверяем, существует ли уже функция showNotification в window
-    // и что это не текущая функция (чтобы избежать рекурсии)
+    // Используем новую функцию из notification.js с улучшенным дизайном
     if (typeof window.showNotification === 'function' && window.showNotification !== showNotification) {
-      window.showNotification(message, type, duration);
-      return;
-    }
-    
-    
-    // Если функция не существует, создаем свою реализацию
-    const notification = document.createElement('div');
-    notification.className = `notification notification--${type}`;
-    notification.innerHTML = `
-      <div class="notification__icon">
-        <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i>
-      </div>
-      <div class="notification__content">
-        <p>${message}</p>
-      </div>
-      <button class="notification__close">&times;</button>
-    `;
-    
-    // Добавляем стили, если они еще не определены
-    if (!document.getElementById('notification-styles')) {
-      const style = document.createElement('style');
-      style.id = 'notification-styles';
-      style.textContent = `
-        .notification {
-          position: fixed;
-          top: 20px;
-          right: 20px;
-          display: flex;
-          align-items: center;
-          padding: 15px 20px;
-          background: white;
-          border-radius: 12px;
-          box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-          z-index: 9999;
-          max-width: 350px;
-          transform: translateX(100%) scale(0.9);
-          animation: slide-in 0.5s forwards cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        .notification--success {
-          border-left: 4px solid #4CAF50;
-        }
-        .notification--error {
-          border-left: 4px solid #F44336;
-        }
-        .notification--info {
-          border-left: 4px solid #2196F3;
-        }
-        .notification__icon {
-          margin-right: 15px;
-          font-size: 20px;
-        }
-        .notification--success .notification__icon {
-          color: #4CAF50;
-        }
-        .notification--error .notification__icon {
-          color: #F44336;
-        }
-        .notification--info .notification__icon {
-          color: #2196F3;
-        }
-        .notification__content {
-          flex: 1;
-        }
-        .notification__content p {
-          margin: 0;
-          color: #333;
-        }
-        .notification__close {
-          background: none;
-          border: none;
-          color: #999;
-          cursor: pointer;
-          font-size: 20px;
-          transition: color 0.2s;
-        }
-        .notification__close:hover {
-          color: #333;
-        }
-        body.dark .notification {
-          background: #333;
-          box-shadow: 0 10px 25px rgba(0,0,0,0.4);
-        }
-        body.dark .notification__content p {
-          color: #f0f0f0;
-        }
-        body.dark .notification__close {
-          color: #aaa;
-        }
-        body.dark .notification__close:hover {
-          color: #f0f0f0;
-        }
-        @keyframes slide-in {
-          to {
-            transform: translateX(0) scale(1);
-          }
-        }
-        @keyframes slide-out {
-          to {
-            transform: translateX(100%) scale(0.9);
-          }
-        }
+      return window.showNotification(message, type, duration, true);
+    } else {
+      console.warn('Функция showNotification не найдена в глобальном объекте');
+      
+      // Резервная реализация (упрощенная версия)
+      const notification = document.createElement('div');
+      notification.className = `notification notification--${type}`;
+      notification.innerHTML = `
+        <div class="notification__icon">
+          <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : type === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
+        </div>
+        <div class="notification__content">
+          <p>${message}</p>
+        </div>
+        <button class="notification__close">&times;</button>
       `;
-      document.head.appendChild(style);
-    }
-    
-    document.body.appendChild(notification);
-    
-    // Используем data-attribute для отслеживания состояния
-    notification.setAttribute('data-visible', 'true');
-    
-    const closeBtn = notification.querySelector('.notification__close');
-      closeBtn.addEventListener('click', () => {
-      notification.style.animation = 'slide-out 0.3s forwards';
-      notification.setAttribute('data-visible', 'false');
-      setTimeout(() => {
-        notification.remove();
-      }, 300);
-    });
-    
-    setTimeout(() => {
-      notification.style.animation = 'slide-out 0.3s forwards';
-      notification.setAttribute('data-visible', 'false');
-      setTimeout(() => {
-        notification.remove();
-      }, 300);
-    }, duration);
-    
-    // Сохраняем ссылку на функцию глобально только при первом вызове
-    if (window.showNotification !== showNotification) {
-      window.showNotification = showNotification;
+      
+      document.body.appendChild(notification);
+      setTimeout(() => notification.classList.add('active'), 10);
+      
+      const closeBtn = notification.querySelector('.notification__close');
+      if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+          notification.classList.remove('active');
+          setTimeout(() => notification.remove(), 300);
+        });
+      }
+      
+      if (duration > 0) {
+        setTimeout(() => {
+          notification.classList.remove('active');
+          setTimeout(() => notification.remove(), 300);
+        }, duration);
+      }
+      
+      return {
+        close: () => {
+          notification.classList.remove('active');
+          setTimeout(() => notification.remove(), 300);
+        },
+        update: (newMessage) => {
+          const messageElement = notification.querySelector('.notification__content p');
+          if (messageElement) messageElement.textContent = newMessage;
+        },
+        setType: (newType) => {
+          notification.className = `notification notification--${newType} active`;
+        }
+      };
     }
   }
 
@@ -1223,7 +1130,11 @@ document.addEventListener('DOMContentLoaded', function() {
       const passwordConfirm = document.getElementById('registerPasswordConfirm').value;
       
       // Показываем анимацию загрузки на кнопке
-      const submitBtn = this.querySelector('.btn-login');
+      const submitBtn = this.querySelector('button[type="submit"]');
+      if (!submitBtn) {
+        showNotification('Ошибка формы: кнопка отправки не найдена', 'error');
+        return;
+      }
       const originalText = submitBtn.textContent;
       submitBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Регистрация...';
       submitBtn.disabled = true;
@@ -1393,80 +1304,129 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Функция для показа модального окна входа
   function showLoginModal() {
+    // Проверяем, нет ли уже открытого модального окна
+    const isModalAlreadyOpen = document.querySelector('.auth-modal.active') || 
+                              document.querySelector('.modal-checkout[aria-hidden="false"]');
+    
+    if (isModalAlreadyOpen) {
+      console.log('Another modal is already open, delaying login modal');
+      setTimeout(() => showLoginModal(), 500);
+      return;
+    }
+    
     const authModal = document.querySelector('.auth-modal');
     if (!authModal) return;
     
-    authModal.classList.add('active');
-    document.body.style.overflow = 'hidden';
+    // Предотвращаем множественные вызовы
+    if (window._loginModalOpening) return;
+    window._loginModalOpening = true;
     
-    // Reset forms
-    const forms = document.querySelectorAll('.auth-form');
-    forms.forEach(form => {
-      form.reset();
-      const formGroups = form.querySelectorAll('.form-group');
-      formGroups.forEach(group => group.classList.remove('error'));
-    });
-    
-    // Show login form by default
-    const tabs = document.querySelectorAll('.auth-tab');
-    tabs.forEach(tab => {
-      if (tab.getAttribute('data-tab') === 'login') {
-        tab.classList.add('active');
-      } else {
-        tab.classList.remove('active');
-      }
-    });
-    
-    const loginForm = document.getElementById('loginForm');
-    const registerForm = document.getElementById('registerForm');
-    const forgotPasswordForm = document.getElementById('forgotPasswordForm');
-    const successScreen = document.querySelector('.auth-success');
-    
-    if (loginForm) loginForm.classList.add('active');
-    if (registerForm) registerForm.classList.remove('active');
-    if (forgotPasswordForm) forgotPasswordForm.classList.remove('active');
-    if (successScreen) successScreen.style.display = 'none';
-    
-    // Генерация интерактивного фона
-    createInteractiveBackground();
+    // Задержка для гарантии успешного завершения предыдущих анимаций
+    setTimeout(() => {
+      authModal.classList.add('active');
+      document.body.style.overflow = 'hidden';
+      
+      // Reset forms
+      const forms = document.querySelectorAll('.auth-form');
+      forms.forEach(form => {
+        form.reset();
+        const formGroups = form.querySelectorAll('.form-group');
+        formGroups.forEach(group => group.classList.remove('error'));
+      });
+      
+      // Show login form by default
+      const tabs = document.querySelectorAll('.auth-tab');
+      tabs.forEach(tab => {
+        if (tab.getAttribute('data-tab') === 'login') {
+          tab.classList.add('active');
+        } else {
+          tab.classList.remove('active');
+        }
+      });
+      
+      const loginForm = document.getElementById('loginForm');
+      const registerForm = document.getElementById('registerForm');
+      const forgotPasswordForm = document.getElementById('forgotPasswordForm');
+      const successScreen = document.querySelector('.auth-success');
+      
+      if (loginForm) loginForm.classList.add('active');
+      if (registerForm) registerForm.classList.remove('active');
+      if (forgotPasswordForm) forgotPasswordForm.classList.remove('active');
+      if (successScreen) successScreen.style.display = 'none';
+      
+      // Задержка перед созданием интерактивного фона, чтобы снизить нагрузку
+      setTimeout(() => {
+        // Генерация интерактивного фона
+        createInteractiveBackground();
+        // Сбрасываем флаг открытия
+        window._loginModalOpening = false;
+      }, 300);
+    }, 100);
   }
 
   // Функция для создания интерактивного фона
   function createInteractiveBackground() {
+    // Проверяем, не выполняется ли уже создание фона
+    if (window._creatingInteractiveBackground) return;
+    window._creatingInteractiveBackground = true;
+    
     // Находим нужные элементы
     const background = document.querySelector('.animated-background');
     const diagonalLines = document.querySelector('.diagonal-lines');
     
-    if (!background || !diagonalLines) return;
+    if (!background || !diagonalLines) {
+      window._creatingInteractiveBackground = false;
+      return;
+    }
     
     // Очищаем контейнеры
     diagonalLines.innerHTML = '';
     
-    // Создаем диагональные линии
-    for (let i = 0; i < 15; i++) {
-      createDiagonalLine(diagonalLines);
-    }
+    // Снижаем количество элементов для оптимизации производительности
     
-    // Создаем элегантные подчеркивания
-    for (let i = 0; i < 6; i++) {
-      createElegantUnderline(background);
-    }
+    // Создаем диагональные линии (снижено количество)
+    const createLines = () => {
+      // Создаем только 5 линий вместо 15
+      for (let i = 0; i < 5; i++) {
+        createDiagonalLine(diagonalLines);
+      }
+      
+      // Создаем элегантные подчеркивания (снижено количество)
+      setTimeout(() => {
+        // Создаем только 2 подчеркивания вместо 6
+        for (let i = 0; i < 2; i++) {
+          createElegantUnderline(background);
+        }
+        
+        // Создаем минималистичные круги с задержкой
+        setTimeout(() => {
+          // Создаем только 2 круга вместо 4
+          for (let i = 0; i < 2; i++) {
+            createMinimalCircle(background);
+          }
+          
+          // Создаем акцентные точки с задержкой (снижено количество)
+          setTimeout(() => {
+            // Создаем только 8 точек вместо 25
+            for (let i = 0; i < 8; i++) {
+              createAccentDot(background);
+            }
+            
+            // Создаем элемент фокуса для дополнительного эффекта динамичности
+            setTimeout(() => {
+              const focusElement = document.querySelector('.focus-element');
+              if (focusElement) {
+                animateFocusElementColor(focusElement);
+              }
+              window._creatingInteractiveBackground = false;
+            }, 100);
+          }, 100);
+        }, 100);
+      }, 100);
+    };
     
-    // Создаем минималистичные круги
-    for (let i = 0; i < 4; i++) {
-      createMinimalCircle(background);
-    }
-    
-    // Создаем акцентные точки
-    for (let i = 0; i < 25; i++) {
-      createAccentDot(background);
-    }
-    
-    // Создаем элемент фокуса для дополнительного эффекта динамичности
-    const focusElement = document.querySelector('.focus-element');
-    if (focusElement) {
-      animateFocusElementColor(focusElement);
-    }
+    // Запускаем процесс создания элементов с небольшой задержкой
+    setTimeout(createLines, 100);
   }
 
   // Функция анимации цвета для элемента фокуса
@@ -1553,6 +1513,33 @@ document.addEventListener('DOMContentLoaded', function() {
     }, transitionDuration/2);
   }
 
+  // Функция создания минималистичного круга
+  function createMinimalCircle(container) {
+    const circle = document.createElement('div');
+    circle.className = 'minimal-circle';
+    
+    // Случайное положение
+    circle.style.left = (Math.random() * 100) + '%';
+    circle.style.top = (Math.random() * 100) + '%';
+    
+    // Случайный размер
+    const size = 120 + Math.random() * 100;
+    circle.style.width = size + 'px';
+    circle.style.height = size + 'px';
+    
+    // Цвет из палитры
+    circle.style.borderColor = getRandomColor();
+    
+    // Начальная прозрачность
+    circle.style.opacity = '0';
+    
+    // Добавляем в контейнер
+    container.appendChild(circle);
+    
+    // Запускаем анимацию
+    animateMinimalCircle(circle);
+  }
+
   // Функция анимации минималистичного круга
   function animateMinimalCircle(circle) {
     // Параметры анимации
@@ -1629,21 +1616,25 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Удаляем существующее меню пользователя, если оно есть
   function deleteUserMenu() {
-    // Удаляем все существующие меню пользователя
+    console.log('desktop.js: deleteUserMenu вызвана');
+    
+    // Находим меню пользователя
     const userMenu = document.getElementById('userMenu');
+    
+    // Проверяем, не является ли это меню из login-system.js, которое не нужно удалять
+    if (userMenu && userMenu.hasAttribute('data-login-system-menu')) {
+        console.log('desktop.js: попытка удалить защищенное меню из login-system.js, пропускаем');
+        return;
+    }
+    
+    // Удаляем меню, если оно существует
     if (userMenu) {
-      userMenu.remove();
+        console.log('desktop.js: удаляем стандартное меню пользователя');
+        userMenu.parentNode.removeChild(userMenu);
     }
     
-    // Удаляем все элементы с классом user-menu
-    const userMenus = document.querySelectorAll('.user-menu');
-    userMenus.forEach(menu => menu.remove());
-    
-    // Удаляем стили меню, если они существуют
-    const userMenuStyles = document.getElementById('user-menu-styles');
-    if (userMenuStyles) {
-      userMenuStyles.remove();
-    }
+    // Удаляем обработчик клика для закрытия меню
+    document.removeEventListener('click', closeUserMenuOutside);
   }
 
   // Настраиваем MutationObserver для автоматического удаления userMenu
@@ -1654,14 +1645,21 @@ document.addEventListener('DOMContentLoaded', function() {
         for (let i = 0; i < mutation.addedNodes.length; i++) {
           const node = mutation.addedNodes[i];
           if (node.nodeType === 1) { // Это элемент DOM
+            // Если у элемента есть атрибут data-login-system-menu, пропускаем его полностью
+            if (node.hasAttribute && node.hasAttribute('data-login-system-menu')) {
+              console.log('Обнаружено доверенное меню пользователя, пропускаем');
+              continue;
+            }
+            
             // Проверяем, не является ли это элементом userMenu
-            if (node.id === 'userMenu' || node.classList.contains('user-menu')) {
+            if ((node.id === 'userMenu' || node.classList.contains('user-menu')) && 
+                !node.hasAttribute('data-login-system-menu')) {
               console.log('Обнаружено автоматическое добавление меню пользователя, удаляем');
               node.remove();
             }
             
             // Проверяем внутренние элементы на наличие userMenu
-            const innerMenus = node.querySelectorAll('#userMenu, .user-menu');
+            const innerMenus = node.querySelectorAll('#userMenu, .user-menu:not([data-login-system-menu])');
             if (innerMenus.length > 0) {
               console.log('Обнаружены вложенные элементы меню пользователя, удаляем');
               innerMenus.forEach(menu => menu.remove());
@@ -1677,6 +1675,27 @@ document.addEventListener('DOMContentLoaded', function() {
     childList: true,
     subtree: true
   });
+
+  // Глобальная функция для временного отключения обсервера меню
+  window.disableMenuObserver = function() {
+    console.log('Отключаем menuObserver');
+    if (menuObserver) {
+      menuObserver.disconnect();
+      return menuObserver;
+    }
+    return null;
+  };
+
+  // Глобальная функция для повторного включения обсервера меню
+  window.enableMenuObserver = function(observer) {
+    console.log('Включаем menuObserver снова');
+    if (observer) {
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true
+      });
+    }
+  };
 
   // Вызываем функцию удаления меню при загрузке страницы
   deleteUserMenu();
@@ -2070,34 +2089,6 @@ document.addEventListener('DOMContentLoaded', function() {
     return re.test(String(phone));
   }
   
-  // Функция выхода из аккаунта
-  function logoutUser() {
-    // Очищаем данные пользователя
-    localStorage.removeItem('userName');
-    localStorage.removeItem('userData');
-    localStorage.removeItem('isLoggedIn');
-    
-    // Обновляем состояние кнопки входа
-    const loginButton = document.getElementById('loginButton');
-    if (loginButton) {
-      loginButton.innerHTML = `<i class="fas fa-user"></i>`;
-      loginButton.title = 'Войти';
-      loginButton.classList.remove('logged-in');
-      
-      // Сбрасываем обработчик на показ модального окна входа
-      loginButton.removeEventListener('click', showProfileModal);
-      loginButton.addEventListener('click', function() {
-        showLoginModal();
-      });
-    }
-    
-    // Удаляем меню пользователя
-    deleteUserMenu();
-    
-    // Показываем уведомление
-    showNotification('Вы успешно вышли из системы', 'success');
-  }
-  
   // Закрытие меню пользователя при клике вне его
   function closeUserMenuOutside(e) {
     const userMenu = document.getElementById('userMenu');
@@ -2136,6 +2127,18 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Создаем меню пользователя
   function createUserMenu() {
+    console.log('desktop.js: createUserMenu вызвана');
+    
+    // Если уже существует меню из login-system.js, не создаем новое
+    const loginSystemMenu = document.getElementById('userProfileMenu');
+    if (loginSystemMenu) {
+        console.log('desktop.js: найдено меню userProfileMenu из login-system.js, прерываем создание нового меню');
+        return;
+    }
+    
+    // Удаляем любое существующее меню
+    deleteUserMenu();
+    
     // Проверяем, существует ли уже меню
     let userMenu = document.getElementById('userMenu');
     if (userMenu) return userMenu;
@@ -2349,32 +2352,62 @@ document.addEventListener('DOMContentLoaded', function() {
     return userMenu;
   }
   
-  // Функция для удаления меню пользователя
-  function deleteUserMenu() {
-    const userMenu = document.getElementById('userMenu');
-    if (userMenu) {
-      userMenu.remove();
-    }
-    
-    document.removeEventListener('click', closeUserMenuOutside);
-  }
-  
   // Проверяем статус авторизации при загрузке
   function checkLoginStatus() {
-    const userData = JSON.parse(localStorage.getItem('userData'));
+    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
     const loginButton = document.getElementById('loginButton');
     
-    if (userData && userData.name) {
-      updateUIAfterLogin(userData.name);
-    } else if (loginButton) {
-      loginButton.innerHTML = '<i class="fas fa-user"></i>';
+    if (!loginButton) return;
+    
+    // Клонируем кнопку, чтобы удалить все слушатели событий
+    const newButton = loginButton.cloneNode(true);
+    loginButton.parentNode.replaceChild(newButton, loginButton);
+    
+    if (userData && userData.loggedIn && userData.name) {
+      // Обновляем внешний вид кнопки авторизованного пользователя
+      newButton.innerHTML = `<i class="fas fa-user-check"></i>`;
+      newButton.title = `Привет, ${userData.name}`;
+      newButton.classList.add('logged-in');
       
-      // Очищаем существующие обработчики
-      const newButton = loginButton.cloneNode(true);
-      loginButton.parentNode.replaceChild(newButton, loginButton);
+      // Устанавливаем обработчик для показа меню пользователя
+      newButton.addEventListener('click', function() {
+        const existingMenu = document.getElementById('userMenu');
+        if (existingMenu) {
+          if (existingMenu.getAttribute('aria-hidden') === 'true') {
+            existingMenu.setAttribute('aria-hidden', 'false');
+            document.addEventListener('click', closeUserMenuOutside);
+          } else {
+            existingMenu.setAttribute('aria-hidden', 'true');
+            document.removeEventListener('click', closeUserMenuOutside);
+          }
+        } else {
+          const menu = createUserMenu();
+          document.body.appendChild(menu);
+          menu.setAttribute('aria-hidden', 'false');
+          
+          // Обработчики для кнопок меню
+          const menuItems = menu.querySelectorAll('.user-menu__item');
+          menuItems.forEach(item => {
+            item.addEventListener('click', handleUserMenuAction);
+          });
+          
+          // Закрытие при клике вне меню
+          document.addEventListener('click', closeUserMenuOutside);
+        }
+      });
+    } else {
+      // Обновляем внешний вид кнопки для неавторизованного пользователя
+      newButton.innerHTML = '<i class="fas fa-user"></i>';
+      newButton.title = 'Войти';
+      newButton.classList.remove('logged-in');
       
-      // Добавляем обработчик для показа формы логина
+      // Устанавливаем обработчик для показа формы входа
       newButton.addEventListener('click', showLoginModal);
+    }
+    
+    // Удаляем меню пользователя, если пользователь не авторизован
+    if (!userData || !userData.loggedIn) {
+      deleteUserMenu();
     }
   }
   
@@ -3611,10 +3644,19 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log("CHECKOUT: userData", userData); // Отладка
     
     if (!userData.email) {
+      // Показываем сообщение о необходимости авторизации
       showNotification('Для оформления заказа необходимо войти в аккаунт', 'info');
+      
+      // Плавно закрываем панель корзины
+      const cartPanel = document.querySelector('.cart-panel');
+      if (cartPanel) {
+        cartPanel.setAttribute('aria-hidden', 'true');
+      }
+      
+      // Отложенный вызов showLoginModal, чтобы избежать одновременного открытия нескольких модальных окон
       setTimeout(() => {
         showLoginModal();
-      }, 1000);
+      }, 300);
       return;
     }
     
@@ -4222,6 +4264,387 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Делаем функцию showSettingsModal доступной глобально
   window.showSettingsModal = showSettingsModal;
+
+  // Данные товаров с описаниями
+  const productsData = {
+    "1": {
+      title: "Наушники Wireless",
+      price: "4 990",
+      category: "electronics",
+      description: "Беспроводные наушники с активным шумоподавлением и высоким качеством звука. Позволяют наслаждаться любимой музыкой без отвлекающих факторов. Встроенный микрофон обеспечивает качественную передачу голоса при звонках. Батарея обеспечивает до 20 часов непрерывной работы.",
+      sku: "EL-WH-001",
+      specs: {
+        "Тип": "Беспроводные, накладные",
+        "Bluetooth": "5.0",
+        "Время работы": "До 20 часов",
+        "Шумоподавление": "Активное"
+      }
+    },
+    "2": {
+      title: "Конструктор LEGO City",
+      price: "3 200",
+      category: "toys",
+      description: "Набор LEGO City позволяет детям создавать собственный город с различными зданиями, транспортными средствами и мини-фигурками. Развивает мелкую моторику, воображение и креативное мышление. Совместим с другими наборами LEGO для расширения игровых возможностей.",
+      sku: "TY-LG-025",
+      specs: {
+        "Возраст": "6+",
+        "Детали": "853 шт.",
+        "Минифигурки": "6 шт.",
+        "Размеры": "38 × 26 × 7 см"
+      }
+    },
+    "3": {
+      title: "Смарт-часы XFit",
+      price: "7 890",
+      category: "accessories",
+      description: "Смарт-часы XFit с большим AMOLED дисплеем, датчиком пульса, GPS и множеством спортивных режимов. Отслеживают физическую активность, сон, уровень стресса и многое другое. Водонепроницаемость позволяет использовать часы при плавании. Время автономной работы до 14 дней.",
+      sku: "AC-SW-112",
+      specs: {
+        "Дисплей": "1.39\" AMOLED",
+        "Батарея": "420 мАч",
+        "Защита": "IP68",
+        "Совместимость": "Android 5.0+, iOS 10.0+"
+      }
+    },
+    "5": {
+      title: "Блендер PowerMix",
+      price: "5 600",
+      category: "appliances",
+      description: "Мощный блендер с несколькими режимами работы для приготовления смузи, коктейлей, супов-пюре и многого другого. Острые лезвия из нержавеющей стали легко справляются даже с твердыми ингредиентами. Стеклянная чаша объемом 1.5 литра позволяет готовить порции для всей семьи.",
+      sku: "AP-BL-078",
+      specs: {
+        "Мощность": "1000 Вт",
+        "Объем": "1.5 л",
+        "Материал чаши": "Термостойкое стекло",
+        "Скорости": "6 + импульсный режим"
+      }
+    },
+    "6": {
+      title: "Ноутбук ProBook 15",
+      price: "89 900",
+      category: "electronics",
+      description: "Современный ноутбук для работы и развлечений. Оснащен процессором последнего поколения, большим объемом оперативной памяти и быстрым SSD-накопителем. Яркий дисплей с разрешением Full HD обеспечивает комфортную работу и просмотр мультимедиа. Тонкий корпус и легкий вес делают ноутбук комфортным для использования в поездках.",
+      sku: "EL-LT-238",
+      specs: {
+        "Процессор": "Intel Core i7-11800H",
+        "ОЗУ": "16 ГБ DDR4",
+        "Накопитель": "512 ГБ SSD",
+        "Экран": "15.6\" Full HD IPS"
+      }
+    },
+    "7": {
+      title: "Плюшевый мишка Teddy",
+      price: "2 100",
+      category: "toys",
+      description: "Мягкий плюшевый мишка Teddy станет любимым другом вашего ребенка. Изготовлен из безопасных гипоаллергенных материалов, приятен на ощупь. Тщательно прошитые швы и качественный наполнитель гарантируют долгий срок службы игрушки. Подарит множество радостных моментов и детских улыбок.",
+      sku: "TY-TB-057",
+      specs: {
+        "Материал": "Плюш премиум-класса",
+        "Наполнитель": "Синтепух",
+        "Высота": "40 см",
+        "Вес": "350 г"
+      }
+    },
+    "8": {
+      title: "Кроссовки AirMax",
+      price: "6 300",
+      category: "accessories",
+      description: "Стильные и комфортные кроссовки для повседневной носки и занятий спортом. Дышащий верх из сетчатого материала обеспечивает вентиляцию, а амортизирующая подошва снижает нагрузку на ноги при ходьбе и беге. Современный дизайн делает кроссовки универсальным дополнением к любому образу.",
+      sku: "AC-SH-186",
+      specs: {
+        "Верх": "Текстиль, синтетика",
+        "Подошва": "Резина, EVA",
+        "Система": "Air Cushion",
+        "Сезон": "Весна-Лето-Осень"
+      }
+    }
+  };
+
+  // Функция для открытия модального окна с товаром
+  function openProductModal(productId) {
+    const product = productsData[productId];
+    if (!product) {
+      console.error(`Продукт с ID ${productId} не найден!`);
+      return;
+    }
+
+    // Заполняем модальное окно данными
+    const modal = document.querySelector('.product-modal');
+    const productImage = modal.querySelector('.product-modal__image img');
+    const productTitle = modal.querySelector('.product-modal__title');
+    const productPrice = modal.querySelector('.product-modal__price span');
+    const productDescription = modal.querySelector('.product-modal__description');
+    const productCategory = modal.querySelector('.product-modal__category');
+    const productSku = modal.querySelector('.product-modal__sku');
+
+    // Находим исходное изображение для этого продукта в карточке
+    const productCard = document.querySelector(`.product-card[data-id="${productId}"]`);
+    const sourceImage = productCard.querySelector('.product-card__image img');
+
+    // Создаем эффект "взлета" карточки
+    createCardFlyEffect(productCard);
+
+    // Устанавливаем данные
+    productImage.src = sourceImage.src;
+    productImage.alt = sourceImage.alt;
+    productTitle.textContent = product.title;
+    productPrice.textContent = product.price;
+    productDescription.textContent = product.description;
+    productCategory.textContent = getCategoryName(product.category);
+    productSku.textContent = product.sku;
+
+    // Создаем и заполняем спецификации
+    if (product.specs) {
+      const specsContainer = modal.querySelector('.product-modal__specs');
+      // Очищаем существующие спецификации, кроме первых трех (категория, артикул, наличие)
+      const existingSpecs = specsContainer.querySelectorAll('.product-modal__spec-item');
+      for (let i = 3; i < existingSpecs.length; i++) {
+        existingSpecs[i].remove();
+      }
+
+      // Добавляем новые спецификации
+      for (const [key, value] of Object.entries(product.specs)) {
+        const specItem = document.createElement('div');
+        specItem.className = 'product-modal__spec-item';
+        specItem.innerHTML = `
+          <span class="product-modal__spec-label">${key}:</span>
+          <span class="product-modal__spec-value">${value}</span>
+        `;
+        specsContainer.appendChild(specItem);
+      }
+    }
+
+    // Анимируем частицы
+    animateModalParticles();
+
+    // Устанавливаем обработчик для кнопки "В корзину"
+    const addToCartBtn = modal.querySelector('.product-modal__btn-cart');
+    addToCartBtn.onclick = () => {
+      addToCart(productId, product.title, product.price, productImage.src);
+      showNotification(`Товар "${product.title}" добавлен в корзину`, 'success');
+      
+      // Добавляем эффект нажатия кнопки
+      addCartButtonEffect(addToCartBtn);
+    };
+
+    // Отображаем модальное окно
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden'; // Блокируем прокрутку страницы
+
+    // Воспроизводим звук, если он не отключен
+    if (window.settingsModule && typeof window.settingsModule.playSound === 'function') {
+      window.settingsModule.playSound('open');
+    }
+  }
+
+  // Функция для создания эффекта "взлета" карточки товара
+  function createCardFlyEffect(card) {
+    // Создаем копию карточки для анимации
+    const rect = card.getBoundingClientRect();
+    const cardClone = card.cloneNode(true);
+    
+    cardClone.style.position = 'fixed';
+    cardClone.style.top = rect.top + 'px';
+    cardClone.style.left = rect.left + 'px';
+    cardClone.style.width = rect.width + 'px';
+    cardClone.style.height = rect.height + 'px';
+    cardClone.style.margin = '0';
+    cardClone.style.zIndex = '1999';
+    cardClone.style.transition = 'all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1)';
+    cardClone.style.pointerEvents = 'none';
+    cardClone.classList.add('card-fly-effect');
+    
+    document.body.appendChild(cardClone);
+    
+    // Добавляем небольшую задержку для правильной анимации
+    setTimeout(() => {
+      cardClone.style.transform = 'translate(-50%, -50%) scale(0.8) rotate(5deg)';
+      cardClone.style.top = '50%';
+      cardClone.style.left = '50%';
+      cardClone.style.opacity = '0';
+      cardClone.style.filter = 'blur(10px)';
+      
+      // Удаляем клон после анимации
+      setTimeout(() => {
+        cardClone.remove();
+      }, 500);
+    }, 10);
+  }
+
+  // Функция для анимации кнопки "В корзину"
+  function addCartButtonEffect(button) {
+    // Добавляем класс для анимации нажатия
+    button.classList.add('btn-pressed');
+    
+    // Создаем частицы для эффекта успешного добавления
+    for (let i = 0; i < 12; i++) {
+      createSuccessParticle(button);
+    }
+    
+    // Убираем класс после анимации
+    setTimeout(() => {
+      button.classList.remove('btn-pressed');
+    }, 300);
+  }
+  
+  // Функция для создания одной частицы успешного добавления
+  function createSuccessParticle(button) {
+    const colors = ['#BCB88A', '#C9897B', '#DFC5A8', '#A3A075', '#D47962'];
+    const particle = document.createElement('span');
+    const rect = button.getBoundingClientRect();
+    
+    particle.className = 'cart-success-particle';
+    particle.style.position = 'fixed';
+    particle.style.top = (rect.top + rect.height / 2) + 'px';
+    particle.style.left = (rect.left + rect.width / 2) + 'px';
+    particle.style.width = Math.random() * 8 + 4 + 'px';
+    particle.style.height = particle.style.width;
+    particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+    particle.style.borderRadius = '50%';
+    particle.style.zIndex = '2001';
+    particle.style.pointerEvents = 'none';
+    
+    const angle = Math.random() * Math.PI * 2;
+    const speed = Math.random() * 80 + 50;
+    const vx = Math.cos(angle) * speed;
+    const vy = Math.sin(angle) * speed;
+    const lifetime = Math.random() * 1000 + 500;
+    
+    document.body.appendChild(particle);
+    
+    // Анимируем частицу
+    let startTime = Date.now();
+    
+    function animateParticle() {
+      const elapsed = Date.now() - startTime;
+      const progress = elapsed / lifetime;
+      
+      if (progress < 1) {
+        const x = rect.left + rect.width / 2 + vx * progress;
+        const y = rect.top + rect.height / 2 + vy * progress + 100 * progress * progress;
+        const scale = 1 - progress;
+        
+        particle.style.transform = `translate(-50%, -50%) scale(${scale})`;
+        particle.style.left = x + 'px';
+        particle.style.top = y + 'px';
+        particle.style.opacity = 1 - progress;
+        
+        requestAnimationFrame(animateParticle);
+      } else {
+        particle.remove();
+      }
+    }
+    
+    requestAnimationFrame(animateParticle);
+  }
+
+  // Функция для анимации фоновых частиц в модальном окне
+  function animateModalParticles() {
+    const particles = document.querySelectorAll('.product-modal__particle');
+    
+    particles.forEach((particle, index) => {
+      // Сбрасываем текущую анимацию
+      particle.style.animation = 'none';
+      
+      // Заставляем браузер выполнить перерисовку
+      void particle.offsetWidth;
+      
+      // Устанавливаем новую произвольную позицию
+      particle.style.top = Math.random() * 100 + '%';
+      particle.style.left = Math.random() * 100 + '%';
+      particle.style.width = Math.random() * 6 + 3 + 'px';
+      particle.style.height = particle.style.width;
+      
+      // Запускаем анимацию снова
+      particle.style.animation = `particleFloat ${Math.random() * 3 + 3}s infinite linear`;
+      particle.style.animationDelay = index * 0.5 + 's';
+    });
+  }
+
+  // Функция для закрытия модального окна
+  function closeProductModal() {
+    const modal = document.querySelector('.product-modal');
+    
+    // Плавно скрываем модальное окно
+    modal.classList.remove('active');
+    
+    // Возвращаем прокрутку страницы после анимации закрытия
+    setTimeout(() => {
+      document.body.style.overflow = '';
+    }, 400);
+
+    // Воспроизводим звук, если он не отключен
+    if (window.settingsModule && typeof window.settingsModule.playSound === 'function') {
+      window.settingsModule.playSound('close');
+    }
+  }
+
+  // Функция для получения названия категории
+  function getCategoryName(categoryId) {
+    const categories = {
+      'electronics': 'Электроника',
+      'toys': 'Игрушки',
+      'accessories': 'Аксессуары',
+      'appliances': 'Бытовая техника'
+    };
+    return categories[categoryId] || categoryId;
+  }
+
+  // Добавляем обработчики событий для открытия и закрытия модального окна
+  document.querySelectorAll('.product-card').forEach(card => {
+    card.addEventListener('click', (e) => {
+      // Проверяем, что клик не был на кнопке "В корзину"
+      if (!e.target.closest('.product-card__button')) {
+        const productId = card.getAttribute('data-id');
+        openProductModal(productId);
+      }
+    });
+  });
+
+  // Обработчики для закрытия модального окна
+  document.querySelector('.product-modal__close').addEventListener('click', closeProductModal);
+  document.querySelector('.product-modal__btn-close').addEventListener('click', closeProductModal);
+  document.querySelector('.product-modal').addEventListener('click', (e) => {
+    // Закрываем модальное окно при клике на затемненный фон (вне контейнера)
+    if (e.target === document.querySelector('.product-modal')) {
+      closeProductModal();
+    }
+  });
+
+  // Закрытие модального окна по клавише Escape
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && document.querySelector('.product-modal.active')) {
+      closeProductModal();
+    }
+  });
+
+  // Функция для добавления анимации пульсации на карточках товаров (эффект привлечения внимания)
+  function addProductCardsPulseEffect() {
+    const cards = document.querySelectorAll('.product-card');
+    let index = 0;
+
+    // Функция для пульсации одной карточки
+    function pulseNextCard() {
+      if (index < cards.length) {
+        const card = cards[index];
+        card.classList.add('pulse');
+        
+        setTimeout(() => {
+          card.classList.remove('pulse');
+          index++;
+          pulseNextCard();
+        }, 300);
+      } else {
+        // После того как все карточки пропульсируют, перезапускаем через некоторое время
+        setTimeout(addProductCardsPulseEffect, 15000);
+      }
+    }
+
+    pulseNextCard();
+  }
+
+  // Запускаем эффект пульсации карточек через некоторое время после загрузки страницы
+  setTimeout(addProductCardsPulseEffect, 3000);
 
 });  // Закрывающая скобка для DOMContentLoaded
 

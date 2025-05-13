@@ -13,6 +13,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const successScreen = document.querySelector('.auth-success');
     const togglePasswordButtons = document.querySelectorAll('.toggle-password');
     const siteLoginButton = document.getElementById('loginButton');
+    const forgotPasswordLink = document.querySelector('.forgot-password-link');
+    
+    // Флаг для использования модального меню пользователя
+    const useModalUserMenu = true; // По умолчанию используем модальное меню
     
     // Для переключения темы
     const darkModeBtns = document.querySelectorAll('[data-action="toggle-theme"]');
@@ -33,6 +37,162 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Проверка статуса авторизации при загрузке
     checkLoginStatus();
+    
+    // Функция для отображения уведомлений
+    function showNotification(message, type = 'info', duration = 5000) {
+        // Проверяем, существует ли уже глобальная функция showNotification
+        if (window.showNotification && typeof window.showNotification === 'function' && window.showNotification !== showNotification) {
+            window.showNotification(message, type, duration);
+            return;
+        }
+        
+        // Проверка, загружены ли стили
+        if (!document.getElementById('notification-styles-link')) {
+            const link = document.createElement('link');
+            link.id = 'notification-styles-link';
+            link.rel = 'stylesheet';
+            link.href = 'notifications.css';
+            document.head.appendChild(link);
+        }
+        
+        // Создаем элемент уведомления
+        const notification = document.createElement('div');
+        notification.className = `notification notification--${type}`;
+        
+        // Добавляем иконку в зависимости от типа уведомления
+        let icon = 'info-circle';
+        if (type === 'success') icon = 'check-circle';
+        if (type === 'error') icon = 'exclamation-circle';
+        if (type === 'warning') icon = 'exclamation-triangle';
+        
+        notification.innerHTML = `
+            <div class="notification__icon">
+                <i class="fas fa-${icon}"></i>
+            </div>
+            <div class="notification__content">
+                <div class="notification__message">${message}</div>
+            </div>
+            <button class="notification__close" aria-label="Закрыть">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="notification__progress"></div>
+        `;
+        
+        // Добавляем уведомление в DOM
+        document.body.appendChild(notification);
+        
+        // Активируем анимацию появления
+        setTimeout(() => {
+            notification.classList.add('notification--active');
+        }, 10);
+        
+        // Анимируем прогресс-бар
+        const progressBar = notification.querySelector('.notification__progress');
+        if (progressBar && duration > 0) {
+            progressBar.style.transition = `transform ${duration}ms linear`;
+            progressBar.style.transform = 'scaleX(1)';
+            
+            setTimeout(() => {
+                progressBar.style.transform = 'scaleX(0)';
+            }, 50);
+        }
+        
+        // Добавляем обработчик для закрытия уведомления
+        const closeButton = notification.querySelector('.notification__close');
+        if (closeButton) {
+            closeButton.addEventListener('click', () => {
+                closeNotification(notification);
+            });
+        }
+        
+        // Автоматически закрываем уведомление через указанное время
+        if (duration > 0) {
+            setTimeout(() => {
+                closeNotification(notification);
+            }, duration);
+        }
+        
+        // Функция для закрытия уведомления
+        function closeNotification(notificationElement) {
+            notificationElement.classList.remove('notification--active');
+            notificationElement.style.animation = 'slide-out 0.3s forwards';
+            
+            // Удаляем элемент после завершения анимации
+            setTimeout(() => {
+                if (notificationElement.parentNode) {
+                    notificationElement.parentNode.removeChild(notificationElement);
+                }
+            }, 300);
+        }
+        
+        // Возвращаем объект с методами для управления уведомлением
+        return {
+            close: () => closeNotification(notification),
+            update: (newMessage) => {
+                const messageElement = notification.querySelector('.notification__message');
+                if (messageElement) {
+                    messageElement.textContent = newMessage;
+                }
+            },
+            setType: (newType) => {
+                notification.className = `notification notification--${newType} notification--active`;
+                
+                // Обновляем иконку
+                let newIcon = 'info-circle';
+                if (newType === 'success') newIcon = 'check-circle';
+                if (newType === 'error') newIcon = 'exclamation-circle';
+                if (newType === 'warning') newIcon = 'exclamation-triangle';
+                
+                const iconElement = notification.querySelector('.notification__icon i');
+                if (iconElement) {
+                    iconElement.className = `fas fa-${newIcon}`;
+                }
+            }
+        };
+    }
+    
+    // Создание тестовых пользователей для демонстрации
+    function createTestUsers() {
+        // Проверяем, создавались ли уже тестовые пользователи
+        if (localStorage.getItem('testUsersCreated')) {
+            return;
+        }
+        
+        // Получаем текущий список пользователей или создаем пустой массив
+        let users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+        
+        // Если список пуст, добавляем тестовых пользователей
+        if (users.length === 0) {
+            users.push({
+                name: 'Иван',
+                email: 'test@example.com',
+                hashedPassword: 'kxspb7$1jm2hs', // пароль: password123
+                registrationDate: new Date().toISOString(),
+                lastLogin: new Date().toISOString(),
+                orders: []
+            });
+            
+            users.push({
+                name: 'Мария',
+                email: 'maria@example.com',
+                hashedPassword: 'kxspb7$1jm2hs', // пароль: password123
+                registrationDate: new Date().toISOString(),
+                lastLogin: new Date().toISOString(),
+                orders: []
+            });
+            
+            // Сохраняем обновленный список пользователей
+            localStorage.setItem('registeredUsers', JSON.stringify(users));
+            
+            // Отмечаем, что тестовые пользователи созданы
+            localStorage.setItem('testUsersCreated', 'true');
+            
+            console.log('Созданы тестовые пользователи');
+        }
+    }
+    
+    // Вызываем функцию создания тестовых пользователей
+    createTestUsers();
     
     // Открыть модальное окно при нажатии на кнопку входа
     if (loginButton) {
@@ -117,11 +277,44 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Создание интерактивного фона вместо цветных палочек
-    if (typeof createInteractiveBackground === 'function') {
-        createInteractiveBackground();
-    } else {
-        console.warn('createInteractiveBackground function not found');
+    // Создание интерактивного фона
+    function createInteractiveBackground() {
+        console.log('Создание интерактивного фона');
+        // Проверяем, существует ли уже глобальная функция
+        if (window.createInteractiveBackground && typeof window.createInteractiveBackground === 'function') {
+            window.createInteractiveBackground();
+            return;
+        }
+        
+        // Простая заглушка для функции, если она не определена глобально
+        const modalContent = document.querySelector('.auth-modal__content');
+        if (!modalContent) return;
+        
+        // Добавляем декоративные элементы в фон
+        const shapes = ['circle', 'square', 'triangle'];
+        const colors = ['#BCB88A33', '#C9897B33', '#4caf5033', '#2196f333'];
+        
+        // Удаляем старые элементы, если они есть
+        const oldShapes = modalContent.querySelectorAll('.bg-shape');
+        oldShapes.forEach(shape => shape.remove());
+        
+        // Создаем новые декоративные элементы
+        for (let i = 0; i < 5; i++) {
+            const shape = document.createElement('div');
+            shape.className = `bg-shape ${shapes[i % shapes.length]}`;
+            shape.style.position = 'absolute';
+            shape.style.opacity = '0.15';
+            shape.style.backgroundColor = colors[i % colors.length];
+            shape.style.width = `${Math.random() * 100 + 50}px`;
+            shape.style.height = `${Math.random() * 100 + 50}px`;
+            shape.style.top = `${Math.random() * 100}%`;
+            shape.style.left = `${Math.random() * 100}%`;
+            shape.style.transform = `rotate(${Math.random() * 360}deg)`;
+            shape.style.borderRadius = shapes[i % shapes.length] === 'circle' ? '50%' : '0';
+            shape.style.zIndex = '0';
+            
+            modalContent.appendChild(shape);
+        }
     }
     
     // Обработка выхода из аккаунта
@@ -164,8 +357,16 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
+    // Обработчик ссылки "Забыли пароль?"
+    if (forgotPasswordLink) {
+        forgotPasswordLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            switchTab('forgotPassword');
+        });
+    }
+    
     // Обработка отправки форм
-    function handleFormSubmit(form, type) {
+    async function handleFormSubmit(form, type) {
         // Валидация формы
         if (!validateForm(form)) {
             return;
@@ -175,32 +376,97 @@ document.addEventListener('DOMContentLoaded', function() {
         const submitButton = form.querySelector('.submit-button');
         submitButton.classList.add('loading');
         
-        // Имитация запроса к API
-        setTimeout(() => {
-            submitButton.classList.remove('loading');
-            
+        try {
             // Сохранение данных пользователя
             if (type === 'login') {
                 const email = document.getElementById('loginEmail').value;
-                // Для демо, используем email как имя (до символа @)
-                const name = email.split('@')[0];
+                const password = document.getElementById('loginPassword').value;
                 
-                // Ищем, есть ли регистрация с такой почтой
+                // Проверяем, заблокирован ли аккаунт из-за множества неудачных попыток
+                const accountStatus = isAccountBlocked(email);
+                if (accountStatus.blocked) {
+                    // Показываем ошибку - аккаунт временно заблокирован
+                    const formGroup = document.getElementById('loginEmail').closest('.form-group');
+                    formGroup.classList.add('error');
+                    formGroup.querySelector('.error-message').textContent = accountStatus.message;
+                    submitButton.classList.remove('loading');
+                    return;
+                }
+                
+                // Получаем массив зарегистрированных пользователей
                 const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
                 const existingUser = registeredUsers.find(user => user.email.toLowerCase() === email.toLowerCase());
                 
+                // Проверяем существует ли пользователь
+                if (!existingUser) {
+                    // Фиксируем неудачную попытку входа
+                    trackLoginAttempts(email, false);
+                    
+                    // Показываем ошибку - пользователь не найден
+                    const formGroup = document.getElementById('loginEmail').closest('.form-group');
+                    formGroup.classList.add('error');
+                    formGroup.querySelector('.error-message').textContent = 'Пользователь с таким email не найден';
+                    submitButton.classList.remove('loading');
+                    return;
+                }
+                
+                // Проверяем правильность пароля
+                let passwordIsCorrect = false;
+                
+                if (existingUser.hashedPassword) {
+                    // Если используется хешированный пароль
+                    passwordIsCorrect = await verifyPassword(password, existingUser.hashedPassword);
+                } else {
+                    // Для обратной совместимости со старыми аккаунтами
+                    passwordIsCorrect = existingUser.password === password;
+                }
+                
+                if (!passwordIsCorrect) {
+                    // Фиксируем неудачную попытку входа
+                    const attemptInfo = trackLoginAttempts(email, false);
+                    
+                    // Готовим сообщение об ошибке
+                    let errorMessage = 'Неверный пароль';
+                    
+                    // Если это 3 или больше неудачная попытка, предупреждаем пользователя
+                    if (attemptInfo && attemptInfo.count >= 3) {
+                        const attemptsLeft = 5 - attemptInfo.count;
+                        if (attemptsLeft > 0) {
+                            errorMessage += `. Осталось попыток: ${attemptsLeft}`;
+                        } else {
+                            errorMessage += '. Аккаунт будет временно заблокирован.';
+                        }
+                    }
+                    
+                    // Показываем ошибку - неверный пароль
+                    const formGroup = document.getElementById('loginPassword').closest('.form-group');
+                    formGroup.classList.add('error');
+                    formGroup.querySelector('.error-message').textContent = errorMessage;
+                    submitButton.classList.remove('loading');
+                    return;
+                }
+                
+                // Фиксируем успешный вход
+                trackLoginAttempts(email, true);
+                
+                // Успешный вход - берем данные из существующего пользователя
                 const userData = {
-                    email: email,
-                    name: name,
+                    email: existingUser.email,
+                    name: existingUser.name,
                     loggedIn: true,
-                    registrationDate: existingUser ? existingUser.registrationDate : new Date().toISOString(),
-                    orders: existingUser && existingUser.orders ? existingUser.orders : []
+                    registrationDate: existingUser.registrationDate,
+                    orders: existingUser.orders || []
                 };
                 localStorage.setItem('userData', JSON.stringify(userData));
                 
                 // Установка сообщения об успешном входе
                 document.querySelector('.auth-success h2').textContent = 'Вход выполнен!';
-                document.querySelector('.success-message').textContent = `Добро пожаловать, ${name}!`;
+                document.querySelector('.success-message').textContent = `Добро пожаловать, ${existingUser.name}!`;
+                
+                // Обновляем время последнего входа
+                existingUser.lastLogin = new Date().toISOString();
+                localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
+                
             } else if (type === 'register') {
                 const email = document.getElementById('registerEmail').value;
                 const name = document.getElementById('registerName').value;
@@ -221,7 +487,27 @@ document.addEventListener('DOMContentLoaded', function() {
                     return;
                 }
                 
-                // Сохраняем данные пользователя
+                // Хешируем пароль
+                const hashedPassword = await hashPassword(password);
+                
+                // Создаем объект нового пользователя
+                const newUser = {
+                    name: name,
+                    email: email,
+                    hashedPassword: hashedPassword, // Сохраняем хешированный пароль
+                    ip: 'Локальная регистрация',
+                    registrationDate: new Date().toISOString(),
+                    lastLogin: new Date().toISOString(),
+                    orders: []
+                };
+                
+                // Добавляем нового пользователя в массив
+                registeredUsers.push(newUser);
+                
+                // Сохраняем обновленный массив
+                localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
+                
+                // Сохраняем данные текущего пользователя
                 const userData = {
                     email: email,
                     name: name,
@@ -229,26 +515,30 @@ document.addEventListener('DOMContentLoaded', function() {
                     registrationDate: new Date().toISOString(),
                     orders: []
                 };
-                
-                // Сохраняем текущего пользователя
                 localStorage.setItem('userData', JSON.stringify(userData));
-                
-                // Добавляем нового пользователя в массив
-                registeredUsers.push({
-                    name: name,
-                    email: email,
-                    password: password, // В реальной системе нужно хешировать
-                    ip: 'Локальная регистрация',
-                    registrationDate: new Date().toISOString()
-                });
-                
-                // Сохраняем обновленный массив
-                localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
                 
                 // Установка сообщения об успешной регистрации
                 document.querySelector('.auth-success h2').textContent = 'Регистрация завершена';
                 document.querySelector('.success-message').textContent = `Ваш аккаунт создан, ${name}!`;
             } else if (type === 'forgot') {
+                const email = document.getElementById('forgotEmail').value;
+                
+                // Проверяем, существует ли пользователь с таким email
+                const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+                const existingUser = registeredUsers.find(user => user.email.toLowerCase() === email.toLowerCase());
+                
+                if (!existingUser) {
+                    // Показываем ошибку - пользователь не найден
+                    const formGroup = document.getElementById('forgotEmail').closest('.form-group');
+                    formGroup.classList.add('error');
+                    formGroup.querySelector('.error-message').textContent = 'Пользователь с таким email не найден';
+                    submitButton.classList.remove('loading');
+                    return;
+                }
+                
+                // В реальном приложении здесь был бы код для отправки email
+                // Для демо просто имитируем успешную отправку
+                
                 // Установка сообщения об отправке инструкций
                 document.querySelector('.auth-success h2').textContent = 'Ссылка отправлена';
                 document.querySelector('.success-message').textContent = 'Проверьте вашу электронную почту для получения инструкций по восстановлению пароля.';
@@ -271,7 +561,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     checkLoginStatus();
                 }, 2000);
             }
-        }, 1500);
+        } finally {
+            // В любом случае, убираем состояние загрузки через некоторое время
+            setTimeout(() => {
+                submitButton.classList.remove('loading');
+            }, 500);
+        }
     }
     
     // Валидация полей формы
@@ -425,6 +720,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Открытие модального окна
     function openModal() {
+        const authModal = document.querySelector('.auth-modal');
         if (authModal) {
             authModal.classList.add('active');
             document.body.style.overflow = 'hidden';
@@ -437,6 +733,17 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Создаем интерактивный фон
             createInteractiveBackground();
+        } else {
+            // Если модального окна нет, создаем его
+            createModalWindow();
+            setTimeout(() => {
+                const newModal = document.querySelector('.auth-modal');
+                if (newModal) {
+                    newModal.classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                    createInteractiveBackground();
+                }
+            }, 50);
         }
     }
     
@@ -475,6 +782,31 @@ document.addEventListener('DOMContentLoaded', function() {
         if (successScreen) {
             successScreen.style.display = 'none';
         }
+        
+        // Для формы восстановления пароля не переключаем tab-кнопки
+        if (tabName === 'forgotPassword') {
+            // Скрываем все вкладки, так как восстановление пароля - это отдельная форма
+            tabs.forEach(tab => tab.parentElement.style.display = 'none');
+            
+            // Показываем кнопку "Назад"
+            if (backButton) {
+                backButton.style.display = 'block';
+            }
+        } else {
+            // Показываем вкладки для остальных форм
+            tabs.forEach(tab => tab.parentElement.style.display = '');
+            
+            // Скрываем кнопку "Назад" для основных форм
+            if (backButton) {
+                backButton.style.display = 'none';
+            }
+        }
+        
+        // Сбросить ошибки при переключении форм
+        forms.forEach(form => {
+            const formGroups = form.querySelectorAll('.form-group');
+            formGroups.forEach(group => group.classList.remove('error'));
+        });
         
         // Отображение соответствующей формы
         forms.forEach(form => {
@@ -572,21 +904,112 @@ document.addEventListener('DOMContentLoaded', function() {
         const userData = JSON.parse(localStorage.getItem('userData') || '{}');
         const isLoggedIn = userData.loggedIn || false;
         
-        if (siteLoginButton) {
-            if (isLoggedIn) {
-                siteLoginButton.innerHTML = `<i class="fas fa-user"></i><span>${userData.name}</span>`;
-                siteLoginButton.classList.add('logged-in');
-            } else {
-                siteLoginButton.innerHTML = `<i class="fas fa-sign-in-alt"></i><span>Войти</span>`;
-                siteLoginButton.classList.remove('logged-in');
+        console.log('checkLoginStatus called, userData:', userData);
+        console.log('isLoggedIn:', isLoggedIn);
+        
+        // Удаляем старые меню пользователя, если они есть
+        const oldMenus = document.querySelectorAll('.user-menu, #userProfileMenu');
+        oldMenus.forEach(menu => {
+            if (menu && menu.parentNode) {
+                menu.parentNode.removeChild(menu);
             }
+        });
+        
+        const loginButton = document.getElementById('loginButton');
+        if (!loginButton) {
+            console.log('Login button not found');
+            return;
+        }
+        
+        // Клонируем кнопку, чтобы удалить все слушатели событий
+        const newButton = loginButton.cloneNode(true);
+        loginButton.parentNode.replaceChild(newButton, loginButton);
+        
+        if (isLoggedIn) {
+            console.log('User is logged in, setting up user menu button');
+            newButton.innerHTML = `<i class="fas fa-user"></i><span>${userData.name}</span>`;
+            newButton.classList.add('logged-in');
+            
+            // Добавляем обработчик для клика
+            newButton.addEventListener('click', function(e) {
+                e.preventDefault(); // Предотвращаем стандартное поведение
+                e.stopPropagation(); // Предотвращаем всплытие
+                console.log('Login button clicked for logged in user');
+                
+                // Закрываем существующее меню перед открытием нового
+                const existingMenu = document.getElementById('userProfileMenu');
+                if (existingMenu) {
+                    existingMenu.parentNode.removeChild(existingMenu);
+                }
+                
+                showUserMenu(this);
+            });
+        } else {
+            console.log('User is not logged in, setting up login button');
+            newButton.innerHTML = `<i class="fas fa-sign-in-alt"></i><span>Войти</span>`;
+            newButton.classList.remove('logged-in');
+            
+            // Добавляем обработчик для показа модального окна входа
+            newButton.addEventListener('click', function(e) {
+                e.preventDefault(); // Предотвращаем стандартное поведение
+                console.log('Login button clicked for guest');
+                openModal();
+            });
         }
     }
     
     // Выход из аккаунта
     function logoutUser() {
+        // Используем глобальный координатор для выхода
+        if (window.logoutCoordinator && typeof window.logoutCoordinator.performLogout === 'function') {
+            console.log('login-system.js: Using global logout coordinator');
+            window.logoutCoordinator.performLogout();
+            
+            // Восстанавливаем оригинальное содержимое модального окна, если оно открыто
+            const contentWrapper = document.querySelector('.auth-modal__content-wrapper');
+            if (contentWrapper && contentWrapper.dataset.originalContent) {
+                contentWrapper.innerHTML = contentWrapper.dataset.originalContent;
+                // Переключаемся на вкладку входа
+                switchTab('login');
+            }
+            
+            // Закрыть модальное окно, если оно открыто
+            if (authModal && authModal.classList.contains('active')) {
+                closeModal();
+            }
+            
+            // Обновляем статус авторизации
+            setTimeout(() => {
+                checkLoginStatus();
+            }, 100);
+            
+            return;
+        }
+        
+        // Резервный вариант если координатор недоступен
+        console.log('login-system.js: Using fallback logout method');
+        
+        // Полностью очищаем данные пользователя из localStorage
         localStorage.removeItem('userData');
-        checkLoginStatus();
+        
+        // Находим кнопку входа
+        const loginButton = document.getElementById('loginButton');
+        if (loginButton) {
+            // Клонируем кнопку, чтобы удалить все слушатели событий
+            const newButton = loginButton.cloneNode(true);
+            loginButton.parentNode.replaceChild(newButton, loginButton);
+            
+            // Обновляем внешний вид кнопки
+            newButton.innerHTML = `<i class="fas fa-sign-in-alt"></i><span>Войти</span>`;
+            newButton.classList.remove('logged-in');
+            
+            // Добавляем новый обработчик для открытия модального окна
+            newButton.addEventListener('click', function() {
+                openModal();
+            });
+        }
+        
+        // Оповещаем пользователя
         showNotification('Вы успешно вышли из системы', 'success');
         
         // Восстанавливаем оригинальное содержимое модального окна, если оно открыто
@@ -608,22 +1031,110 @@ document.addEventListener('DOMContentLoaded', function() {
             userMenu.style.opacity = '0';
             userMenu.style.visibility = 'hidden';
             userMenu.style.transform = 'translateY(10px)';
+            
+            // Полностью удаляем меню пользователя после исчезновения
+            setTimeout(() => {
+                if (userMenu && userMenu.parentNode) {
+                    userMenu.parentNode.removeChild(userMenu);
+                }
+            }, 300);
         }
+        
+        // Обновляем статус авторизации
+        setTimeout(() => {
+            checkLoginStatus();
+        }, 100);
+        
+        // Перезагрузка страницы через 1 секунду после выхода из аккаунта
+        setTimeout(() => {
+            location.reload();
+        }, 1000);
+    }
+    
+    // Простая функция хеширования пароля для демонстрации
+    // В реальном приложении нужно использовать более надежные методы
+    function hashPassword(password) {
+        // В реальном мире нужно использовать bcrypt или аналоги
+        // Эта функция - заглушка для демонстрации
+        return new Promise((resolve) => {
+            // Простая хеш-функция для демонстрации
+            let hash = 0;
+            for (let i = 0; i < password.length; i++) {
+                const char = password.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash; // Convert to 32bit integer
+            }
+            
+            // Добавляем соль и префикс для безопасности
+            const salt = Date.now().toString(36);
+            const hashedPassword = salt + '$' + (hash >>> 0).toString(36);
+            
+            // Имитируем асинхронную работу
+            setTimeout(() => {
+                resolve(hashedPassword);
+            }, 100);
+        });
+    }
+    
+    // Функция для проверки пароля (для демонстрации)
+    function verifyPassword(inputPassword, storedHash) {
+        return new Promise((resolve) => {
+            // Разделяем на соль и хеш
+            const [salt, hash] = storedHash.split('$');
+            
+            // Хешируем введенный пароль с той же солью
+            let calculatedHash = 0;
+            for (let i = 0; i < inputPassword.length; i++) {
+                const char = inputPassword.charCodeAt(i);
+                calculatedHash = ((calculatedHash << 5) - calculatedHash) + char;
+                calculatedHash = calculatedHash & calculatedHash;
+            }
+            
+            // Сравниваем хеши
+            const calculatedHashString = (calculatedHash >>> 0).toString(36);
+            const matches = calculatedHashString === hash;
+            
+            // Имитируем асинхронную работу
+            setTimeout(() => {
+                resolve(matches);
+            }, 100);
+        });
     }
     
     // Отображение меню пользователя
     function showUserMenu(button) {
-        // Check if desktop menu is already open and use it instead if possible
-        const desktopMenu = document.getElementById('userMenu');
-        if (desktopMenu && desktopMenu.getAttribute('aria-hidden') === 'false') {
-            return; // Desktop menu is already open, don't create another one
+        console.log('showUserMenu called with button:', button);
+        
+        // Проверяем, авторизован ли пользователь
+        const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+        if (!userData.loggedIn) {
+            console.log('User not logged in, showing auth modal instead');
+            openModal();
+            return;
         }
         
-        const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+        // Отключаем обсервер меню, если он есть
+        const menuObserver = window.disableMenuObserver ? window.disableMenuObserver() : null;
         
-        // Проверяем, открыто ли модальное окно
-        if (authModal && authModal.classList.contains('active')) {
-            // Если модальное окно открыто, отображаем меню внутри него
+        // Получаем ссылку на модальное окно авторизации
+        const authModal = document.querySelector('.auth-modal');
+        
+        // Проверяем, открыто ли модальное окно или нужно использовать модальный стиль меню
+        if ((authModal && authModal.classList.contains('active')) || useModalUserMenu) {
+            console.log('Modal is open or modal menu style is enabled, showing menu with modal style');
+            
+            // Если модальное окно не открыто, но нужно использовать модальный стиль меню,
+            // создаем и открываем модальное окно
+            if (!authModal || !authModal.classList.contains('active')) {
+                // Создаем модальное окно, если его нет
+                if (!authModal) {
+                    createModalWindow();
+                }
+                // Открываем модальное окно
+                openModal();
+            }
+            
+            // Если модальное окно открыто или включен флаг модального меню, отображаем меню в модальном стиле
             let userMenuContent = `
                 <div class="user-menu-modal">
                     <div class="decorative-shape shape-1"></div>
@@ -636,564 +1147,602 @@ document.addEventListener('DOMContentLoaded', function() {
                         </div>
                         <div class="user-menu__name-container">
                             <div class="user-menu__name">
-                                <span class="name-text">${userData.name}</span>
-                                <div class="account-status">
-                                    <div class="status-indicator"></div>
-                                    <span>212</span>
+                                <div class="name-wrapper">
+                                    <span class="name-text">${userData.name}</span>
+                                    <div class="account-status">
+                                        <div class="status-indicator"></div>
+                                        <span>Премиум</span>
+                                    </div>
                                 </div>
                             </div>
                             <div class="user-menu__email">${userData.email}</div>
                         </div>
                     </div>
                     
-                    <div class="user-menu-scrollable">
-                        <div class="welcome-message">
-                            <i class="fas fa-crown welcome-icon"></i>
-                            <span>Добро пожаловать в личный кабинет!</span>
-                        </div>
-                        
-                        <div class="user-menu__items">
-                            <div class="user-menu__item" data-action="profile">
-                                <i class="fas fa-user-circle"></i>
-                                <span>Мой профиль</span>
-                                <i class="fas fa-chevron-right item-chevron"></i>
-                            </div>
-                            <div class="user-menu__item" data-action="orders">
-                                <i class="fas fa-shopping-bag"></i>
-                                <span>Мои заказы</span>
-                                <i class="fas fa-chevron-right item-chevron"></i>
-                            </div>
-                            <div class="user-menu__item" data-action="settings">
-                                <i class="fas fa-cog"></i>
-                                <span>Настройки</span>
-                                <i class="fas fa-chevron-right item-chevron"></i>
-                            </div>
-                            <div class="user-menu__item" data-action="logout">
-                                <i class="fas fa-sign-out-alt"></i>
-                                <span>Выйти</span>
-                                <i class="fas fa-chevron-right item-chevron"></i>
-                            </div>
-                        </div>
-                    </div>
+                    <ul class="user-menu__items">
+                        <li class="user-menu__item" data-action="profile">
+                            <i class="fas fa-id-card"></i>
+                            <span>Профиль</span>
+                        </li>
+                        <li class="user-menu__item" data-action="orders">
+                            <i class="fas fa-shopping-bag"></i>
+                            <span>Заказы</span>
+                        </li>
+                        <li class="user-menu__item" data-action="settings">
+                            <i class="fas fa-cog"></i>
+                            <span>Настройки</span>
+                        </li>
+                        <li class="user-menu__item" data-action="logout">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Выйти</span>
+                        </li>
+                    </ul>
                 </div>
             `;
             
-            // Находим контентную часть модального окна и заменяем её содержимое на меню пользователя
-            const contentWrapper = document.querySelector('.auth-modal__content-wrapper');
-            if (contentWrapper) {
-                // Сохраняем оригинальное содержимое для возможного восстановления после выхода
+            // Добавляем стили для модального меню, если их еще нет
+            if (!document.getElementById('user-menu-modal-styles')) {
+                const style = document.createElement('style');
+                style.id = 'user-menu-modal-styles';
+                style.textContent = `
+                    .user-menu-modal {
+                        position: relative;
+                        width: 100%;
+                        margin: 0 auto;
+                        padding: 20px;
+                        background: ${document.body.classList.contains('dark') ? '#2a2a2a' : 'white'};
+                        border-radius: 12px;
+                        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+                        overflow: hidden;
+                    }
+                    
+                    .decorative-shape {
+                        position: absolute;
+                        z-index: 0;
+                        opacity: 0.1;
+                    }
+                    
+                    .shape-1 {
+                        top: -30px;
+                        left: -30px;
+                        width: 100px;
+                        height: 100px;
+                        background: linear-gradient(135deg, #BCB88A, #C9897B);
+                        border-radius: 50%;
+                    }
+                    
+                    .shape-2 {
+                        bottom: -20px;
+                        right: -20px;
+                        width: 80px;
+                        height: 80px;
+                        background: linear-gradient(135deg, #4caf50, #2196f3);
+                        border-radius: 50%;
+                    }
+                    
+                    .shape-3 {
+                        top: 50%;
+                        right: 30px;
+                        width: 60px;
+                        height: 60px;
+                        background: linear-gradient(135deg, #ff9800, #f44336);
+                        border-radius: 50%;
+                        transform: translateY(-50%);
+                    }
+                    
+                    .user-menu__header {
+                        position: relative;
+                        z-index: 1;
+                        display: flex;
+                        align-items: center;
+                        margin-bottom: 20px;
+                        padding-bottom: 15px;
+                        border-bottom: 1px solid ${document.body.classList.contains('dark') ? '#444' : '#eee'};
+                    }
+                    
+                    .user-menu__avatar {
+                        width: 60px;
+                        height: 60px;
+                        border-radius: 50%;
+                        background: linear-gradient(135deg, #BCB88A, #C9897B);
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        margin-right: 15px;
+                    }
+                    
+                    .user-menu__avatar i {
+                        font-size: 24px;
+                        color: white;
+                    }
+                    
+                    .user-menu__name-container {
+                        flex: 1;
+                    }
+                    
+                    .user-menu__name {
+                        display: flex;
+                        flex-direction: column;
+                        margin-bottom: 5px;
+                    }
+                    
+                    .name-text {
+                        font-size: 18px;
+                        font-weight: 600;
+                        color: ${document.body.classList.contains('dark') ? '#f0f0f0' : '#333'};
+                        text-align: left;
+                    }
+                    
+                    .name-wrapper {
+                        display: flex;
+                        align-items: center;
+                        justify-content: flex-start;
+                        width: 100%;
+                    }
+                    
+                    .account-status {
+                        display: flex;
+                        align-items: center;
+                        gap: 6px;
+                        font-size: 11px;
+                        color: #BCB88A;
+                        background: linear-gradient(135deg, rgba(188, 184, 138, 0.15), rgba(201, 137, 123, 0.15));
+                        padding: 4px 8px;
+                        border-radius: 50px;
+                        box-shadow: 0 2px 10px rgba(201, 137, 123, 0.15);
+                        font-weight: 600;
+                        letter-spacing: 0.3px;
+                        text-transform: uppercase;
+                        margin-left: 8px;
+                    }
+                    
+                    .status-indicator {
+                        width: 8px;
+                        height: 8px;
+                        background: linear-gradient(135deg, #BCB88A, #C9897B);
+                        border-radius: 50%;
+                        margin-right: 0;
+                        box-shadow: 0 0 0 2px rgba(201, 137, 123, 0.2);
+                        position: relative;
+                    }
+                    
+                    .user-menu__email {
+                        font-size: 14px;
+                        color: ${document.body.classList.contains('dark') ? '#aaa' : '#666'};
+                    }
+                    
+                    .user-menu__items {
+                        position: relative;
+                        z-index: 1;
+                        list-style: none;
+                        padding: 0;
+                        margin: 0;
+                    }
+                    
+                    .user-menu__item {
+                        padding: 12px 15px;
+                        margin-bottom: 5px;
+                        display: flex;
+                        align-items: center;
+                        cursor: pointer;
+                        border-radius: 8px;
+                        transition: background 0.2s ease;
+                    }
+                    
+                    .user-menu__item:hover {
+                        background: ${document.body.classList.contains('dark') ? '#444' : '#f5f5f5'};
+                    }
+                    
+                    .user-menu__item i {
+                        width: 24px;
+                        margin-right: 12px;
+                        font-size: 16px;
+                        color: ${document.body.classList.contains('dark') ? '#aaa' : '#666'};
+                    }
+                    
+                    .user-menu__item span {
+                        font-size: 14px;
+                        color: ${document.body.classList.contains('dark') ? '#f0f0f0' : '#333'};
+                    }
+                    
+                    .user-menu__item[data-action="logout"] {
+                        margin-top: 10px;
+                        border-top: 1px solid ${document.body.classList.contains('dark') ? '#444' : '#eee'};
+                        padding-top: 15px;
+                    }
+                    
+                    .user-menu__item[data-action="logout"] i {
+                        color: #f44336;
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+            
+            // Если модальное окно открыто, показываем меню внутри него
+            if (authModal && authModal.classList.contains('active')) {
+                // Получаем обертку для контента модального окна
+                const contentWrapper = document.querySelector('.auth-modal__content-wrapper');
+                
+                // Сохраняем оригинальный контент если еще не сохранен
                 if (!contentWrapper.dataset.originalContent) {
                     contentWrapper.dataset.originalContent = contentWrapper.innerHTML;
                 }
+                
+                // Заменяем содержимое модального окна
                 contentWrapper.innerHTML = userMenuContent;
                 
-                // Добавляем анимацию для пунктов меню
-                setTimeout(() => {
-                    const menuItems = contentWrapper.querySelectorAll('.user-menu-scrollable .user-menu__item');
-                    menuItems.forEach((item, index) => {
-                        item.style.opacity = '0';
-                        item.style.transform = 'translateY(20px)';
-                        item.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
-                        item.style.transitionDelay = `${0.1 + index * 0.1}s`;
-                        
-                        setTimeout(() => {
-                            item.style.opacity = '1';
-                            item.style.transform = 'translateY(0)';
-                        }, 50);
-                    });
-                }, 100);
-                
-                // Добавляем обработчики для пунктов меню
+                // Добавляем обработчики к пунктам меню
                 const menuItems = contentWrapper.querySelectorAll('.user-menu__item');
                 menuItems.forEach(item => {
                     item.addEventListener('click', function(e) {
+                        e.stopPropagation(); // Предотвращаем всплытие
                         const action = this.getAttribute('data-action');
+                        console.log(`Modal menu item clicked: ${action}`);
                         
                         // Выполняем соответствующее действие
                         if (action === 'logout') {
                             logoutUser();
-                            
-                            // Восстанавливаем оригинальное содержимое модального окна
-                            if (contentWrapper.dataset.originalContent) {
-                                contentWrapper.innerHTML = contentWrapper.dataset.originalContent;
-                                // Переключаемся на вкладку входа
-                                switchTab('login');
-                            }
                         } else if (action === 'profile') {
                             // Закрываем модальное окно
                             closeModal();
-                            // Проверяем, есть ли функция showProfileModal
-                            if (typeof showProfileModal === 'function') {
-                                showProfileModal();
+                            // Вызываем функцию showProfileModal из desktop.js
+                            if (typeof window.showProfileModal === 'function') {
+                                window.showProfileModal();
                             } else {
-                                // Для совместимости с мобильной версией
-                                showNotification(`Функция "${this.querySelector('span').textContent}" находится в разработке`, 'info');
+                                // При клике на "Профиль" показываем форму профиля
+                                if (contentWrapper && contentWrapper.dataset.originalContent) {
+                                    contentWrapper.innerHTML = contentWrapper.dataset.originalContent;
+                                    // Переключаемся на вкладку входа
+                                    switchTab('login');
+                                    // Заполняем поле email
+                                    const emailField = document.getElementById('loginEmail');
+                                    if (emailField) {
+                                        emailField.value = userData.email || '';
+                                        // Фокусируемся на поле пароля
+                                        const passwordField = document.getElementById('loginPassword');
+                                        if (passwordField) passwordField.focus();
+                                    }
+                                }
                             }
                         } else if (action === 'orders') {
                             // Закрываем модальное окно
                             closeModal();
-                            // Проверяем, есть ли функция showOrdersModal
-                            if (typeof showOrdersModal === 'function') {
-                                // Всегда показываем модальное окно заказов
-                                showOrdersModal();
+                            // Вызываем функцию showOrdersModal из desktop.js
+                            if (typeof window.showOrdersModal === 'function') {
+                                window.showOrdersModal();
                             } else {
-                                showNotification('Функция "Мои заказы" находится в разработке', 'info');
+                                showNotification('Функция просмотра заказов пока не реализована', 'info');
                             }
                         } else if (action === 'settings') {
                             // Закрываем модальное окно
                             closeModal();
-                            // Проверяем, есть ли функция showSettingsModal
-                            if (typeof showSettingsModal === 'function') {
-                                showSettingsModal();
+                            // Вызываем функцию showSettingsModal
+                            if (typeof window.showSettingsModal === 'function') {
+                                window.showSettingsModal();
+                            } else if (typeof window.settingsModule !== 'undefined' && 
+                                      typeof window.settingsModule.showSettingsModal === 'function') {
+                                window.settingsModule.showSettingsModal();
                             } else {
-                                showNotification('Функция "Настройки" находится в разработке', 'info');
+                                // Перенаправляем на страницу настроек, если она существует
+                                if (window.location.href.includes('/desktop.html')) {
+                                    showNotification('Переход на страницу настроек...', 'info');
+                                    setTimeout(() => {
+                                        window.location.href = 'settings.html';
+                                    }, 500);
+                                } else {
+                                    showNotification('Функция настроек пока не реализована', 'info');
+                                }
                             }
                         } else {
-                            showNotification(`Функция "${this.querySelector('span').textContent}" находится в разработке`, 'info');
+                            showNotification(`Действие "${action}" пока не реализовано`, 'info');
                         }
                     });
                 });
+            } else {
+                // Если модальное окно не открыто, но нужно использовать модальный стиль меню,
+                // создаем отдельное меню с модальным стилем
+                console.log('Creating standalone menu with modal style');
+                
+                // Удаляем существующее меню, если оно есть
+                const existingMenu = document.getElementById('userProfileMenu');
+                if (existingMenu) {
+                    existingMenu.parentNode.removeChild(existingMenu);
+                }
+                
+                // Создаем элемент меню пользователя
+                const userMenu = document.createElement('div');
+                userMenu.className = 'user-menu login-system-menu';
+                userMenu.id = 'userProfileMenu'; // Уникальный ID для меню
+                userMenu.setAttribute('data-login-system-menu', 'true');
+                userMenu.setAttribute('data-protected', 'true');
+                
+                // Позиционируем меню относительно кнопки
+                const buttonRect = button.getBoundingClientRect();
+                console.log('Button rectangle:', buttonRect);
+                
+                // Рассчитываем позицию меню
+                const topPosition = buttonRect.bottom + 10; // Добавляем 10px отступа от кнопки
+                const leftPosition = buttonRect.left + (buttonRect.width / 2) - 140; // Центрируем по кнопке
+                
+                // Добавляем стили для корректного отображения меню
+                Object.assign(userMenu.style, {
+                    position: 'fixed',
+                    top: `${topPosition}px`,
+                    left: `${Math.max(10, leftPosition)}px`,
+                    zIndex: '9999',
+                    width: '280px',
+                    backgroundColor: document.body.classList.contains('dark') ? '#2a2a2a' : 'white',
+                    borderRadius: '12px',
+                    boxShadow: '0 10px 25px rgba(0, 0, 0, 0.15)',
+                    opacity: '0',
+                    visibility: 'hidden',
+                    transition: 'opacity 0.3s ease, transform 0.3s ease, visibility 0.3s ease',
+                    transform: 'translateY(10px)',
+                    overflow: 'visible' // Для отображения стрелки
+                });
+                
+                // Добавляем HTML содержимое меню
+                userMenu.innerHTML = userMenuContent;
+                
+                // Добавляем меню на страницу
+                document.body.appendChild(userMenu);
+                console.log('Menu added to body:', userMenu);
+                
+                // Показываем меню с анимацией
+                setTimeout(() => {
+                    userMenu.style.opacity = '1';
+                    userMenu.style.visibility = 'visible';
+                    userMenu.style.transform = 'translateY(0)';
+                }, 50);
+                
+                // Добавляем обработчики к пунктам меню
+                const menuItems = userMenu.querySelectorAll('.user-menu__item');
+                menuItems.forEach(item => {
+                    item.addEventListener('click', function(e) {
+                        e.stopPropagation(); // Предотвращаем всплытие
+                        const action = this.getAttribute('data-action');
+                        console.log(`Menu item clicked: ${action}`);
+                        
+                        // Скрываем меню
+                        userMenu.style.opacity = '0';
+                        userMenu.style.visibility = 'hidden';
+                        userMenu.style.transform = 'translateY(10px)';
+                        
+                        // Выполняем действие после анимации скрытия
+                        setTimeout(() => {
+                            if (action === 'logout') {
+                                logoutUser();
+                            } else if (action === 'profile') {
+                                // Вызываем функцию showProfileModal из desktop.js
+                                if (typeof window.showProfileModal === 'function') {
+                                    window.showProfileModal();
+                                } else {
+                                    // Открываем модальное окно профиля
+                                    openModal();
+                                    // Переключаем на вкладку входа
+                                    switchTab('login');
+                                    // Заполняем поле email
+                                    const emailField = document.getElementById('loginEmail');
+                                    if (emailField) {
+                                        emailField.value = userData.email || '';
+                                        // Фокусируемся на поле пароля
+                                        const passwordField = document.getElementById('loginPassword');
+                                        if (passwordField) passwordField.focus();
+                                    }
+                                }
+                            } else if (action === 'orders') {
+                                // Вызываем функцию showOrdersModal из desktop.js
+                                if (typeof window.showOrdersModal === 'function') {
+                                    window.showOrdersModal();
+                                } else {
+                                    showNotification('Функция просмотра заказов пока не реализована', 'info');
+                                }
+                            } else if (action === 'settings') {
+                                // Вызываем функцию showSettingsModal
+                                if (typeof window.showSettingsModal === 'function') {
+                                    window.showSettingsModal();
+                                } else if (typeof window.settingsModule !== 'undefined' && 
+                                          typeof window.settingsModule.showSettingsModal === 'function') {
+                                    window.settingsModule.showSettingsModal();
+                                } else {
+                                    // Перенаправляем на страницу настроек, если она существует
+                                    if (window.location.href.includes('/desktop.html')) {
+                                        showNotification('Переход на страницу настроек...', 'info');
+                                        setTimeout(() => {
+                                            window.location.href = 'settings.html';
+                                        }, 500);
+                                    } else {
+                                        showNotification('Функция настроек пока не реализована', 'info');
+                                    }
+                                }
+                            } else {
+                                showNotification(`Действие "${action}" пока не реализовано`, 'info');
+                            }
+                            
+                            // Удаляем меню из DOM
+                            if (userMenu.parentNode) {
+                                userMenu.parentNode.removeChild(userMenu);
+                            }
+                            
+                            // Восстанавливаем обсервер меню, если он был отключен
+                            if (menuObserver && window.enableMenuObserver) {
+                                window.enableMenuObserver(menuObserver);
+                            }
+                        }, 300);
+                    });
+                });
+                
+                // Функция закрытия меню при клике вне его области
+                function closeMenuOnOutsideClick(e) {
+                    if (!userMenu.contains(e.target) && !button.contains(e.target)) {
+                        userMenu.style.opacity = '0';
+                        userMenu.style.visibility = 'hidden';
+                        userMenu.style.transform = 'translateY(10px)';
+                        
+                        // Удаляем обработчик клика
+                        document.removeEventListener('click', closeMenuOnOutsideClick);
+                        document.removeEventListener('keydown', closeMenuOnEscape);
+                        
+                        // Удаляем меню после анимации
+                        setTimeout(() => {
+                            if (userMenu.parentNode) {
+                                userMenu.parentNode.removeChild(userMenu);
+                            }
+                            
+                            // Восстанавливаем обсервер меню, если он был отключен
+                            if (menuObserver && window.enableMenuObserver) {
+                                window.enableMenuObserver(menuObserver);
+                            }
+                        }, 300);
+                    }
+                }
+                
+                // Функция закрытия меню при нажатии Escape
+                function closeMenuOnEscape(e) {
+                    if (e.key === 'Escape') {
+                        userMenu.style.opacity = '0';
+                        userMenu.style.visibility = 'hidden';
+                        userMenu.style.transform = 'translateY(10px)';
+                        
+                        // Удаляем обработчики
+                        document.removeEventListener('keydown', closeMenuOnEscape);
+                        document.removeEventListener('click', closeMenuOnOutsideClick);
+                        
+                        // Удаляем меню после анимации
+                        setTimeout(() => {
+                            if (userMenu.parentNode) {
+                                userMenu.parentNode.removeChild(userMenu);
+                            }
+                            
+                            // Восстанавливаем обсервер меню, если он был отключен
+                            if (menuObserver && window.enableMenuObserver) {
+                                window.enableMenuObserver(menuObserver);
+                            }
+                        }, 300);
+                    }
+                }
+                
+                // Добавляем обработчики для закрытия меню
+                setTimeout(() => {
+                    document.addEventListener('click', closeMenuOnOutsideClick);
+                    document.addEventListener('keydown', closeMenuOnEscape);
+                }, 100);
             }
         } else {
-            // Если модальное окно закрыто, открываем его и затем показываем меню пользователя
-            openModal();
+            // Стандартное меню пользователя (не модальное)
+            console.log('Using standard user menu style');
             
-            // Используем setTimeout, чтобы дать время модальному окну открыться
-            setTimeout(() => {
-                showUserMenu(button);
-            }, 100);
+            // Здесь может быть код для отображения стандартного меню
+            // Но так как мы всегда используем модальное меню (useModalUserMenu = true),
+            // этот код не будет выполняться
+            showNotification('Используется модальный стиль меню пользователя', 'info');
         }
     }
     
-    // Отображение уведомлений
-    function showNotification(message, type = 'info', duration = 3000) {
-        // Проверяем, существует ли глобальная функция showNotification в desktop.js
-        if (typeof window.showNotification === 'function') {
-            window.showNotification(message, type, duration);
-            return;
-        }
+    // Создание модального окна, если его нет в DOM
+    function createModalWindow() {
+        if (document.querySelector('.auth-modal')) return;
         
-        // Создаем элемент уведомления в современном стиле
-        const notification = document.createElement('div');
-        notification.className = `notification notification--${type}`;
-        notification.innerHTML = `
-          <div class="notification__icon">
-            <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i>
-          </div>
-          <div class="notification__content">
-            <p>${message}</p>
-          </div>
-          <button class="notification__close">&times;</button>
+        // Создаем структуру модального окна
+        const modalHTML = `
+            <div class="auth-modal">
+                <div class="auth-modal__overlay"></div>
+                <div class="auth-modal__content">
+                    <button class="auth-modal__close"><i class="fas fa-times"></i></button>
+                    <div class="auth-modal__content-wrapper">
+                        <!-- Здесь будет контент -->
+                    </div>
+                </div>
+            </div>
         `;
         
-        // Добавляем стили, если они еще не определены
-        if (!document.getElementById('notification-styles')) {
-          const style = document.createElement('style');
-          style.id = 'notification-styles';
-          style.textContent = `
-            .notification {
-              position: fixed;
-              top: 20px;
-              right: 20px;
-              display: flex;
-              align-items: center;
-              padding: 15px 20px;
-              background: white;
-              border-radius: 12px;
-              box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-              z-index: 9999;
-              max-width: 350px;
-              transform: translateX(100%) scale(0.9);
-              animation: slide-in 0.5s forwards cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            }
-            .notification--success {
-              border-left: 4px solid #4CAF50;
-            }
-            .notification--error {
-              border-left: 4px solid #F44336;
-            }
-            .notification--info {
-              border-left: 4px solid #2196F3;
-            }
-            .notification--warning {
-              border-left: 4px solid #FF9800;
-            }
-            .notification__icon {
-              margin-right: 15px;
-              font-size: 20px;
-            }
-            .notification--success .notification__icon {
-              color: #4CAF50;
-            }
-            .notification--error .notification__icon {
-              color: #F44336;
-            }
-            .notification--info .notification__icon {
-              color: #2196F3;
-            }
-            .notification--warning .notification__icon {
-              color: #FF9800;
-            }
-            .notification__content {
-              flex: 1;
-            }
-            .notification__content p {
-              margin: 0;
-              color: #333;
-              font-size: 14px;
-            }
-            .notification__close {
-              background: none;
-              border: none;
-              color: #999;
-              cursor: pointer;
-              font-size: 20px;
-              transition: color 0.2s;
-            }
-            .notification__close:hover {
-              color: #333;
-            }
-            body.dark .notification {
-              background: #333;
-              box-shadow: 0 10px 25px rgba(0,0,0,0.4);
-            }
-            body.dark .notification__content p {
-              color: #f0f0f0;
-            }
-            body.dark .notification__close {
-              color: #aaa;
-            }
-            body.dark .notification__close:hover {
-              color: #f0f0f0;
-            }
-            @keyframes slide-in {
-              to {
-                transform: translateX(0) scale(1);
-              }
-            }
-            @keyframes slide-out {
-              to {
-                transform: translateX(100%) scale(0.9);
-              }
-            }
-          `;
-          document.head.appendChild(style);
+        // Добавляем модальное окно в DOM
+        const modalContainer = document.createElement('div');
+        modalContainer.innerHTML = modalHTML;
+        document.body.appendChild(modalContainer.firstElementChild);
+        
+        // Добавляем обработчики событий
+        const newModal = document.querySelector('.auth-modal');
+        const newOverlay = document.querySelector('.auth-modal__overlay');
+        const newCloseButton = document.querySelector('.auth-modal__close');
+        
+        if (newCloseButton) {
+            newCloseButton.addEventListener('click', closeModal);
         }
         
-        document.body.appendChild(notification);
-        
-        // Используем data-attribute для отслеживания состояния
-        notification.setAttribute('data-visible', 'true');
-        
-        const closeBtn = notification.querySelector('.notification__close');
-          closeBtn.addEventListener('click', () => {
-          notification.style.animation = 'slide-out 0.3s forwards';
-          notification.setAttribute('data-visible', 'false');
-          setTimeout(() => {
-            notification.remove();
-          }, 300);
-        });
-        
-        setTimeout(() => {
-          notification.style.animation = 'slide-out 0.3s forwards';
-          notification.setAttribute('data-visible', 'false');
-          setTimeout(() => {
-            notification.remove();
-          }, 300);
-        }, duration);
-    }
-    
-    // Создание интерактивного фона
-    function createInteractiveBackground() {
-        // Находим нужные элементы
-        const background = document.querySelector('.animated-background');
-        const particlesContainer = document.querySelector('.light-particles');
-        
-        if (!background || !particlesContainer) return;
-        
-        // Очищаем контейнер частиц
-        particlesContainer.innerHTML = '';
-        
-        // Создаем светящиеся частицы
-        for (let i = 0; i < 30; i++) {
-            createParticle(particlesContainer);
+        if (newOverlay) {
+            newOverlay.addEventListener('click', closeModal);
         }
         
-        // Создаем светящиеся линии
-        for (let i = 0; i < 5; i++) {
-            createGlowLine(background);
-        }
-        
-        // Создаем светящиеся круги
-        for (let i = 0; i < 8; i++) {
-            createGlowCircle(background);
-        }
-        
-        // Создаем пульсирующие точки
-        for (let i = 0; i < 15; i++) {
-            createPulseDot(background);
-        }
-        
-        // Добавляем обработку движения курсора
-        const brandSection = document.querySelector('.auth-modal__brand');
-        if (brandSection) {
-            brandSection.addEventListener('mousemove', handleMouseMove);
-        }
-    }
-
-    // Функция создания светящейся частицы
-    function createParticle(container) {
-        const particle = document.createElement('div');
-        particle.className = 'particle';
-        
-        // Случайный размер
-        const size = Math.random() * 50 + 20;
-        particle.style.width = size + 'px';
-        particle.style.height = size + 'px';
-        
-        // Случайная позиция
-        particle.style.left = Math.random() * 100 + '%';
-        particle.style.top = Math.random() * 100 + '%';
-        
-        // Добавляем анимацию
-        animateParticle(particle);
-        
-        // Добавляем в контейнер
-        container.appendChild(particle);
-    }
-
-    // Функция анимации частицы
-    function animateParticle(particle) {
-        // Случайная продолжительность анимации
-        const duration = Math.random() * 3000 + 2000;
-        
-        // Начальная прозрачность
-        particle.style.opacity = '0';
-        
-        // Анимируем появление и исчезновение
-        setTimeout(() => {
-            particle.style.transition = `opacity ${duration/2}ms ease-in-out`;
-            particle.style.opacity = Math.random() * 0.3 + 0.1;
-            
-            setTimeout(() => {
-                particle.style.opacity = '0';
+        // Добавляем стили для модального окна, если их еще нет
+        if (!document.getElementById('auth-modal-styles')) {
+            const style = document.createElement('style');
+            style.id = 'auth-modal-styles';
+            style.textContent = `
+                .auth-modal {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 1000;
+                    opacity: 0;
+                    visibility: hidden;
+                    transition: opacity 0.3s ease, visibility 0.3s ease;
+                }
                 
-                // После завершения анимации, запускаем снова с новыми параметрами
-                setTimeout(() => {
-                    // Новая позиция
-                    particle.style.transition = 'none';
-                    particle.style.left = Math.random() * 100 + '%';
-                    particle.style.top = Math.random() * 100 + '%';
-                    
-                    // Запускаем анимацию снова
-                    animateParticle(particle);
-                }, duration/2);
-            }, duration/2);
-        }, Math.random() * 1000);
-    }
-
-    // Функция создания светящейся линии
-    function createGlowLine(container) {
-        const line = document.createElement('div');
-        line.className = 'glow-line';
-        
-        // Случайная позиция по вертикали
-        line.style.top = Math.random() * 100 + '%';
-        line.style.opacity = '0';
-        
-        // Добавляем анимацию
-        animateGlowLine(line);
-        
-        // Добавляем в контейнер
-        container.appendChild(line);
-    }
-
-    // Функция анимации светящейся линии
-    function animateGlowLine(line) {
-        // Случайная продолжительность анимации
-        const duration = Math.random() * 3000 + 3000;
-        const delay = Math.random() * 2000;
-        
-        setTimeout(() => {
-            line.style.transition = `transform ${duration}ms linear, opacity ${duration/4}ms ease-in-out`;
-            line.style.opacity = Math.random() * 0.2 + 0.1;
-            line.style.transform = 'scaleX(1)';
-            
-            setTimeout(() => {
-                line.style.opacity = '0';
+                .auth-modal.active {
+                    opacity: 1;
+                    visibility: visible;
+                }
                 
-                // После завершения анимации, запускаем снова с новыми параметрами
-                setTimeout(() => {
-                    // Новая позиция
-                    line.style.transition = 'none';
-                    line.style.transform = 'scaleX(0)';
-                    line.style.top = Math.random() * 100 + '%';
-                    
-                    // Запускаем анимацию снова
-                    animateGlowLine(line);
-                }, duration/2);
-            }, duration - duration/4);
-        }, delay);
-    }
-
-    // Функция создания светящегося круга
-    function createGlowCircle(container) {
-        const circle = document.createElement('div');
-        circle.className = 'glow-circle';
-        
-        // Случайный размер
-        const size = Math.random() * 100 + 50;
-        circle.style.width = size + 'px';
-        circle.style.height = size + 'px';
-        
-        // Случайная позиция
-        circle.style.left = Math.random() * 100 + '%';
-        circle.style.top = Math.random() * 100 + '%';
-        circle.style.opacity = '0';
-        
-        // Добавляем анимацию
-        animateGlowCircle(circle);
-        
-        // Добавляем в контейнер
-        container.appendChild(circle);
-    }
-
-    // Функция анимации светящегося круга
-    function animateGlowCircle(circle) {
-        // Случайная продолжительность анимации
-        const duration = Math.random() * 6000 + 4000;
-        const delay = Math.random() * 3000;
-        
-        setTimeout(() => {
-            circle.style.transition = `transform ${duration}ms ease-in-out, opacity ${duration/3}ms ease-in-out`;
-            circle.style.opacity = Math.random() * 0.2 + 0.1;
-            circle.style.transform = 'scale(1.2)';
-            
-            setTimeout(() => {
-                circle.style.opacity = '0';
+                .auth-modal__overlay {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0, 0, 0, 0.5);
+                    backdrop-filter: blur(5px);
+                }
                 
-                // После завершения анимации, запускаем снова с новыми параметрами
-                setTimeout(() => {
-                    // Новая позиция и размер
-                    circle.style.transition = 'none';
-                    circle.style.transform = 'scale(0.8)';
-                    const size = Math.random() * 100 + 50;
-                    circle.style.width = size + 'px';
-                    circle.style.height = size + 'px';
-                    circle.style.left = Math.random() * 100 + '%';
-                    circle.style.top = Math.random() * 100 + '%';
-                    
-                    // Запускаем анимацию снова
-                    animateGlowCircle(circle);
-                }, duration/3);
-            }, duration * 2/3);
-        }, delay);
-    }
-
-    // Функция создания пульсирующей точки
-    function createPulseDot(container) {
-        const dot = document.createElement('div');
-        dot.className = 'pulse-dot';
-        
-        // Случайная позиция
-        dot.style.left = Math.random() * 100 + '%';
-        dot.style.top = Math.random() * 100 + '%';
-        
-        // Случайный размер
-        const size = Math.random() * 3 + 2;
-        dot.style.width = size + 'px';
-        dot.style.height = size + 'px';
-        
-        // Добавляем анимацию
-        animatePulseDot(dot);
-        
-        // Добавляем в контейнер
-        container.appendChild(dot);
-    }
-
-    // Функция анимации пульсирующей точки
-    function animatePulseDot(dot) {
-        // Случайная продолжительность анимации
-        const duration = Math.random() * 2000 + 1000;
-        
-        // Анимация пульсации
-        dot.style.animation = `mainPulse ${duration}ms ease-in-out infinite`;
-    }
-
-    // Обработка движения мыши для создания эффекта интерактивности
-    function handleMouseMove(e) {
-        const brandSection = e.currentTarget;
-        const rect = brandSection.getBoundingClientRect();
-        
-        // Вычисляем координаты мыши относительно секции
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        
-        // Создаем временную частицу при движении мыши
-        if (Math.random() > 0.7) { // Ограничиваем количество создаваемых частиц
-            const particlesContainer = brandSection.querySelector('.light-particles');
-            if (particlesContainer) {
-                const mouseParticle = document.createElement('div');
-                mouseParticle.className = 'particle';
+                .auth-modal__content {
+                    position: relative;
+                    width: 90%;
+                    max-width: 450px;
+                    background: ${document.body.classList.contains('dark') ? '#333' : 'white'};
+                    border-radius: 15px;
+                    padding: 30px;
+                    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+                    transform: translateY(20px);
+                    transition: transform 0.3s ease;
+                    overflow: hidden;
+                }
                 
-                // Размещаем частицу в позиции курсора
-                mouseParticle.style.left = (x / rect.width * 100) + '%';
-                mouseParticle.style.top = (y / rect.height * 100) + '%';
+                .auth-modal.active .auth-modal__content {
+                    transform: translateY(0);
+                }
                 
-                // Задаем размер
-                const size = Math.random() * 30 + 10;
-                mouseParticle.style.width = size + 'px';
-                mouseParticle.style.height = size + 'px';
+                .auth-modal__close {
+                    position: absolute;
+                    top: 15px;
+                    right: 15px;
+                    background: none;
+                    border: none;
+                    font-size: 18px;
+                    color: ${document.body.classList.contains('dark') ? '#aaa' : '#999'};
+                    cursor: pointer;
+                    z-index: 10;
+                }
                 
-                // Анимируем появление и исчезновение
-                mouseParticle.style.opacity = '0';
-                mouseParticle.style.transition = 'opacity 500ms ease-in-out';
-                
-                particlesContainer.appendChild(mouseParticle);
-                
-                // Появление
-                setTimeout(() => {
-                    mouseParticle.style.opacity = Math.random() * 0.2 + 0.1;
-                    
-                    // Исчезновение и удаление
-                    setTimeout(() => {
-                        mouseParticle.style.opacity = '0';
-                        
-                        setTimeout(() => {
-                            if (particlesContainer.contains(mouseParticle)) {
-                                particlesContainer.removeChild(mouseParticle);
-                            }
-                        }, 500);
-                    }, 300);
-                }, 10);
-            }
+                .auth-modal__close:hover {
+                    color: ${document.body.classList.contains('dark') ? '#fff' : '#333'};
+                }
+            `;
+            document.head.appendChild(style);
         }
     }
-
-    // Добавляем обработчики событий для регистрационных форм
-    document.addEventListener('DOMContentLoaded', function() {
-        // Запрет вставки пароля в поле подтверждения
-        const confirmPasswordFields = document.querySelectorAll('#registerPasswordConfirm');
-        
-        confirmPasswordFields.forEach(function(field) {
-            // Предотвращаем вставку из буфера обмена
-            field.addEventListener('paste', function(e) {
-                e.preventDefault();
-                
-                // Показываем сообщение
-                const formGroup = field.closest('.form-group');
-                const errorMessage = formGroup.querySelector('.error-message');
-                formGroup.classList.add('error');
-                errorMessage.textContent = 'Да, вот такие вот мы дотошные';
-                
-                // Удаляем сообщение через 3 секунды
-                setTimeout(() => {
-                    if (field.value.trim() === '') {  // Только если поле все еще пустое
-                        formGroup.classList.remove('error');
-                        errorMessage.textContent = '';
-                    }
-                }, 3000);
-            });
-        });
-    });
 }); 

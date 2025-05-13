@@ -1,0 +1,784 @@
+/**
+ * Примеры использования редизайна уведомлений с максимальным фокусом на эстетику
+ * Для тестирования подключите этот файл после notification.js
+ */
+
+// Функция для демонстрации всех типов уведомлений
+function showAllNotificationTypes() {
+    // Стандартное уведомление
+    showNotification('Информационное уведомление с новым дизайном', 'info', 5000, true, {
+        animation: 'fade'
+    });
+    
+    // Уведомление об успехе
+    setTimeout(() => {
+        showNotification('Операция успешно выполнена!', 'success', 5000, true, {
+            animation: 'bounce'
+        });
+    }, 1000);
+    
+    // Уведомление об ошибке
+    setTimeout(() => {
+        showNotification('Произошла ошибка при выполнении операции', 'error', 5000, true, {
+            animation: 'shake'
+        });
+    }, 2000);
+    
+    // Предупреждение
+    setTimeout(() => {
+        showNotification('Внимание! Это важное предупреждение', 'warning', 5000, true, {
+            animation: 'zoom'
+        });
+    }, 3000);
+}
+
+// Функция для демонстрации различных анимаций
+function showAnimationExamples() {
+    // Анимация bounce
+    showNotification('Пружинистая анимация "bounce"', 'info', 5000, true, {
+        animation: 'bounce',
+        position: 'top-right'
+    });
+    
+    // Анимация fade
+    setTimeout(() => {
+        showNotification('Плавная анимация "fade"', 'info', 5000, true, {
+            animation: 'fade',
+            position: 'top-right'
+        });
+    }, 700);
+    
+    // Анимация shake
+    setTimeout(() => {
+        showNotification('Анимация тряски "shake"', 'info', 5000, true, {
+            animation: 'shake',
+            position: 'top-right'
+        });
+    }, 1400);
+    
+    // Анимация pulse
+    setTimeout(() => {
+        showNotification('Анимация пульсации "pulse"', 'info', 5000, true, {
+            animation: 'pulse',
+            position: 'top-right'
+        });
+    }, 2100);
+    
+    // Анимация flip
+    setTimeout(() => {
+        showNotification('Анимация переворота "flip"', 'info', 5000, true, {
+            animation: 'flip',
+            position: 'top-right'
+        });
+    }, 2800);
+    
+    // Анимация zoom
+    setTimeout(() => {
+        showNotification('Анимация увеличения "zoom"', 'info', 5000, true, {
+            animation: 'zoom',
+            position: 'top-right'
+        });
+    }, 3500);
+    
+    // Анимация glitch для ошибок
+    setTimeout(() => {
+        showNotification('Глюк-эффект для ошибок "glitch"', 'error', 5000, true, {
+            animation: 'glitch',
+            position: 'top-right'
+        });
+    }, 4200);
+}
+
+// Функция для демонстрации различных позиций
+function showPositionExamples() {
+    // Верхний правый угол (по умолчанию)
+    showNotification('Верхний правый угол (по умолчанию)', 'info', 8000, true, {
+        position: 'top-right',
+        theme: 'gradient'
+    });
+    
+    // Верхний левый угол
+    setTimeout(() => {
+        showNotification('Верхний левый угол', 'success', 8000, true, {
+            position: 'top-left',
+            theme: 'gradient'
+        });
+    }, 500);
+    
+    // Верхний центр
+    setTimeout(() => {
+        showNotification('Верхний центр', 'warning', 8000, true, {
+            position: 'top-center',
+            theme: 'gradient'
+        });
+    }, 1000);
+    
+    // Нижний правый угол
+    setTimeout(() => {
+        showNotification('Нижний правый угол', 'error', 8000, true, {
+            position: 'bottom-right',
+            theme: 'gradient'
+        });
+    }, 1500);
+    
+    // Нижний левый угол
+    setTimeout(() => {
+        showNotification('Нижний левый угол', 'info', 8000, true, {
+            position: 'bottom-left',
+            theme: 'gradient'
+        });
+    }, 2000);
+    
+    // Нижний центр
+    setTimeout(() => {
+        showNotification('Нижний центр', 'success', 8000, true, {
+            position: 'bottom-center',
+            theme: 'gradient'
+        });
+    }, 2500);
+}
+
+// Функция для демонстрации различных тем
+function showThemeExamples() {
+    // Тема по умолчанию (светлая)
+    showNotification('Тема по умолчанию (светлая)', 'info', 8000, true);
+    
+    // Темная тема
+    setTimeout(() => {
+        showNotification('Темная тема', 'info', 8000, true, {
+            theme: 'dark'
+        });
+    }, 1000);
+    
+    // Стеклянная тема
+    setTimeout(() => {
+        showNotification('Стеклянная тема', 'info', 8000, true, {
+            theme: 'glass'
+        });
+    }, 2000);
+    
+    // Неоновая тема
+    setTimeout(() => {
+        showNotification('Неоновая тема', 'info', 8000, true, {
+            theme: 'neon'
+        });
+    }, 3000);
+    
+    // Градиентная тема
+    setTimeout(() => {
+        showNotification('Градиентная тема', 'info', 8000, true, {
+            theme: 'gradient'
+        });
+    }, 4000);
+    
+    // Минималистичная тема
+    setTimeout(() => {
+        showNotification('Минималистичная тема', 'info', 8000, true, {
+            theme: 'minimal'
+        });
+    }, 5000);
+    
+    // Тема "размытая карточка" (новая)
+    setTimeout(() => {
+        showNotification('Новая тема "размытая карточка"', 'info', 8000, true, {
+            theme: 'blurred-card'
+        });
+    }, 6000);
+    
+    // Тема "soft-ui" (новая)
+    setTimeout(() => {
+        showNotification('Новая тема "soft-ui"', 'info', 8000, true, {
+            theme: 'soft-ui'
+        });
+    }, 7000);
+    
+    // Тема "frosted" (новая)
+    setTimeout(() => {
+        showNotification('Новая тема "frosted"', 'info', 8000, true, {
+            theme: 'frosted'
+        });
+    }, 8000);
+}
+
+// Функция для демонстрации эмодзи и изображений
+function showEmojiAndImageExamples() {
+    // Уведомление с эмодзи
+    showNotification('Уведомление с эмодзи вместо иконки', 'info', 5000, true, {
+        emoji: '🚀',
+        theme: 'blurred-card'
+    });
+    
+    // Еще примеры с эмодзи
+    setTimeout(() => {
+        showNotification('Успешное выполнение!', 'success', 5000, true, {
+            emoji: '✅',
+            theme: 'glass'
+        });
+    }, 1000);
+    
+    setTimeout(() => {
+        showNotification('Ошибка!', 'error', 5000, true, {
+            emoji: '❌',
+            theme: 'frosted'
+        });
+    }, 2000);
+    
+    setTimeout(() => {
+        showNotification('Предупреждение!', 'warning', 5000, true, {
+            emoji: '⚠️',
+            theme: 'neon'
+        });
+    }, 3000);
+    
+    // Уведомление с изображением
+    setTimeout(() => {
+        showNotification('Уведомление с изображением', 'info', 5000, true, {
+            imageUrl: 'https://via.placeholder.com/50',
+            theme: 'soft-ui'
+        });
+    }, 4000);
+    
+    // Анимированный эмодзи с эффектом парения
+    setTimeout(() => {
+        showNotification('Анимированный эмодзи с эффектом парения', 'success', 5000, true, {
+            emoji: '🎈',
+            animation: 'zoom',
+            theme: 'gradient'
+        });
+    }, 5000);
+}
+
+/**
+ * Примеры интерактивных уведомлений с обработкой кликов
+ */
+function showInteractiveExamples() {
+    // Простое кликабельное уведомление
+    let basicClickableNotification = showNotification(
+        'Нажмите, чтобы открыть профиль', 
+        'info', 
+        8000,
+        true, 
+        {
+            animation: 'slide',
+            emoji: '👤',
+            theme: 'glass',
+            onClick: function(event, notification) {
+                // Показываем ответное уведомление
+                showNotification(
+                    'Переход в профиль пользователя...', 
+                    'success',
+                    3000,
+                    true, 
+                    {
+                        animation: 'zoom'
+                    }
+                );
+                
+                // Закрываем исходное уведомление
+                notification.close();
+                
+                // Имитация перехода к профилю (в реальном приложении здесь будет переход)
+                if (typeof window.showProfileModal === 'function') {
+                    setTimeout(() => window.showProfileModal(), 500);
+                }
+            }
+        }
+    );
+    
+    // Уведомление с кнопкой действия
+    setTimeout(() => {
+        showNotification(
+            'Доступно новое обновление системы', 
+            'info', 
+            10000,
+            true, 
+            {
+                animation: 'slide',
+                customIcon: 'download',
+                theme: 'blurred-card',
+                actionText: 'Обновить сейчас',
+                onClick: function(event, notification) {
+                    // Показываем процесс обновления
+                    const updateNotification = showNotification(
+                        'Загрузка обновления...', 
+                        'info',
+                        0, // бесконечное уведомление
+                        true, 
+                        {
+                            animation: 'fade',
+                            customIcon: 'sync'
+                        }
+                    );
+                    
+                    // Имитируем прогресс загрузки
+                    let progress = 0;
+                    const interval = setInterval(() => {
+                        progress += 20;
+                        if (progress <= 100) {
+                            updateNotification.update(`Загрузка обновления... ${progress}%`);
+                        } else {
+                            clearInterval(interval);
+                            
+                            // Меняем тип уведомления на успешный
+                            updateNotification.setType('success');
+                            updateNotification.update('Обновление успешно установлено');
+                            
+                            // Закрываем через 3 секунды
+                            setTimeout(() => updateNotification.close(), 3000);
+                        }
+                    }, 800);
+                    
+                    // Закрываем исходное уведомление
+                    notification.close();
+                }
+            }
+        );
+    }, 1500);
+    
+    // Уведомление с полностью кликабельной областью
+    setTimeout(() => {
+        showNotification(
+            'У вас 3 новых сообщения', 
+            'info', 
+            7000,
+            true, 
+            {
+                animation: 'bounce',
+                customIcon: 'envelope',
+                theme: 'gradient',
+                clickablePart: 'all', // весь блок кликабелен
+                onClick: function(event, notification) {
+                    // Показываем содержимое сообщений
+                    showNotification(
+                        'Открываю список сообщений...', 
+                        'success',
+                        3000,
+                        true, 
+                        {
+                            animation: 'fade'
+                        }
+                    );
+                    
+                    // Закрываем исходное уведомление
+                    notification.close();
+                }
+            }
+        );
+    }, 3000);
+    
+    // Многоуровневое уведомление с интерактивным подтверждением
+    setTimeout(() => {
+        const confirmationNotification = showNotification(
+            'Вы хотите сохранить изменения перед выходом?', 
+            'warning', 
+            0, // бесконечное уведомление
+            false, 
+            {
+                animation: 'slide',
+                theme: 'soft-ui',
+                actionText: 'Сохранить и выйти',
+                onClick: function(event, notification) {
+                    // Показываем процесс сохранения
+                    const savingNotification = showNotification(
+                        'Сохранение изменений...', 
+                        'info',
+                        0, // бесконечное уведомление
+                        true, 
+                        {
+                            animation: 'fade',
+                            customIcon: 'save'
+                        }
+                    );
+                    
+                    // Имитируем процесс сохранения
+                    setTimeout(() => {
+                        savingNotification.setType('success');
+                        savingNotification.update('Изменения успешно сохранены');
+                        
+                        // Закрываем уведомление о сохранении через 2 секунды
+                        setTimeout(() => savingNotification.close(), 2000);
+                    }, 1500);
+                    
+                    // Закрываем уведомление с подтверждением
+                    notification.close();
+                }
+            }
+        );
+        
+        // Динамически добавляем возможность не сохранять изменения через 1 секунду
+        setTimeout(() => {
+            // Изменяем текст уведомления
+            confirmationNotification.update('Вы хотите сохранить изменения перед выходом?<br><span style="font-size: 12px; opacity: 0.8;">Нажмите на сообщение, чтобы выйти без сохранения</span>');
+            
+            // Добавляем новый обработчик клика
+            confirmationNotification.setOnClick(function(event, notification) {
+                // Показываем уведомление о выходе без сохранения
+                showNotification(
+                    'Выход без сохранения изменений', 
+                    'info',
+                    3000,
+                    true, 
+                    {
+                        animation: 'fade'
+                    }
+                );
+                
+                // Закрываем уведомление с подтверждением
+                notification.close();
+            });
+        }, 1000);
+    }, 5000);
+}
+
+// Функция для демонстрации комбинаций дизайна
+function showCreativeExamples() {
+    // Неоновое уведомление с эмодзи и анимацией
+    showNotification('Неон + эмодзи + пульсация', 'info', 8000, true, {
+        theme: 'neon',
+        emoji: '🔮',
+        animation: 'pulse'
+    });
+    
+    // Уведомление с кастомной иконкой в стиле soft-ui
+    setTimeout(() => {
+        showNotification('Soft-UI + кастомная иконка', 'info', 8000, true, {
+            customIcon: 'magic',
+            theme: 'soft-ui'
+        });
+    }, 1000);
+    
+    // Gradient + shake + custom class
+    setTimeout(() => {
+        showNotification('Градиент + тряска + кастомный класс', 'info', 8000, true, {
+            customClass: 'my-custom-notification',
+            theme: 'gradient',
+            animation: 'shake'
+        });
+    }, 2000);
+    
+    // Glass + emoji + zoom
+    setTimeout(() => {
+        showNotification('Стекло + эмодзи + увеличение', 'success', 8000, true, {
+            theme: 'glass',
+            emoji: '🎉',
+            animation: 'zoom',
+            position: 'bottom-center'
+        });
+    }, 3000);
+    
+    // Success + confetti + gradient
+    setTimeout(() => {
+        showNotification('Успех + конфетти + градиент', 'success', 8000, true, {
+            showConfetti: true,
+            animation: 'bounce',
+            theme: 'gradient'
+        });
+    }, 4000);
+    
+    // Error + glitch + neon
+    setTimeout(() => {
+        showNotification('Ошибка + глитч + неон', 'error', 8000, true, {
+            animation: 'glitch',
+            theme: 'neon'
+        });
+    }, 5000);
+    
+    // Blurred-card + sound + zoom + emoji
+    setTimeout(() => {
+        showNotification('Размытие + звук + зум + эмодзи', 'info', 8000, true, {
+            useSound: true,
+            soundName: 'notification',
+            animation: 'zoom',
+            emoji: '🔔',
+            theme: 'blurred-card'
+        });
+    }, 6000);
+}
+
+// Демонстрация ультрасовременных комбинаций
+function showEestheticEffects() {
+    // Эффект 1: Максимальный вау-эффект
+    showNotification('Потрясающе красивое уведомление', 'success', 5000, true, {
+        theme: 'neon',
+        animation: 'zoom',
+        showConfetti: true,
+        emoji: '✨',
+        position: 'top-center'
+    });
+    
+    // Эффект 2: Минималистичная эстетика
+    setTimeout(() => {
+        showNotification('Минималистичная эстетика', 'info', 5000, true, {
+            theme: 'minimal',
+            animation: 'fade',
+            position: 'top-right',
+            customIcon: 'feather'
+        });
+    }, 1500);
+    
+    // Эффект 3: Драматическое сообщение об ошибке
+    setTimeout(() => {
+        showNotification('Критическая ошибка!', 'error', 5000, true, {
+            animation: 'glitch',
+            theme: 'dark',
+            position: 'top-center',
+            customIcon: 'skull-crossbones'
+        });
+    }, 3000);
+    
+    // Эффект 4: Soft-UI с градиентным фоном
+    setTimeout(() => {
+        showNotification('Нейморфизм и градиенты', 'info', 5000, true, {
+            theme: 'soft-ui',
+            animation: 'bounce',
+            position: 'bottom-right',
+            customIcon: 'paint-brush'
+        });
+    }, 4500);
+    
+    // Эффект 5: Frosted glass эффект
+    setTimeout(() => {
+        showNotification('Морозное стекло с эффектом blur', 'success', 5000, true, {
+            theme: 'frosted',
+            animation: 'flip',
+            customIcon: 'snowflake',
+            showConfetti: true
+        });
+    }, 6000);
+    
+    // Эффект 6: Blurred-card с кастомной иконкой
+    setTimeout(() => {
+        showNotification('Размытая карточка с подсветкой', 'warning', 5000, true, {
+            theme: 'blurred-card',
+            animation: 'pulse',
+            customIcon: 'lightbulb'
+        });
+    }, 7500);
+    
+    // Эффект 7: Прогрессивное уведомление
+    setTimeout(() => {
+        const notification = showNotification('Загрузка данных...', 'info', 12000, true, {
+            theme: 'glass',
+            animation: 'bounce',
+            position: 'bottom-center',
+            customIcon: 'spinner fa-spin'
+        });
+        
+        setTimeout(() => {
+            notification.update('Обработка данных: 50% завершено');
+            notification.pulse();
+        }, 3000);
+        
+        setTimeout(() => {
+            notification.setType('success');
+            notification.update('Данные успешно обработаны!');
+            notification.shake();
+            
+            setTimeout(() => {
+                showNotification('Всё готово!', 'success', 4000, true, {
+                    showConfetti: true,
+                    position: 'bottom-center',
+                    animation: 'zoom',
+                    theme: 'gradient'
+                });
+            }, 1000);
+        }, 6000);
+    }, 9000);
+}
+
+// Функция для создания демо-панели (можно вызвать вручную при необходимости)
+function createDemoPanel() {
+    const panel = document.createElement('div');
+    panel.className = 'notification-demo-panel';
+    panel.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        padding: 20px;
+        box-shadow: 
+            0 10px 30px rgba(0, 0, 0, 0.1),
+            0 1px 1px rgba(0, 0, 0, 0.05),
+            inset 0 0 0 1px rgba(255, 255, 255, 0.7);
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    `;
+    
+    const buttons = [
+        { text: 'Типы уведомлений', action: showAllNotificationTypes },
+        { text: 'Анимации', action: showAnimationExamples },
+        { text: 'Позиции', action: showPositionExamples },
+        { text: 'Темы', action: showThemeExamples },
+        { text: 'Эмодзи и изображения', action: showEmojiAndImageExamples },
+        { text: 'Интерактивные', action: showInteractiveExamples },
+        { text: 'Креативные комбинации', action: showCreativeExamples },
+        { text: 'Эстетические эффекты', action: showEestheticEffects }
+    ];
+    
+    // Заголовок панели
+    const title = document.createElement('h3');
+    title.textContent = 'Демонстрация уведомлений';
+    title.style.cssText = `
+        margin: 0 0 10px 0;
+        font-size: 16px;
+        font-weight: 600;
+        color: #333;
+        font-family: 'Inter', 'Segoe UI', sans-serif;
+    `;
+    panel.appendChild(title);
+    
+    buttons.forEach(btn => {
+        const button = document.createElement('button');
+        button.textContent = btn.text;
+        button.style.cssText = `
+            padding: 10px 16px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.8), rgba(250, 250, 255, 0.9));
+            color: #333;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            transition: all 0.3s ease;
+            box-shadow: 
+                0 2px 10px rgba(0, 0, 0, 0.05),
+                0 1px 1px rgba(0, 0, 0, 0.03),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.7);
+        `;
+        button.addEventListener('mouseenter', () => {
+            button.style.transform = 'translateY(-2px)';
+            button.style.boxShadow = `
+                0 6px 15px rgba(0, 0, 0, 0.08),
+                0 2px 5px rgba(0, 0, 0, 0.04),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.9)
+            `;
+            button.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(250, 250, 255, 1))';
+        });
+        button.addEventListener('mouseleave', () => {
+            button.style.transform = 'translateY(0)';
+            button.style.boxShadow = `
+                0 2px 10px rgba(0, 0, 0, 0.05),
+                0 1px 1px rgba(0, 0, 0, 0.03),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.7)
+            `;
+            button.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.8), rgba(250, 250, 255, 0.9))';
+        });
+        button.addEventListener('click', btn.action);
+        panel.appendChild(button);
+    });
+    
+    document.body.appendChild(panel);
+    
+    // Делаем панель перемещаемой
+    let isDragging = false;
+    let dragStartX, dragStartY;
+    let initialX, initialY;
+    
+    title.style.cursor = 'grab';
+    
+    title.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        dragStartX = e.clientX;
+        dragStartY = e.clientY;
+        initialX = panel.offsetLeft;
+        initialY = panel.offsetTop;
+        title.style.cursor = 'grabbing';
+    });
+    
+    document.addEventListener('mousemove', (e) => {
+        if (isDragging) {
+            const dx = e.clientX - dragStartX;
+            const dy = e.clientY - dragStartY;
+            panel.style.left = initialX + dx + 'px';
+            panel.style.top = initialY + dy + 'px';
+            panel.style.bottom = 'auto';
+        }
+    });
+    
+    document.addEventListener('mouseup', () => {
+        isDragging = false;
+        title.style.cursor = 'grab';
+    });
+    
+    // Добавляем адаптивность для темной темы
+    const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const updatePanelColors = (isDarkMode) => {
+        if (isDarkMode) {
+            panel.style.background = 'rgba(30, 30, 40, 0.8)';
+            panel.style.boxShadow = `
+                0 10px 30px rgba(0, 0, 0, 0.2),
+                0 1px 1px rgba(0, 0, 0, 0.1),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.1)
+            `;
+            title.style.color = '#e0e0e0';
+            
+            buttons.forEach((_, index) => {
+                const btn = panel.querySelectorAll('button')[index];
+                btn.style.background = 'linear-gradient(135deg, rgba(50, 50, 60, 0.8), rgba(40, 40, 50, 0.9))';
+                btn.style.color = '#e0e0e0';
+                btn.style.boxShadow = `
+                    0 2px 10px rgba(0, 0, 0, 0.15),
+                    0 1px 1px rgba(0, 0, 0, 0.1),
+                    inset 0 0 0 1px rgba(255, 255, 255, 0.1)
+                `;
+                
+                btn.addEventListener('mouseenter', () => {
+                    btn.style.background = 'linear-gradient(135deg, rgba(60, 60, 70, 0.9), rgba(50, 50, 60, 1))';
+                    btn.style.boxShadow = `
+                        0 6px 15px rgba(0, 0, 0, 0.2),
+                        0 2px 5px rgba(0, 0, 0, 0.15),
+                        inset 0 0 0 1px rgba(255, 255, 255, 0.15)
+                    `;
+                });
+                
+                btn.addEventListener('mouseleave', () => {
+                    btn.style.background = 'linear-gradient(135deg, rgba(50, 50, 60, 0.8), rgba(40, 40, 50, 0.9))';
+                    btn.style.boxShadow = `
+                        0 2px 10px rgba(0, 0, 0, 0.15),
+                        0 1px 1px rgba(0, 0, 0, 0.1),
+                        inset 0 0 0 1px rgba(255, 255, 255, 0.1)
+                    `;
+                });
+            });
+        }
+    };
+    
+    // Проверяем текущую тему
+    updatePanelColors(darkModeMediaQuery.matches);
+    
+    // Отслеживаем изменения темы
+    darkModeMediaQuery.addEventListener('change', (e) => {
+        updatePanelColors(e.matches);
+    });
+    
+    // Дополнительно следим за классом body для ручного переключения темы
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.attributeName === 'class') {
+                const isDarkMode = document.body.classList.contains('dark');
+                updatePanelColors(isDarkMode);
+            }
+        });
+    });
+    
+    observer.observe(document.body, { attributes: true });
+    
+    return panel;
+}
+
+// Экспортируем функции для использования в других файлах
+window.showAllNotificationTypes = showAllNotificationTypes;
+window.showAnimationExamples = showAnimationExamples;
+window.showPositionExamples = showPositionExamples;
+window.showThemeExamples = showThemeExamples;
+window.showEmojiAndImageExamples = showEmojiAndImageExamples;
+window.showInteractiveExamples = showInteractiveExamples;
+window.showCreativeExamples = showCreativeExamples;
+window.showEestheticEffects = showEestheticEffects;
+window.createDemoPanel = createDemoPanel; 

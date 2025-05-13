@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Гарантии и возврат - Damax</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='80' font-size='80' font-family='Cinzel'>D</text></svg>" type="image/svg+xml">
+    <link rel="stylesheet" href="desktop-styles.css">
+    <link rel="stylesheet" href="desktop-styles-fixed.css">
+    <link rel="stylesheet" href="dark-theme-improved.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lato:wght@400;700&family=Dancing+Script:wght@400&display=swap" rel="stylesheet">
+    <style>
+        .warranty-return {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: var(--bg-primary);
+            border-radius: var(--radius-large);
+            box-shadow: var(--shadow);
+        }
+
+        .warranty-return__header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding-bottom: 2rem;
+            border-bottom: 2px solid var(--accent-primary);
+        }
+
+        .warranty-return__title {
+            font-family: 'Cinzel', serif;
+            color: var(--text-primary);
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .warranty-return__date {
+            font-size: 1rem;
+            color: var(--text-secondary);
+        }
+
+        .warranty-return__section {
+            margin-bottom: 3rem;
+        }
+
+        .warranty-return__section-title {
+            font-family: 'Cinzel', serif;
+            color: var(--accent-primary);
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .warranty-return__section-title i {
+            margin-right: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .warranty-return__text {
+            color: var(--text-primary);
+            line-height: 1.8;
+            margin-bottom: 1.5rem;
+        }
+
+        .warranty-return__list {
+            list-style-type: none;
+            padding-left: 1.5rem;
+        }
+
+        .warranty-return__list-item {
+            position: relative;
+            padding-left: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .warranty-return__list-item::before {
+            content: "•";
+            color: var(--accent-primary);
+            position: absolute;
+            left: 0;
+            font-size: 1.5rem;
+        }
+
+        .warranty-return__steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .warranty-return__step {
+            background: var(--bg-secondary);
+            padding: 1.5rem;
+            border-radius: var(--radius-medium);
+            text-align: center;
+            transition: transform var(--transition-fast);
+        }
+
+        .warranty-return__step:hover {
+            transform: translateY(-5px);
+        }
+
+        .warranty-return__step-number {
+            font-family: 'Cinzel', serif;
+            font-size: 2rem;
+            color: var(--accent-primary);
+            margin-bottom: 1rem;
+        }
+
+        .warranty-return__step-title {
+            font-family: 'Cinzel', serif;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .warranty-return__step-description {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .warranty-return__back-link {
+            display: inline-flex;
+            align-items: center;
+            color: var(--accent-primary);
+            text-decoration: none;
+            margin-top: 2rem;
+            transition: color var(--transition-fast);
+        }
+
+        .warranty-return__back-link:hover {
+            color: var(--accent-dark);
+        }
+
+        .warranty-return__back-link i {
+            margin-right: 0.5rem;
+        }
+
+        .warranty-return__note {
+            background: var(--bg-secondary);
+            padding: 1.5rem;
+            border-radius: var(--radius-medium);
+            margin-top: 2rem;
+            border-left: 4px solid var(--accent-primary);
+        }
+
+        .warranty-return__note-title {
+            font-family: 'Cinzel', serif;
+            color: var(--accent-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .warranty-return__note-text {
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <div class="content-wrapper">
+            <div class="warranty-return" data-aos="fade-up">
+                <div class="warranty-return__header">
+                    <h1 class="warranty-return__title">Гарантии и возврат</h1>
+                    <p class="warranty-return__date">Последнее обновление: 1 марта 2025</p>
+                </div>
+
+                <div class="warranty-return__section">
+                    <h2 class="warranty-return__section-title">
+                        <i class="fas fa-info-circle"></i>
+                        Общие положения
+                    </h2>
+                    <p class="warranty-return__text">
+                        ООО "Дамакс" (ИНН: 1650421897, ОГРН: 1231600009740) предоставляет гарантии на товары и осуществляет их возврат в соответствии с Законом о защите прав потребителей и настоящими условиями.
+                    </p>
+                </div>
+
+                <div class="warranty-return__section">
+                    <h2 class="warranty-return__section-title">
+                        <i class="fas fa-shield-alt"></i>
+                        Гарантийные обязательства
+                    </h2>
+                    <p class="warranty-return__text">
+                        Мы предоставляем гарантию на все товары в соответствии с законодательством РФ:
+                    </p>
+                    <ul class="warranty-return__list">
+                        <li class="warranty-return__list-item">Гарантийный срок на технику - 12 месяцев</li>
+                        <li class="warranty-return__list-item">Гарантия на аксессуары - 6 месяцев</li>
+                        <li class="warranty-return__list-item">Расширенная гарантия доступна при покупке</li>
+                        <li class="warranty-return__list-item">Бесплатное сервисное обслуживание</li>
+                    </ul>
+                </div>
+
+                <div class="warranty-return__section">
+                    <h2 class="warranty-return__section-title">
+                        <i class="fas fa-tools"></i>
+                        Сервисное обслуживание
+                    </h2>
+                    <p class="warranty-return__text">
+                        В случае обнаружения недостатков товара:
+                    </p>
+                    <ul class="warranty-return__list">
+                        <li class="warranty-return__list-item">Бесплатный ремонт в течение гарантийного срока</li>
+                        <li class="warranty-return__list-item">Срок ремонта - не более 45 дней</li>
+                        <li class="warranty-return__list-item">Предоставление аналогичного товара на время ремонта</li>
+                        <li class="warranty-return__list-item">Компенсация расходов на доставку в сервисный центр</li>
+                    </ul>
+                </div>
+
+                <div class="warranty-return__section">
+                    <h2 class="warranty-return__section-title">
+                        <i class="fas fa-undo"></i>
+                        Процедура возврата
+                    </h2>
+                    <div class="warranty-return__steps">
+                        <div class="warranty-return__step">
+                            <div class="warranty-return__step-number">1</div>
+                            <h3 class="warranty-return__step-title">Заявка на возврат</h3>
+                            <p class="warranty-return__step-description">Оформите заявку через личный кабинет или по телефону</p>
+                        </div>
+                        <div class="warranty-return__step">
+                            <div class="warranty-return__step-number">2</div>
+                            <h3 class="warranty-return__step-title">Проверка товара</h3>
+                            <p class="warranty-return__step-description">Наш специалист проверит состояние товара</p>
+                        </div>
+                        <div class="warranty-return__step">
+                            <div class="warranty-return__step-number">3</div>
+                            <h3 class="warranty-return__step-title">Возврат средств</h3>
+                            <p class="warranty-return__step-description">Деньги возвращаются в течение 10 рабочих дней</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="warranty-return__section">
+                    <h2 class="warranty-return__section-title">
+                        <i class="fas fa-exclamation-circle"></i>
+                        Условия возврата
+                    </h2>
+                    <ul class="warranty-return__list">
+                        <li class="warranty-return__list-item">Товар должен быть в оригинальной упаковке</li>
+                        <li class="warranty-return__list-item">Сохранены все документы и чеки</li>
+                        <li class="warranty-return__list-item">Отсутствуют следы использования</li>
+                        <li class="warranty-return__list-item">Срок возврата - 14 дней с момента получения</li>
+                    </ul>
+                </div>
+
+                <div class="warranty-return__section">
+                    <h2 class="warranty-return__section-title">
+                        <i class="fas fa-file-alt"></i>
+                        Порядок рассмотрения претензий
+                    </h2>
+                    <p class="warranty-return__text">
+                        Претензии принимаются и рассматриваются следующим образом:
+                    </p>
+                    <ul class="warranty-return__list">
+                        <li class="warranty-return__list-item">Письменная претензия в течение гарантийного срока</li>
+                        <li class="warranty-return__list-item">Срок рассмотрения - 10 рабочих дней</li>
+                        <li class="warranty-return__list-item">Право на проведение экспертизы</li>
+                        <li class="warranty-return__list-item">Возможность привлечения независимых экспертов</li>
+                    </ul>
+                </div>
+
+                <div class="warranty-return__section">
+                    <h2 class="warranty-return__section-title">
+                        <i class="fas fa-search"></i>
+                        Проведение экспертизы
+                    </h2>
+                    <p class="warranty-return__text">
+                        В случае спора о причинах возникновения недостатков:
+                    </p>
+                    <ul class="warranty-return__list">
+                        <li class="warranty-return__list-item">Экспертиза проводится за счет продавца</li>
+                        <li class="warranty-return__list-item">Срок проведения - не более 20 рабочих дней</li>
+                        <li class="warranty-return__list-item">Право присутствия при проведении экспертизы</li>
+                        <li class="warranty-return__list-item">Возможность оспаривания результатов</li>
+                    </ul>
+                </div>
+
+                <div class="warranty-return__section">
+                    <h2 class="warranty-return__section-title">
+                        <i class="fas fa-money-bill-wave"></i>
+                        Компенсация расходов
+                    </h2>
+                    <p class="warranty-return__text">
+                        При возврате товара компенсируются:
+                    </p>
+                    <ul class="warranty-return__list">
+                        <li class="warranty-return__list-item">Полная стоимость товара</li>
+                        <li class="warranty-return__list-item">Расходы на доставку</li>
+                        <li class="warranty-return__list-item">Стоимость упаковки</li>
+                        <li class="warranty-return__list-item">Проценты за пользование денежными средствами</li>
+                    </ul>
+                </div>
+
+                <div class="warranty-return__note">
+                    <h3 class="warranty-return__note-title">Важно знать</h3>
+                    <p class="warranty-return__note-text">
+                        Некоторые товары не подлежат возврату в соответствии с законодательством РФ. Подробный список можно уточнить у наших консультантов.
+                    </p>
+                </div>
+
+                <a href="desktop.html" class="warranty-return__back-link">
+                    <i class="fas fa-arrow-left"></i>
+                    Вернуться на главную
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+    <script>
+        AOS.init({
+            duration: 800,
+            once: true
+        });
+    </script>
+</body>
+</html> 

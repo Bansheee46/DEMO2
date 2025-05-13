@@ -693,32 +693,122 @@
             
             // Функция показа уведомления
             function showNotification(message, type = 'info') {
-                notificationText.textContent = message;
-                notification.className = 'notification';
-                notification.classList.add(type);
-                notification.classList.add('active');
-                
-                // Обновляем иконку в зависимости от типа
-                const iconElement = notification.querySelector('i');
-                iconElement.className = 'fas';
-                
-                switch (type) {
-                    case 'error':
-                        iconElement.classList.add('fa-exclamation-circle');
-                        break;
-                    case 'success':
-                        iconElement.classList.add('fa-check-circle');
-                        break;
-                    case 'info':
-                    default:
-                        iconElement.classList.add('fa-info-circle');
-                        break;
+                // Проверяем, существует ли уже глобальная функция showNotification
+                if (window.showNotification && typeof window.showNotification === 'function') {
+                    window.showNotification(message, type);
+                    return;
                 }
                 
-                // Скрываем уведомление через 3 секунды
-                setTimeout(() => {
-                    notification.classList.remove('active');
-                }, 3000);
+                // Проверка, загружены ли стили
+                if (!document.getElementById('notification-styles-link')) {
+                    const link = document.createElement('link');
+                    link.id = 'notification-styles-link';
+                    link.rel = 'stylesheet';
+                    link.href = 'notifications.css';
+                    document.head.appendChild(link);
+                }
+                
+                // Если нет глобальной функции, используем встроенные элементы
+                if (!notification || !notificationText) {
+                    // Создаем элемент уведомления
+                    const notificationElement = document.createElement('div');
+                    notificationElement.className = `notification notification--${type}`;
+                    
+                    // Определяем иконку в зависимости от типа
+                    let icon = 'info-circle';
+                    if (type === 'success') icon = 'check-circle';
+                    if (type === 'error') icon = 'exclamation-circle';
+                    if (type === 'warning') icon = 'exclamation-triangle';
+                    
+                    notificationElement.innerHTML = `
+                        <div class="notification__icon">
+                            <i class="fas fa-${icon}"></i>
+                        </div>
+                        <div class="notification__content">
+                            <div class="notification__message">${message}</div>
+                        </div>
+                        <button class="notification__close" aria-label="Закрыть">
+                            <i class="fas fa-times"></i>
+                        </button>
+                        <div class="notification__progress"></div>
+                    `;
+                    
+                    // Добавляем уведомление в DOM
+                    document.body.appendChild(notificationElement);
+                    
+                    // Активируем анимацию появления
+                    setTimeout(() => {
+                        notificationElement.classList.add('notification--active');
+                    }, 10);
+                    
+                    // Анимируем прогресс-бар
+                    const progressBar = notificationElement.querySelector('.notification__progress');
+                    if (progressBar) {
+                        progressBar.style.transition = `transform 3000ms linear`;
+                        progressBar.style.transform = 'scaleX(1)';
+                        
+                        setTimeout(() => {
+                            progressBar.style.transform = 'scaleX(0)';
+                        }, 50);
+                    }
+                    
+                    // Добавляем обработчик для закрытия уведомления
+                    const closeButton = notificationElement.querySelector('.notification__close');
+                    if (closeButton) {
+                        closeButton.addEventListener('click', () => {
+                            notificationElement.classList.remove('notification--active');
+                            notificationElement.style.animation = 'slide-out 0.3s forwards';
+                            
+                            // Удаляем элемент после завершения анимации
+                            setTimeout(() => {
+                                if (notificationElement.parentNode) {
+                                    notificationElement.parentNode.removeChild(notificationElement);
+                                }
+                            }, 300);
+                        });
+                    }
+                    
+                    // Автоматически закрываем уведомление через 3 секунды
+                    setTimeout(() => {
+                        notificationElement.classList.remove('notification--active');
+                        notificationElement.style.animation = 'slide-out 0.3s forwards';
+                        
+                        // Удаляем элемент после завершения анимации
+                        setTimeout(() => {
+                            if (notificationElement.parentNode) {
+                                notificationElement.parentNode.removeChild(notificationElement);
+                            }
+                        }, 300);
+                    }, 3000);
+                } else {
+                    // Используем существующие элементы на странице
+                    notificationText.textContent = message;
+                    notification.className = 'notification';
+                    notification.classList.add(type);
+                    notification.classList.add('active');
+                    
+                    // Обновляем иконку в зависимости от типа
+                    const iconElement = notification.querySelector('i');
+                    iconElement.className = 'fas';
+                    
+                    switch (type) {
+                        case 'error':
+                            iconElement.classList.add('fa-exclamation-circle');
+                            break;
+                        case 'success':
+                            iconElement.classList.add('fa-check-circle');
+                            break;
+                        case 'info':
+                        default:
+                            iconElement.classList.add('fa-info-circle');
+                            break;
+                    }
+                    
+                    // Скрываем уведомление через 3 секунды
+                    setTimeout(() => {
+                        notification.classList.remove('active');
+                    }, 3000);
+                }
             }
             
             // Инициализация: загружаем пользователей при загрузке страницы
