@@ -634,6 +634,85 @@ document.addEventListener('DOMContentLoaded', function() {
         return isValid;
     }
     
+    // Функция для определения блокировки аккаунта
+    function isAccountBlocked(email) {
+        // Получаем данные о попытках входа из localStorage
+        const loginAttempts = JSON.parse(localStorage.getItem('loginAttempts') || '{}');
+        
+        // Проверяем наличие данных по email
+        if (!loginAttempts[email]) {
+            return { blocked: false };
+        }
+        
+        const userData = loginAttempts[email];
+        
+        // Если стоит флаг блокировки, проверяем срок её действия
+        if (userData.blocked) {
+            const now = new Date();
+            const blockEndTime = new Date(userData.blockUntil);
+            
+            // Если время блокировки истекло, сбрасываем блокировку
+            if (now > blockEndTime) {
+                userData.blocked = false;
+                userData.count = 0;
+                loginAttempts[email] = userData;
+                localStorage.setItem('loginAttempts', JSON.stringify(loginAttempts));
+                return { blocked: false };
+            }
+            
+            // Если блокировка ещё действует, возвращаем информацию
+            const minutesLeft = Math.ceil((blockEndTime - now) / (1000 * 60));
+            return { 
+                blocked: true, 
+                message: `Аккаунт временно заблокирован. Повторите через ${minutesLeft} мин.` 
+            };
+        }
+        
+        // Если нет блокировки, возвращаем статус
+        return { blocked: false };
+    }
+
+    // Функция для отслеживания попыток входа
+    function trackLoginAttempts(email, isSuccessful) {
+        // Получаем данные о попытках входа из localStorage
+        const loginAttempts = JSON.parse(localStorage.getItem('loginAttempts') || '{}');
+        
+        // Инициализируем объект для email, если его еще нет
+        if (!loginAttempts[email]) {
+            loginAttempts[email] = {
+                count: 0,
+                lastAttempt: new Date().toISOString(),
+                blocked: false
+            };
+        }
+        
+        // Если вход успешный, сбрасываем счетчик
+        if (isSuccessful) {
+            loginAttempts[email].count = 0;
+            loginAttempts[email].blocked = false;
+        } else {
+            // Увеличиваем счетчик неудачных попыток
+            loginAttempts[email].count += 1;
+            loginAttempts[email].lastAttempt = new Date().toISOString();
+            
+            // Если превышено максимальное количество попыток, блокируем аккаунт
+            if (loginAttempts[email].count >= 5) {
+                // Блокируем на 30 минут
+                const blockUntil = new Date();
+                blockUntil.setMinutes(blockUntil.getMinutes() + 30);
+                
+                loginAttempts[email].blocked = true;
+                loginAttempts[email].blockUntil = blockUntil.toISOString();
+            }
+        }
+        
+        // Сохраняем обновленные данные
+        localStorage.setItem('loginAttempts', JSON.stringify(loginAttempts));
+        
+        // Возвращаем текущий статус для удобства
+        return loginAttempts[email];
+    }
+    
     // Проверка силы пароля
     function checkPasswordStrength() {
         const password = this.value;
@@ -724,6 +803,12 @@ document.addEventListener('DOMContentLoaded', function() {
         if (authModal) {
             authModal.classList.add('active');
             document.body.style.overflow = 'hidden';
+            
+            // Удаляем атрибут aria-hidden и добавляем inert на все остальные элементы страницы
+            // кроме модального окна для правильного управления фокусом
+            if (authModal.hasAttribute('aria-hidden')) {
+                authModal.removeAttribute('aria-hidden');
+            }
             
             // Сбрасываем состояние форм при открытии
             forms.forEach(form => form.reset());
@@ -1045,10 +1130,16 @@ document.addEventListener('DOMContentLoaded', function() {
             checkLoginStatus();
         }, 100);
         
-        // Перезагрузка страницы через 1 секунду после выхода из аккаунта
-        setTimeout(() => {
-            location.reload();
-        }, 1000);
+        // Анимированная перезагрузка страницы после выхода из аккаунта
+        if (typeof window.animatedReload === 'function') {
+            // Используем функцию анимированной перезагрузки с минималистичной темой
+            window.animatedReload(400, false, '', '', 'minimal');
+        } else {
+            // Резервный вариант с обычной перезагрузкой
+            setTimeout(() => {
+                location.reload();
+            }, 1000);
+        }
     }
     
     // Простая функция хеширования пароля для демонстрации
@@ -1672,6 +1763,16 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (newOverlay) {
             newOverlay.addEventListener('click', closeModal);
+        }
+        
+        // Добавляем полифилл для inert, если он не поддерживается браузером
+        if (!('inert' in HTMLElement.prototype)) {
+            console.log('Adding inert polyfill');
+            // Здесь должен быть код полифилла для inert
+            // Или можно использовать CDN
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/wicg-inert@latest/dist/inert.min.js';
+            document.head.appendChild(script);
         }
         
         // Добавляем стили для модального окна, если их еще нет

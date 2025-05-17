@@ -581,73 +581,274 @@ document.addEventListener('DOMContentLoaded', () => {
       const searchPopup = document.querySelector('#searchPopup');
       const searchInput = document.querySelector('#searchInput');
       const searchResults = document.querySelector('#searchResults');
+      const clearSearchBtn = document.querySelector('#clearSearch');
+      const closeSearchBtn = document.querySelector('#closeSearch');
+      const searchSuggestions = document.querySelector('#searchSuggestions');
+      const searchTags = document.querySelectorAll('.search-popup__tag');
+      
+      // Объект для хранения истории поиска
+      const searchHistory = JSON.parse(localStorage.getItem('searchHistory') || '[]');
+      
+      // Функция для сохранения истории поиска
+      function saveSearchHistory(query) {
+        if (query && query.length > 2 && !searchHistory.includes(query)) {
+          searchHistory.unshift(query);
+          if (searchHistory.length > 5) {
+            searchHistory.pop();
+          }
+          localStorage.setItem('searchHistory', JSON.stringify(searchHistory));
+        }
+      }
   
       if (searchIcon && searchPopup && searchInput && searchResults) {
         searchIcon.addEventListener('click', (e) => {
           e.preventDefault();
           searchPopup.setAttribute('aria-hidden', 'false');
           searchInput.focus();
+          searchIcon.classList.add('active');
+          
+          // Показываем историю поиска, если она есть
+          if (searchHistory.length > 0 && !searchInput.value) {
+            showSearchHistory();
+          }
         });
+        
+        // Функция для отображения истории поиска
+        function showSearchHistory() {
+          if (searchSuggestions) {
+            const historyHTML = `
+              <p class="search-popup__suggestions-title">История поиска:</p>
+              <div class="search-popup__tags">
+                ${searchHistory.map(query => `<span class="search-popup__tag" data-query="${query}">${query}</span>`).join('')}
+                ${searchHistory.length > 0 ? '<span class="search-popup__tag" data-action="clear-history">Очистить историю</span>' : ''}
+              </div>
+            `;
+            searchSuggestions.innerHTML = historyHTML;
+            
+            // Добавляем обработчики для тегов истории
+            searchSuggestions.querySelectorAll('.search-popup__tag').forEach(tag => {
+              tag.addEventListener('click', handleTagClick);
+            });
+          }
+        }
+        
+        // Обработчик клика по тегу
+        function handleTagClick(e) {
+          const tag = e.currentTarget;
+          if (tag.dataset.action === 'clear-history') {
+            localStorage.removeItem('searchHistory');
+            searchSuggestions.innerHTML = `
+              <p class="search-popup__suggestions-title">Популярные запросы:</p>
+              <div class="search-popup__tags">
+                <span class="search-popup__tag" data-query="наушники">Наушники</span>
+                <span class="search-popup__tag" data-query="часы">Часы</span>
+                <span class="search-popup__tag" data-query="футболка">Футболка</span>
+                <span class="search-popup__tag" data-query="чехол">Чехол</span>
+                <span class="search-popup__tag" data-query="колонка">Колонка</span>
+              </div>
+            `;
+            searchSuggestions.querySelectorAll('.search-popup__tag').forEach(tag => {
+              tag.addEventListener('click', handleTagClick);
+            });
+            return;
+          }
+          
+          const query = tag.dataset.query;
+          if (query) {
+            searchInput.value = query;
+            searchInput.dispatchEvent(new Event('input'));
+            searchInput.focus();
+          }
+        }
+        
+        // Добавляем обработчики для тегов популярных запросов
+        if (searchTags) {
+          searchTags.forEach(tag => {
+            tag.addEventListener('click', handleTagClick);
+          });
+        }
   
+        // Закрытие по клику на оверлей
         searchPopup.addEventListener('click', (e) => {
           if (e.target === searchPopup.querySelector('.search-popup__overlay')) {
-            searchPopup.setAttribute('aria-hidden', 'true');
-            searchInput.value = '';
-            searchResults.innerHTML = '';
+            closeSearchPopup();
           }
         });
+        
+        // Функция закрытия поиска
+        function closeSearchPopup() {
+          searchPopup.setAttribute('aria-hidden', 'true');
+          setTimeout(() => {
+            searchIcon.classList.remove('active');
+          }, 300);
+        }
+        
+        // Кнопка закрытия
+        if (closeSearchBtn) {
+          closeSearchBtn.addEventListener('click', () => {
+            closeSearchPopup();
+          });
+        }
+        
+        // Кнопка очистки поля
+        if (clearSearchBtn) {
+          clearSearchBtn.addEventListener('click', () => {
+            searchInput.value = '';
+            searchInput.focus();
+            searchResults.innerHTML = '';
+            if (searchHistory.length > 0) {
+              showSearchHistory();
+            } else {
+              searchSuggestions.style.display = 'block';
+            }
+          });
+        }
   
+        // Обработка ввода в поле поиска
         searchInput.addEventListener('input', (e) => {
           const query = e.target.value.trim().toLowerCase();
+          
+          // Показываем/скрываем кнопку очистки
+          if (clearSearchBtn) {
+            clearSearchBtn.style.opacity = query.length > 0 ? '1' : '0';
+          }
+          
           if (query.length > 0) {
+            searchSuggestions.style.display = 'none';
             const filteredProducts = Object.values(products).filter(product =>
-              product.title.toLowerCase().includes(query)
+              product.title.toLowerCase().includes(query) || 
+              (product.description && product.description.toLowerCase().includes(query)) ||
+              (product.category && product.category.toLowerCase().includes(query))
             );
-            renderSearchResults(filteredProducts);
+            renderSearchResults(filteredProducts, query);
           } else {
             searchResults.innerHTML = '';
+            searchSuggestions.style.display = 'block';
+            if (searchHistory.length > 0) {
+              showSearchHistory();
+            }
           }
         });
   
-        searchInput.addEventListener('blur', () => {
-          if (!searchInput.value) {
-            setTimeout(() => {
-              searchPopup.setAttribute('aria-hidden', 'true');
-              searchResults.innerHTML = '';
-            }, 100);
+        // Обработка нажатия Enter в поле поиска
+        searchInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' && searchInput.value.trim()) {
+            const query = searchInput.value.trim().toLowerCase();
+            saveSearchHistory(query);
+            
+            const firstResult = searchResults.querySelector('li');
+            if (firstResult) {
+              firstResult.click();
+            }
+          }
+          
+          // Закрытие по Escape
+          if (e.key === 'Escape') {
+            closeSearchPopup();
           }
         });
-  
+        
+        // Обработка клика по результату поиска
         searchResults.addEventListener('click', (e) => {
           const li = e.target.closest('li');
           if (li) {
             const productId = li.getAttribute('data-id');
-            const product = products[productId];
-            updatePopup(product, productId);
-            productPopup.setAttribute('aria-hidden', 'false');
-            searchPopup.setAttribute('aria-hidden', 'true');
-            searchInput.value = '';
-            searchResults.innerHTML = '';
+            if (productId && products[productId]) {
+              const product = products[productId];
+              saveSearchHistory(searchInput.value.trim().toLowerCase());
+              updatePopup(product, productId);
+              productPopup.setAttribute('aria-hidden', 'false');
+              closeSearchPopup();
+            }
           }
         });
+        
+        // Добавляем автофокус при открытии
+        const observer = new MutationObserver((mutations) => {
+          mutations.forEach((mutation) => {
+            if (mutation.attributeName === 'aria-hidden' && 
+                searchPopup.getAttribute('aria-hidden') === 'false') {
+              setTimeout(() => searchInput.focus(), 100);
+            }
+          });
+        });
+        
+        observer.observe(searchPopup, { attributes: true });
       }
     }
   
-    function renderSearchResults(products) {
+    function renderSearchResults(filteredProducts, query) {
       const searchResults = document.querySelector('#searchResults');
       searchResults.innerHTML = '';
-      if (products.length === 0) {
-        searchResults.innerHTML = '<ul><li>Ничего не найдено</li></ul>';
+      
+      if (filteredProducts.length === 0) {
+        searchResults.innerHTML = `
+          <div class="search-popup__no-results">
+            <i class="fas fa-search" style="font-size: 24px; opacity: 0.5; margin-bottom: 10px;"></i>
+            <p>По запросу «${query}» ничего не найдено</p>
+            <p style="font-size: 12px; margin-top: 5px;">Попробуйте изменить запрос или выбрать из популярных</p>
+          </div>
+        `;
       } else {
         const ul = document.createElement('ul');
-        products.forEach(product => {
+        
+        filteredProducts.forEach(product => {
+          const productId = Object.keys(products).find(id => products[id] === product);
           const li = document.createElement('li');
-          li.setAttribute('data-id', Object.keys(products).find(id => products[id] === product));
-          li.textContent = `${product.title} - ${product.price} ₽`;
+          li.setAttribute('data-id', productId);
+          
+          // Получаем изображение продукта
+          let productImage = '';
+          if (product.images && product.images.length > 0) {
+            productImage = product.images[0];
+          } else {
+            // Пытаемся найти изображение в HTML
+            const productCard = document.querySelector(`.product-card[data-id="${productId}"]`);
+            if (productCard) {
+              const img = productCard.querySelector('img');
+              if (img) {
+                productImage = img.src;
+              }
+            }
+          }
+          
+          // Получаем категорию продукта
+          const categoryName = getCategoryName(product.category);
+          
+          li.innerHTML = `
+            <img src="${productImage}" alt="${product.title}" class="search-popup__product-image" onerror="this.src='https://via.placeholder.com/40x40?text=Фото'">
+            <div class="search-popup__product-info">
+              <div class="search-popup__product-title">${highlightQuery(product.title, query)}</div>
+              <div class="search-popup__product-price">${product.price} ₽</div>
+              ${categoryName ? `<div class="search-popup__category-tag">${categoryName}</div>` : ''}
+            </div>
+          `;
+          
           ul.appendChild(li);
         });
+        
         searchResults.appendChild(ul);
       }
+    }
+    
+    // Функция для подсветки искомого текста
+    function highlightQuery(text, query) {
+      if (!query) return text;
+      const regex = new RegExp(`(${query})`, 'gi');
+      return text.replace(regex, '<mark style="background-color: rgba(201, 137, 123, 0.2); padding: 0 2px; border-radius: 2px;">$1</mark>');
+    }
+    
+    // Функция для получения названия категории
+    function getCategoryName(categoryCode) {
+      const categories = {
+        'electronics': 'Электроника',
+        'toys': 'Игрушки',
+        'accessories': 'Аксессуары',
+        'clothes': 'Одежда',
+        'appliances': 'Бытовая техника'
+      };
+      
+      return categories[categoryCode] || '';
     }
   
     updateCartCount();

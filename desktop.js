@@ -124,8 +124,21 @@ document.addEventListener('DOMContentLoaded', function() {
     document.body.classList.add('light');
   }
   
+  // Инициализация состояния звука
   if (localStorage.getItem('sound') === 'muted') {
     document.body.classList.add('muted');
+    
+    // Обновляем иконки звука
+    const soundToggleButtons = document.querySelectorAll('[data-action="toggle-sound"]');
+    soundToggleButtons.forEach(button => {
+      const volumeIcon = button.querySelector('.fa-volume-up');
+      const muteIcon = button.querySelector('.fa-volume-mute');
+      if (volumeIcon && muteIcon) {
+        volumeIcon.style.display = 'none';
+        muteIcon.style.display = 'inline-block';
+      }
+    });
+    
     updateSettingsMenu();
   }
 
@@ -202,7 +215,24 @@ document.addEventListener('DOMContentLoaded', function() {
         toggleThemeWithAnimation();
       } else if (action === 'toggle-sound') {
         document.body.classList.toggle('muted');
-        localStorage.setItem('sound', document.body.classList.contains('muted') ? 'muted' : 'unmuted');
+        const isMuted = document.body.classList.contains('muted');
+        localStorage.setItem('sound', isMuted ? 'muted' : 'unmuted');
+        
+        // Переключаем иконки
+        const volumeIcon = item.querySelector('.fa-volume-up');
+        const muteIcon = item.querySelector('.fa-volume-mute');
+        if (volumeIcon && muteIcon) {
+          volumeIcon.style.display = isMuted ? 'none' : 'inline-block';
+          muteIcon.style.display = isMuted ? 'inline-block' : 'none';
+        }
+        
+        // Обновляем настройки в модуле настроек
+        if (window.settingsModule && typeof window.settingsModule.loadSettings === 'function') {
+          const settings = window.settingsModule.loadSettings();
+          settings.isSoundEnabled = !isMuted;
+          window.settingsModule.saveSettings(settings);
+        }
+        
         updateSettingsMenu();
       } else if (action === 'scroll-top') {
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -555,7 +585,11 @@ document.addEventListener('DOMContentLoaded', function() {
       // Add handler for the checkout button
       cartCheckout.addEventListener('click', function(e) {
         createRippleEffect(e);
-        showCheckoutModal();
+        
+        // Используем только новый модуль оформления заказа
+        if (window.checkoutModule && typeof window.checkoutModule.showCheckout === 'function') {
+          window.checkoutModule.showCheckout();
+        }
       });
     }
     
@@ -623,7 +657,7 @@ document.addEventListener('DOMContentLoaded', function() {
       
       // Обновляем элементы интерфейса в соответствии с текущими настройками
       const menuThemeToggle = document.querySelector('.theme-toggle');
-      const menuSoundToggle = document.querySelector('.sound-toggle');
+      const menuSoundToggle = document.querySelector('[data-action="toggle-sound"]');
       
       if (menuThemeToggle) {
         const sunIcon = menuThemeToggle.querySelector('.fa-sun');
@@ -944,7 +978,15 @@ document.addEventListener('DOMContentLoaded', function() {
   // Открытие модального окна входа
   if (loginButton && loginModal) {
     loginButton.addEventListener('click', function() {
-      loginModal.setAttribute('aria-hidden', 'false');
+      // Используем классы вместо aria-hidden для лучшей доступности
+      loginModal.classList.add('active');
+      document.body.style.overflow = 'hidden';
+      
+      // Удаляем атрибут aria-hidden, если он был установлен
+      if (loginModal.hasAttribute('aria-hidden')) {
+        loginModal.removeAttribute('aria-hidden');
+      }
+      
       // Сбросить формы при открытии
       if (loginForm) loginForm.reset();
       if (registerForm) registerForm.reset();
@@ -958,14 +1000,28 @@ document.addEventListener('DOMContentLoaded', function() {
   // Закрытие модального окна
   if (closeLoginButton && loginModal) {
     closeLoginButton.addEventListener('click', function() {
-      loginModal.setAttribute('aria-hidden', 'true');
+      // Используем классы вместо aria-hidden для лучшей доступности
+      loginModal.classList.remove('active');
+      document.body.style.overflow = '';
+      
+      // Удаляем атрибут aria-hidden, если он был установлен
+      if (loginModal.hasAttribute('aria-hidden')) {
+        loginModal.removeAttribute('aria-hidden');
+      }
     });
   }
   
   // Закрытие модального окна по клику вне его содержимого
   window.addEventListener('click', function(e) {
     if (e.target === loginModal) {
-      loginModal.setAttribute('aria-hidden', 'true');
+      // Используем классы вместо aria-hidden для лучшей доступности
+      loginModal.classList.remove('active');
+      document.body.style.overflow = '';
+      
+      // Удаляем атрибут aria-hidden, если он был установлен
+      if (loginModal.hasAttribute('aria-hidden')) {
+        loginModal.removeAttribute('aria-hidden');
+      }
     }
   });
   
@@ -1049,7 +1105,12 @@ document.addEventListener('DOMContentLoaded', function() {
       
       // Показываем анимацию загрузки на кнопке
       const submitBtn = this.querySelector('.btn-login');
-      const originalText = submitBtn.textContent;
+      // Проверяем, что submitBtn не null перед обращением к textContent
+      if (!submitBtn) {
+        console.error('Кнопка входа не найдена в форме');
+        return;
+      }
+      const originalText = submitBtn.textContent || 'Вход';
       submitBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Вход...';
       submitBtn.disabled = true;
       
@@ -1106,7 +1167,12 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Закрываем модальное окно с задержкой и обновляем UI
         setTimeout(() => {
-          loginModal.setAttribute('aria-hidden', 'true');
+          // Используем inert вместо aria-hidden
+          if (loginModal.hasAttribute('aria-hidden')) {
+            loginModal.removeAttribute('aria-hidden');
+          }
+          // Скрываем модальное окно стандартным способом
+          loginModal.classList.remove('active');
           loginModal.classList.remove('success-login');
           formElement.classList.remove('form-success-animation');
           
@@ -1217,7 +1283,12 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Закрываем модальное окно с задержкой и обновляем UI
         setTimeout(() => {
-          loginModal.setAttribute('aria-hidden', 'true');
+          // Используем inert вместо aria-hidden
+          if (loginModal.hasAttribute('aria-hidden')) {
+            loginModal.removeAttribute('aria-hidden');
+          }
+          // Скрываем модальное окно стандартным способом
+          loginModal.classList.remove('active');
           loginModal.classList.remove('success-login');
           formElement.classList.remove('form-success-animation');
           
@@ -1242,7 +1313,15 @@ document.addEventListener('DOMContentLoaded', function() {
       
       // Пример успешной отправки
       showNotification('Инструкции по восстановлению пароля отправлены на ваш email', 'success');
-      loginModal.setAttribute('aria-hidden', 'true');
+      
+      // Используем классы вместо aria-hidden для лучшей доступности
+      loginModal.classList.remove('active');
+      document.body.style.overflow = '';
+      
+      // Удаляем атрибут aria-hidden, если он был установлен
+      if (loginModal.hasAttribute('aria-hidden')) {
+        loginModal.removeAttribute('aria-hidden');
+      }
     });
   }
   
@@ -1288,10 +1367,22 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Если модальное окно профиля не открыто, показываем меню пользователя
         const userMenu = createUserMenu();
-        userMenu.setAttribute('aria-hidden', userMenu.getAttribute('aria-hidden') === 'true' ? 'false' : 'true');
+        
+        // Используем классы вместо aria-hidden для лучшей доступности
+        const isMenuHidden = !userMenu.classList.contains('visible');
+        if (isMenuHidden) {
+            userMenu.classList.add('visible');
+        } else {
+            userMenu.classList.remove('visible');
+        }
+        
+        // Удаляем атрибут aria-hidden, если он был установлен
+        if (userMenu.hasAttribute('aria-hidden')) {
+            userMenu.removeAttribute('aria-hidden');
+        }
         
         // Добавляем обработчик для закрытия меню при клике вне его
-        if (userMenu.getAttribute('aria-hidden') === 'false') {
+        if (userMenu.classList.contains('visible')) {
           setTimeout(() => {
             document.addEventListener('click', closeUserMenuOutside);
           }, 0);
@@ -2095,7 +2186,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const loginButton = document.getElementById('loginButton');
     
     if (userMenu && !userMenu.contains(e.target) && !loginButton.contains(e.target)) {
-      userMenu.setAttribute('aria-hidden', 'true');
+      // Используем классы вместо aria-hidden для лучшей доступности
+      userMenu.classList.remove('visible');
+      
+      // Удаляем атрибут aria-hidden, если он был установлен
+      if (userMenu.hasAttribute('aria-hidden')) {
+        userMenu.removeAttribute('aria-hidden');
+      }
+      
       document.removeEventListener('click', closeUserMenuOutside);
     }
   }
@@ -2106,7 +2204,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const userMenu = document.getElementById('userMenu');
     
     if (userMenu) {
-      userMenu.setAttribute('aria-hidden', 'true');
+      // Используем классы вместо aria-hidden для лучшей доступности
+      userMenu.classList.remove('visible');
+      
+      // Удаляем атрибут aria-hidden, если он был установлен
+      if (userMenu.hasAttribute('aria-hidden')) {
+        userMenu.removeAttribute('aria-hidden');
+      }
     }
     
     switch (action) {
@@ -2147,7 +2251,7 @@ document.addEventListener('DOMContentLoaded', function() {
     userMenu = document.createElement('div');
     userMenu.id = 'userMenu';
     userMenu.className = 'user-menu';
-    userMenu.setAttribute('aria-hidden', 'true');
+    // Не используем aria-hidden для лучшей доступности
     
     const userName = localStorage.getItem('userName') || 'Пользователь';
     
@@ -2202,7 +2306,7 @@ document.addEventListener('DOMContentLoaded', function() {
           overflow: hidden;
         }
         
-        .user-menu[aria-hidden="false"] {
+        .user-menu.visible {
           opacity: 1;
           visibility: visible;
           transform: translateY(0);
@@ -2373,17 +2477,24 @@ document.addEventListener('DOMContentLoaded', function() {
       newButton.addEventListener('click', function() {
         const existingMenu = document.getElementById('userMenu');
         if (existingMenu) {
-          if (existingMenu.getAttribute('aria-hidden') === 'true') {
-            existingMenu.setAttribute('aria-hidden', 'false');
+          // Используем классы вместо aria-hidden для лучшей доступности
+          if (!existingMenu.classList.contains('visible')) {
+            existingMenu.classList.add('visible');
+            
+            // Удаляем атрибут aria-hidden, если он был установлен
+            if (existingMenu.hasAttribute('aria-hidden')) {
+              existingMenu.removeAttribute('aria-hidden');
+            }
+            
             document.addEventListener('click', closeUserMenuOutside);
           } else {
-            existingMenu.setAttribute('aria-hidden', 'true');
+            existingMenu.classList.remove('visible');
             document.removeEventListener('click', closeUserMenuOutside);
           }
         } else {
           const menu = createUserMenu();
           document.body.appendChild(menu);
-          menu.setAttribute('aria-hidden', 'false');
+          menu.classList.add('visible');
           
           // Обработчики для кнопок меню
           const menuItems = menu.querySelectorAll('.user-menu__item');
@@ -3081,9 +3192,20 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log("ORDERS: Все заказы", orderHistory); // Отладка
     
     // Фильтруем заказы текущего пользователя
-    const userOrders = orderHistory.filter(order => 
+    // Проверяем два варианта: заказы из orderHistory и заказы из registeredUsers
+    let userOrders = orderHistory.filter(order => 
       order.userEmail === userData.email
     );
+    
+    // Если заказов нет в общей истории, попробуем получить их из профиля пользователя
+    if (userOrders.length === 0 && userData.email) {
+      const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+      const currentUser = registeredUsers.find(user => user.email === userData.email);
+      if (currentUser && currentUser.orders && currentUser.orders.length > 0) {
+        userOrders = currentUser.orders;
+        console.log("ORDERS: Заказы найдены в профиле пользователя", userOrders);
+      }
+    }
     
     console.log("ORDERS: Заказы текущего пользователя", userOrders); // Отладка
     
@@ -3096,8 +3218,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Создаем модальное окно заказов
     ordersModal = document.createElement('div');
     ordersModal.className = 'modal-orders';
-    // Replace aria-hidden with inert attribute
-    ordersModal.removeAttribute('aria-hidden');
+    ordersModal.setAttribute('aria-hidden', 'false');
     
     // Скрываем island при открытии модального окна
     const islandElement = document.querySelector('.island');
@@ -3121,17 +3242,25 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
       `;
     } else {
-      // Если заказы есть, выводим их в виде списка
+      // Если заказы есть, выводим их в виде компактных строк с возможностью раскрытия
       ordersContent = `
         <div class="orders-list">
-          ${userOrders.map(order => `
-            <div class="order-item">
-              <div class="order-header">
-                <div class="order-id">Заказ #${order.id}</div>
-                <div class="order-date">${order.date}</div>
-                <div class="order-status">Выполнен</div>
+          ${userOrders.map((order, index) => `
+            <div class="order-item-row" data-order-id="${order.id}">
+              <div class="order-row-header">
+                <div class="order-row-main">
+                  <div class="order-id">Заказ #${order.id}</div>
+                  <div class="order-date">${order.date}</div>
+                </div>
+                <div class="order-row-status">
+                  <div class="order-status">${order.status || 'Выполнен'}</div>
+                  <div class="order-total-compact">${order.total ? order.total.toLocaleString() : (order.totalPrice || 0).toLocaleString()} ₽</div>
+                  <button class="order-toggle-btn" aria-label="Развернуть детали заказа">
+                    <i class="fas fa-chevron-down"></i>
+                  </button>
+                </div>
               </div>
-              <div class="order-details">
+              <div class="order-details-collapsible">
                 <div class="order-products">
                   <h4>Товары (${order.items.length})</h4>
                   <ul>
@@ -3140,22 +3269,45 @@ document.addEventListener('DOMContentLoaded', function() {
                         <img src="${item.image}" alt="${item.title}">
                         <div class="product-info">
                           <div class="product-title">${item.title}</div>
-                          <div class="product-price">${item.price} ₽</div>
+                          <div class="product-price">${item.price} ₽ × ${item.quantity}</div>
                         </div>
+                        <div class="product-subtotal">${(item.price * item.quantity).toLocaleString()} ₽</div>
                       </li>
                     `).join('')}
                   </ul>
                 </div>
                 <div class="order-info">
-                  <div class="order-total">
-                    <strong>Итого:</strong> ${order.total} ₽
+                  <div class="order-info-section">
+                    <h4>Информация о доставке</h4>
+                    <div class="order-delivery">
+                      <div><strong>Адрес:</strong> ${order.address || (order.delivery && order.delivery.address) || 'Не указан'}</div>
+                      <div><strong>Способ доставки:</strong> ${order.delivery ? (
+                        order.delivery.type === 'courier' ? 'Курьер' : 
+                        order.delivery.type === 'pickup' ? 'Самовывоз' : 
+                        order.delivery.type === 'post' ? 'Почта' : 'Не указан'
+                      ) : 'Не указан'}</div>
+                    </div>
                   </div>
-                  <div class="order-delivery">
-                    <strong>Адрес доставки:</strong><br>${order.address}
+                  <div class="order-info-section">
+                    <h4>Контактная информация</h4>
+                    <div class="order-contact">
+                      <div><strong>Имя:</strong> ${order.name || (order.customer && (order.customer.name + ' ' + (order.customer.surname || ''))) || 'Не указано'}</div>
+                      <div><strong>Телефон:</strong> ${order.phone || (order.customer && order.customer.phone) || 'Не указан'}</div>
+                      <div><strong>Email:</strong> ${order.customer && order.customer.email || order.userEmail || 'Не указан'}</div>
+                    </div>
                   </div>
-                  <div class="order-contact">
-                    <div><strong>Имя:</strong> ${order.name}</div>
-                    <div><strong>Телефон:</strong> ${order.phone}</div>
+                  <div class="order-info-section">
+                    <h4>Оплата</h4>
+                    <div class="order-payment">
+                      <div><strong>Способ оплаты:</strong> ${order.paymentMethod === 'card' ? 'Банковская карта' : 
+                                                           order.paymentMethod === 'cash' ? 'Наличными при получении' : 
+                                                           order.paymentMethod === 'online' ? 'Онлайн-оплата' : 'Не указан'}</div>
+                      <div class="order-total">
+                        <div><strong>Товары:</strong> ${order.subtotal ? order.subtotal.toLocaleString() : 'Не указано'} ₽</div>
+                        <div><strong>Доставка:</strong> ${order.deliveryCost ? order.deliveryCost.toLocaleString() : 'Не указано'} ₽</div>
+                        <div class="order-grand-total"><strong>Итого:</strong> ${order.total ? order.total.toLocaleString() : (order.totalPrice || 0).toLocaleString()} ₽</div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -3184,6 +3336,78 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Добавляем модальное окно в документ
     document.body.appendChild(ordersModal);
+    
+    // Добавляем обработчики для раскрытия/сворачивания заказов
+    setTimeout(() => {
+      const orderRows = document.querySelectorAll('.order-row-header');
+      orderRows.forEach(row => {
+        row.addEventListener('click', function() {
+          const orderItem = this.closest('.order-item-row');
+          if (orderItem) {
+            // Переключаем класс expanded для анимации
+            orderItem.classList.toggle('expanded');
+          }
+        });
+      });
+      
+      // Добавляем обработчики для кнопок закрытия
+      const closeButtons = document.querySelectorAll('.modal-orders__close, .modal-orders__close-top');
+      closeButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          const modal = document.querySelector('.modal-orders');
+          if (modal) {
+            // Скрываем модальное окно
+            modal.setAttribute('aria-hidden', 'true');
+            
+            // Возвращаем видимость острова с задержкой
+            setTimeout(() => {
+              const islandElement = document.querySelector('.island');
+              if (islandElement) {
+                islandElement.style.visibility = 'visible';
+                islandElement.style.opacity = '1';
+                islandElement.style.transform = 'translateY(0) translateX(-50%)';
+              }
+            }, 300);
+            
+            // Удаляем модальное окно после анимации
+            setTimeout(() => {
+              if (modal.parentNode) {
+                modal.parentNode.removeChild(modal);
+              }
+            }, 500);
+          }
+        });
+      });
+      
+      // Добавляем обработчик для кнопки "Начать покупки"
+      const startShoppingButton = document.querySelector('.btn-start-shopping');
+      if (startShoppingButton) {
+        startShoppingButton.addEventListener('click', function() {
+          const modal = document.querySelector('.modal-orders');
+          if (modal) {
+            // Скрываем модальное окно
+            modal.setAttribute('aria-hidden', 'true');
+            
+            // Возвращаем видимость острова с задержкой
+            setTimeout(() => {
+              const islandElement = document.querySelector('.island');
+              if (islandElement) {
+                islandElement.style.visibility = 'visible';
+                islandElement.style.opacity = '1';
+                islandElement.style.transform = 'translateY(0) translateX(-50%)';
+              }
+            }, 300);
+            
+            // Удаляем модальное окно после анимации
+            setTimeout(() => {
+              if (modal.parentNode) {
+                modal.parentNode.removeChild(modal);
+              }
+            }, 500);
+          }
+        });
+      }
+    }, 100);
     
     // Добавляем стили для модального окна заказов
     if (!document.getElementById('orders-modal-styles')) {
@@ -3271,6 +3495,285 @@ document.addEventListener('DOMContentLoaded', function() {
           background: linear-gradient(to right, #BCB88A, #C9897B);
           margin: 12px auto 0;
           border-radius: 2px;
+        }
+        
+        /* Стили для компактного отображения заказов */
+        .orders-list {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+        
+        .order-item-row {
+          border-radius: 8px;
+          overflow: hidden;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+          background: #fff;
+          transition: all 0.3s ease;
+        }
+        
+        .order-item-row:hover {
+          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .order-row-header {
+          padding: 15px 20px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          background: #f9f9f9;
+          cursor: pointer;
+          transition: background 0.2s;
+        }
+        
+        .order-row-header:hover {
+          background: #f0f0f0;
+        }
+        
+        .order-row-main {
+          display: flex;
+          align-items: center;
+          gap: 15px;
+        }
+        
+        .order-id {
+          font-weight: 600;
+          color: #333;
+        }
+        
+        .order-date {
+          color: #666;
+          font-size: 0.9em;
+        }
+        
+        .order-row-status {
+          display: flex;
+          align-items: center;
+          gap: 15px;
+        }
+        
+        .order-status {
+          padding: 4px 10px;
+          background: #4CAF50;
+          color: white;
+          border-radius: 20px;
+          font-size: 0.8em;
+          font-weight: 500;
+        }
+        
+        .order-total-compact {
+          font-weight: 600;
+          color: #333;
+        }
+        
+        .order-toggle-btn {
+          background: none;
+          border: none;
+          width: 30px;
+          height: 30px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          color: #666;
+          transition: transform 0.3s, color 0.2s;
+        }
+        
+        .order-toggle-btn:hover {
+          color: #333;
+        }
+        
+        .order-item-row.expanded .order-toggle-btn {
+          transform: rotate(180deg);
+        }
+        
+        .order-details-collapsible {
+          display: none;
+          padding: 0;
+          max-height: 0;
+          overflow: hidden;
+          transition: all 0.3s ease;
+          border-top: 1px solid #eee;
+        }
+        
+        .order-item-row.expanded .order-details-collapsible {
+          display: block;
+          padding: 20px;
+          max-height: 2000px;
+        }
+        
+        .order-products {
+          margin-bottom: 25px;
+        }
+        
+        .order-products h4 {
+          margin-top: 0;
+          margin-bottom: 15px;
+          font-size: 1.1em;
+          color: #333;
+          border-bottom: 1px solid #eee;
+          padding-bottom: 8px;
+        }
+        
+        .order-products ul {
+          list-style: none;
+          padding: 0;
+          margin: 0;
+        }
+        
+        .order-products li {
+          display: flex;
+          align-items: center;
+          padding: 10px 0;
+          border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .order-products li:last-child {
+          border-bottom: none;
+        }
+        
+        .order-products img {
+          width: 50px;
+          height: 50px;
+          object-fit: cover;
+          border-radius: 6px;
+          margin-right: 15px;
+        }
+        
+        .product-info {
+          flex: 1;
+        }
+        
+        .product-title {
+          font-weight: 500;
+          margin-bottom: 4px;
+        }
+        
+        .product-price {
+          color: #666;
+          font-size: 0.9em;
+        }
+        
+        .product-subtotal {
+          font-weight: 600;
+          color: #333;
+        }
+        
+        .order-info {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+          gap: 20px;
+        }
+        
+        .order-info-section {
+          background: #f9f9f9;
+          padding: 15px;
+          border-radius: 8px;
+        }
+        
+        .order-info-section h4 {
+          margin-top: 0;
+          margin-bottom: 12px;
+          font-size: 1em;
+          color: #333;
+        }
+        
+        .order-delivery,
+        .order-contact,
+        .order-payment {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          font-size: 0.95em;
+        }
+        
+        .order-total {
+          margin-top: 10px;
+          padding-top: 10px;
+          border-top: 1px dashed #ddd;
+          display: flex;
+          flex-direction: column;
+          gap: 5px;
+        }
+        
+        .order-grand-total {
+          margin-top: 5px;
+          padding-top: 5px;
+          border-top: 1px solid #ddd;
+          font-size: 1.1em;
+          color: #333;
+        }
+        
+        /* Темная тема */
+        body.dark .order-item-row {
+          background: #2c2c2e;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        
+        body.dark .order-row-header {
+          background: #222;
+        }
+        
+        body.dark .order-row-header:hover {
+          background: #333;
+        }
+        
+        body.dark .order-id {
+          color: #eee;
+        }
+        
+        body.dark .order-date {
+          color: #aaa;
+        }
+        
+        body.dark .order-total-compact {
+          color: #ddd;
+        }
+        
+        body.dark .order-toggle-btn {
+          color: #aaa;
+        }
+        
+        body.dark .order-toggle-btn:hover {
+          color: #fff;
+        }
+        
+        body.dark .order-details-collapsible {
+          border-top: 1px solid #444;
+        }
+        
+        body.dark .order-products h4 {
+          color: #ddd;
+          border-bottom: 1px solid #444;
+        }
+        
+        body.dark .order-products li {
+          border-bottom: 1px solid #333;
+        }
+        
+        body.dark .product-price {
+          color: #aaa;
+        }
+        
+        body.dark .product-subtotal {
+          color: #ddd;
+        }
+        
+        body.dark .order-info-section {
+          background: #222;
+        }
+        
+        body.dark .order-info-section h4 {
+          color: #ddd;
+        }
+        
+        body.dark .order-total {
+          border-top: 1px dashed #444;
+        }
+        
+        body.dark .order-grand-total {
+          border-top: 1px solid #444;
+          color: #ddd;
         }
         
         .orders-content {
@@ -3639,6 +4142,12 @@ document.addEventListener('DOMContentLoaded', function() {
       return;
     }
     
+    // Плавно закрываем панель корзины
+    const cartPanel = document.querySelector('.cart-panel');
+    if (cartPanel) {
+      cartPanel.setAttribute('aria-hidden', 'true');
+    }
+    
     // Проверяем, залогинен ли пользователь
     const userData = JSON.parse(localStorage.getItem('userData') || '{}');
     console.log("CHECKOUT: userData", userData); // Отладка
@@ -3646,12 +4155,6 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!userData.email) {
       // Показываем сообщение о необходимости авторизации
       showNotification('Для оформления заказа необходимо войти в аккаунт', 'info');
-      
-      // Плавно закрываем панель корзины
-      const cartPanel = document.querySelector('.cart-panel');
-      if (cartPanel) {
-        cartPanel.setAttribute('aria-hidden', 'true');
-      }
       
       // Отложенный вызов showLoginModal, чтобы избежать одновременного открытия нескольких модальных окон
       setTimeout(() => {
@@ -3683,68 +4186,85 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Считаем общую сумму заказа
-    const totalPrice = cartItems.reduce((sum, item) => sum + item.price, 0);
+    const totalPrice = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     
     // Создаем содержимое модального окна
     checkoutModal.innerHTML = `
       <div class="modal-checkout__content">
         <button class="modal-checkout__close-top" title="Закрыть"><i class="fas fa-times"></i></button>
-        <div class="checkout-content">
-          <h2 class="modal-checkout__title">Оформление заказа</h2>
-          
-          <div class="checkout-items">
-            <h3>Товары в корзине</h3>
-            <ul class="checkout-items-list">
-              ${cartItems.map(item => `
-                <li class="checkout-item">
-                  <img src="${item.image}" alt="${item.title}">
-                  <div class="checkout-item-info">
-                    <div class="checkout-item-title">${item.title}</div>
-                    <div class="checkout-item-price">${item.price} ₽</div>
-                  </div>
-                </li>
-              `).join('')}
-            </ul>
-            <div class="checkout-total">
-              <span>Итого:</span>
-              <strong>${totalPrice} ₽</strong>
+        <div class="checkout-grid">
+          <div class="checkout-order-summary">
+            <h2 class="modal-checkout__section-title">Ваш заказ</h2>
+            <div class="checkout-items-container">
+              ${cartItems.length > 0 ? `
+                <ul class="checkout-items-list">
+                  ${cartItems.map(item => `
+                    <li class="checkout-item">
+                      <img src="${item.image}" alt="${item.title}" class="checkout-item-image">
+                      <div class="checkout-item-details">
+                        <div class="checkout-item-title">${item.title}</div>
+                        <div class="checkout-item-meta">
+                          <span class="checkout-item-quantity">Кол-во: ${item.quantity}</span>
+                          <span class="checkout-item-price">${item.price} ₽</span>
+                        </div>
+                      </div>
+                      <div class="checkout-item-subtotal">${item.price * item.quantity} ₽</div>
+                    </li>
+                  `).join('')}
+                </ul>
+              ` : '<p class="checkout-empty-cart">Ваша корзина пуста.</p>'}
+            </div>
+            <div class="checkout-summary-details">
+              <div class="checkout-summary-row">
+                <span>Подытог:</span>
+                <strong class="checkout-subtotal-value">${totalPrice} ₽</strong>
+              </div>
+              <div class="checkout-summary-row">
+                <span>Доставка:</span>
+                <strong>Бесплатно</strong>
+              </div>
+              <div class="checkout-summary-row checkout-total-row">
+                <span>Итого:</span>
+                <strong class="checkout-grand-total">${totalPrice} ₽</strong>
+              </div>
             </div>
           </div>
-          
-          <form class="checkout-form">
-            <h3>Информация для доставки</h3>
-            
-            <div class="checkout-form-group">
-              <label for="checkout-name">Ваше имя</label>
-              <input type="text" id="checkout-name" value="${userData.name || ''}" placeholder="Введите ваше имя" required>
-            </div>
-            
-            <div class="checkout-form-group">
-              <label for="checkout-phone">Телефон</label>
-              <input type="tel" id="checkout-phone" value="${userData.phone || ''}" placeholder="+7 (___) ___-__-__" required>
-            </div>
-            
-            <div class="checkout-form-group">
-              <label for="checkout-address">Адрес доставки</label>
-              <textarea id="checkout-address" placeholder="Укажите полный адрес доставки" required></textarea>
-            </div>
-            
-            <div class="checkout-form-group">
-              <label for="checkout-comment">Комментарий к заказу</label>
-              <textarea id="checkout-comment" placeholder="Необязательно"></textarea>
-            </div>
-            
-            <div class="checkout-actions">
-              <button type="submit" class="checkout-submit">
-                <i class="fas fa-check"></i>
-                Подтвердить заказ
-              </button>
-              <button type="button" class="checkout-cancel">
-                <i class="fas fa-times"></i>
-                Отмена
-              </button>
-            </div>
-          </form>
+
+          <div class="checkout-delivery-info">
+            <h2 class="modal-checkout__section-title">Информация для доставки</h2>
+            <form class="checkout-form">
+              <div class="checkout-form-group">
+                <label for="checkout-name">Имя получателя</label>
+                <input type="text" id="checkout-name" value="${userData.name || ''}" placeholder="Введите ваше имя" required>
+              </div>
+              <div class="checkout-form-group">
+                <label for="checkout-email">Email</label>
+                <input type="email" id="checkout-email" value="${userData.email || ''}" placeholder="example@domain.com" required>
+              </div>
+              <div class="checkout-form-group">
+                <label for="checkout-phone">Телефон</label>
+                <input type="tel" id="checkout-phone" value="${userData.phone || ''}" placeholder="+7 (XXX) XXX-XX-XX" required>
+              </div>
+              <div class="checkout-form-group">
+                <label for="checkout-address">Адрес доставки</label>
+                <textarea id="checkout-address" placeholder="Город, улица, дом, квартира" rows="3" required></textarea>
+              </div>
+              <div class="checkout-form-group">
+                <label for="checkout-comment">Комментарий к заказу</label>
+                <textarea id="checkout-comment" placeholder="Ваши пожелания (необязательно)" rows="2"></textarea>
+              </div>
+              <div class="checkout-actions">
+                <button type="submit" class="checkout-submit">
+                  <i class="fas fa-credit-card"></i>
+                  Оплатить ${totalPrice} ₽
+                </button>
+                <button type="button" class="checkout-cancel">
+                  <i class="fas fa-times"></i>
+                  Отмена
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
     `;
@@ -3763,300 +4283,392 @@ document.addEventListener('DOMContentLoaded', function() {
           left: 0;
           right: 0;
           bottom: 0;
-          background: rgba(0,0,0,0.5);
+          background: rgba(0,0,0,0.6); /* Slightly darker overlay */
           display: flex;
           justify-content: center;
           align-items: center;
-          z-index: 1000;
+          z-index: 1050; /* Ensure it's above other elements like cart panel */
           opacity: 0;
           visibility: hidden;
-          transition: opacity 0.3s;
+          transition: opacity 0.4s ease, visibility 0s linear 0.4s;
+          font-family: 'Lato', sans-serif;
         }
-        
+
         .modal-checkout[aria-hidden="false"] {
           opacity: 1;
           visibility: visible;
+          transition: opacity 0.4s ease;
         }
-        
+
         .modal-checkout__content {
-          background: white;
-          border-radius: 12px;
+          background: #fff; /* Light background for content */
+          border-radius: 16px; /* Softer corners */
           width: 90%;
-          max-width: 800px;
-          max-height: 85vh;
-          overflow-y: auto;
-          box-shadow: 0 15px 30px rgba(0,0,0,0.2);
-          padding: 30px;
+          max-width: 960px; /* Wider modal for two columns */
+          max-height: 90vh;
+          overflow: auto; /* Changed to auto for full modal scrolling */
+          box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+          padding: 0; /* Padding will be handled by inner elements */
           position: relative;
-          transform: translateY(20px);
+          transform: translateY(30px) scale(0.95);
           opacity: 0;
-          transition: transform 0.3s, opacity 0.3s;
+          transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
-        
+
         .modal-checkout[aria-hidden="false"] .modal-checkout__content {
-          transform: translateY(0);
+          transform: translateY(0) scale(1);
           opacity: 1;
         }
-        
+
         .modal-checkout__close-top {
           position: absolute;
-          top: 15px;
-          right: 15px;
-          background: rgba(0,0,0,0.05);
+          top: 20px;
+          right: 20px;
+          background: rgba(0,0,0,0.08);
           border: none;
           font-size: 18px;
           cursor: pointer;
-          color: #888;
-          width: 32px;
-          height: 32px;
+          color: #555;
+          width: 40px;
+          height: 40px;
           display: flex;
           align-items: center;
           justify-content: center;
           border-radius: 50%;
-          transition: background 0.2s, color 0.2s;
+          transition: background 0.2s, color 0.2s, transform 0.2s;
+          z-index: 10; /* Above content grid */
         }
-        
+
         .modal-checkout__close-top:hover {
-          background: rgba(0,0,0,0.1);
-          color: #333;
+          background: rgba(0,0,0,0.12);
+          color: #000;
+          transform: rotate(90deg);
         }
         
-        .modal-checkout__title {
-          font-size: 28px;
+        .modal-checkout__section-title {
+          font-family: 'Cinzel', serif;
+          font-size: 24px;
           font-weight: 600;
+          color: #333;
           margin-bottom: 25px;
-          text-align: center;
-          color: #333;
-          position: relative;
+          text-align: left;
+          padding-bottom: 10px;
+          border-bottom: 1px solid #eee;
         }
         
-        .modal-checkout__title:after {
-          content: '';
-          display: block;
-          width: 80px;
-          height: 3px;
-          background: linear-gradient(to right, #BCB88A, #C9897B);
-          margin: 12px auto 0;
-          border-radius: 2px;
+        .checkout-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr; /* Two equal columns */
+          gap: 0; /* No gap, borders will separate */
+          width: 100%;
+          min-height: 500px; /* Minimum height to ensure visibility */
+        }
+
+        .checkout-order-summary,
+        .checkout-delivery-info {
+          padding: 30px 35px;
+          display: flex;
+          flex-direction: column;
+          min-height: 500px; /* Ensure content is visible */
+          position: relative; /* For proper element positioning */
+          background-color: #fbf9f2; /* Легкий кремовый оттенок для фона */
+          border-left: 1px solid #e0e0e0;
+          box-shadow: inset 5px 0 15px -5px rgba(0,0,0,0.05); /* Внутренняя тень слева */
+        }
+
+        .checkout-order-summary {
+          background-color: #fcfcfc; /* Slightly off-white for summary */
+          border-right: 1px solid #e0e0e0;
         }
         
-        .checkout-content {
-          position: relative;
-        }
-        
-        .checkout-items, .checkout-form {
-          background: #f9f9f9;
-          border-radius: 12px;
-          padding: 20px;
+        .checkout-items-container {
+          flex-grow: 1; /* Allows list to take available space and scroll */
+          overflow-y: auto;
           margin-bottom: 20px;
+          padding-right: 10px; /* For scrollbar */
         }
-        
-        .checkout-items h3, .checkout-form h3 {
-          margin-top: 0;
-          margin-bottom: 15px;
-          font-size: 18px;
-          color: #333;
-          font-weight: 600;
-          position: relative;
-          padding-bottom: 8px;
+
+        /* Custom Scrollbar for items list */
+        .checkout-items-container::-webkit-scrollbar {
+          width: 6px;
         }
-        
-        .checkout-items h3:after, .checkout-form h3:after {
-          content: '';
-          position: absolute;
-          bottom: 0;
-          left: 0;
-          width: 40px;
-          height: 2px;
-          background: linear-gradient(to right, #BCB88A, #C9897B);
-          border-radius: 2px;
+        .checkout-items-container::-webkit-scrollbar-track {
+          background: #f1f1f1;
+          border-radius: 10px;
+        }
+        .checkout-items-container::-webkit-scrollbar-thumb {
+          background: #BCB88A;
+          border-radius: 10px;
+        }
+        .checkout-items-container::-webkit-scrollbar-thumb:hover {
+          background: #a8a47e;
         }
         
         .checkout-items-list {
           list-style: none;
           padding: 0;
-          margin: 0 0 20px 0;
-          max-height: 300px;
-          overflow-y: auto;
+          margin: 0;
         }
-        
+
         .checkout-item {
           display: flex;
           align-items: center;
-          padding: 12px;
+          padding: 15px 0;
           border-bottom: 1px solid #eee;
-          background: #fff;
-          transition: transform 0.2s ease;
         }
-        
-        .checkout-item:hover {
-          transform: translateX(5px);
+        .checkout-item:last-child {
+          border-bottom: none;
         }
-        
-        .checkout-item img {
-          width: 60px;
-          height: 60px;
+
+        .checkout-item-image {
+          width: 70px;
+          height: 70px;
           object-fit: cover;
           border-radius: 8px;
-          box-shadow: 0 3px 10px rgba(0,0,0,0.1);
           margin-right: 15px;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         }
-        
-        .checkout-item-info {
+
+        .checkout-item-details {
           flex: 1;
         }
-        
+
         .checkout-item-title {
-          font-weight: 500;
+          font-weight: 600;
+          color: #444;
           margin-bottom: 5px;
+          font-size: 15px;
+        }
+
+        .checkout-item-meta {
+          font-size: 13px;
+          color: #777;
+        }
+        .checkout-item-quantity { margin-right: 10px; }
+        .checkout-item-price { color: #C9897B; font-weight: 500;}
+
+        .checkout-item-subtotal {
+          font-weight: 600;
+          font-size: 15px;
           color: #333;
+          min-width: 70px;
+          text-align: right;
         }
         
-        .checkout-item-price {
-          color: #C9897B;
-          font-weight: 500;
+        .checkout-empty-cart {
+            text-align: center;
+            padding: 40px 0;
+            color: #777;
+            font-size: 16px;
         }
-        
-        .checkout-total {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          font-size: 18px;
-          padding: 15px 0 0 0;
+
+        .checkout-summary-details {
+          margin-top: auto; /* Pushes to the bottom */
+          padding-top: 20px;
           border-top: 1px solid #eee;
         }
         
-        .checkout-total strong {
-          color: #C9897B;
+        .checkout-summary-row {
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: 10px;
+          font-size: 15px;
+        }
+        .checkout-summary-row span { color: #555; }
+        .checkout-summary-row strong { color: #333; font-weight: 600; }
+        
+        .checkout-total-row {
+          font-size: 18px;
+          font-weight: bold;
+          margin-top: 15px;
+          padding-top: 15px;
+          border-top: 1px dashed #ddd;
+        }
+        .checkout-total-row span { color: #333; }
+        .checkout-grand-total { color: #C9897B; font-size: 22px; }
+
+        .checkout-form {
+          display: block; /* Changed to block for better rendering */
+          width: 100%;
+          position: relative; /* Needed for absolute elements */
         }
         
         .checkout-form-group {
-          margin-bottom: 15px;
+          margin-bottom: 18px;
         }
-        
+
         .checkout-form-group label {
           display: block;
-          margin-bottom: 5px;
-          font-weight: 500;
-          color: #333;
+          margin-bottom: 8px;
+          font-weight: 600; /* Более жирный шрифт */
+          color: #333; /* Более темный цвет */
+          font-size: 15px; /* Чуть увеличенный размер */
+          text-shadow: 0 1px 0 rgba(255,255,255,0.8); /* Добавим тень */
+          position: relative; /* Для добавления декоративных элементов */
         }
         
+        /* Декоративный маркер перед каждой меткой */
+        .checkout-form-group label::before {
+          content: '•';
+          color: #C9897B;
+          margin-right: 5px;
+          font-size: 18px;
+          position: relative;
+          top: 1px;
+        }
+
         .checkout-form-group input,
         .checkout-form-group textarea {
           width: 100%;
-          padding: 10px 12px;
-          border: 1px solid #ddd;
-          border-radius: 5px;
-          font-size: 14px;
-          transition: border-color 0.2s;
+          padding: 12px 15px;
+          border: 2px solid #BCB88A; /* Более заметная граница */
+          border-radius: 8px;
+          font-size: 15px;
+          transition: border-color 0.2s, box-shadow 0.2s;
+          font-family: 'Lato', sans-serif;
+          background-color: #fff;
+          color: #333; /* Темный цвет текста */
+          box-shadow: 0 2px 8px rgba(0,0,0,0.05); /* Добавляем тень */
+          display: block; /* Принудительное отображение блоком */
+          margin-bottom: 5px; /* Отступ снизу */
         }
-        
         .checkout-form-group input:focus,
         .checkout-form-group textarea:focus {
           border-color: #BCB88A;
+          box-shadow: 0 0 0 3px rgba(188, 184, 138, 0.2);
           outline: none;
         }
         
         .checkout-form-group textarea {
-          min-height: 80px;
           resize: vertical;
+          min-height: 60px;
         }
-        
+
         .checkout-actions {
           display: flex;
           gap: 15px;
-          margin-top: 20px;
+          margin-top: 30px; /* Fixed distance from above elements */
+          padding-top: 20px;
+          border-top: 1px solid #eee;
         }
-        
+
         .checkout-submit, .checkout-cancel {
-          padding: 12px 20px;
+          padding: 14px 20px;
           border: none;
-          border-radius: 5px;
-          font-weight: 500;
+          border-radius: 8px;
+          font-weight: 600;
+          font-size: 15px;
           cursor: pointer;
           display: flex;
           align-items: center;
           justify-content: center;
-          transition: all 0.2s;
+          transition: all 0.25s ease;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
         }
-        
+        .checkout-submit i, .checkout-cancel i {
+          margin-right: 10px;
+          font-size: 1.1em;
+        }
+
         .checkout-submit {
           background: linear-gradient(135deg, #BCB88A, #C9897B);
           color: white;
+          flex: 2; /* Takes more space */
+          box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .checkout-submit:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 6px 18px rgba(201, 137, 123, 0.4);
+        }
+
+        .checkout-cancel {
+          background: #f0f0f0;
+          color: #555;
           flex: 1;
         }
-        
-        .checkout-submit:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 5px 10px rgba(0,0,0,0.1);
-        }
-        
-        .checkout-cancel {
-          background: #f1f1f1;
-          color: #666;
-        }
-        
         .checkout-cancel:hover {
-          background: #e5e5e5;
+          background: #e0e0e0;
+          color: #333;
         }
         
-        .checkout-submit i, .checkout-cancel i {
-          margin-right: 8px;
-        }
-        
-        /* Dark theme */
+        /* Dark theme adaptations */
         body.dark .modal-checkout__content {
-          background: #333;
-          color: #f0f0f0;
+          background: #303030; /* Darker background */
+        }
+        body.dark .modal-checkout__section-title {
+          color: #e0e0e0;
+          border-bottom-color: #444;
+        }
+        body.dark .checkout-order-summary {
+          background-color: #2a2a2a; /* Slightly lighter dark for summary */
+          border-right-color: #444;
         }
         
-        body.dark .modal-checkout__title,
-        body.dark .checkout-items h3, 
-        body.dark .checkout-form h3 {
-          color: #f0f0f0;
+        body.dark .checkout-delivery-info {
+          background-color: #2d2d2d; /* Slightly different color for contrast */
+          border-left-color: #444;
+          box-shadow: inset 5px 0 15px -5px rgba(0,0,0,0.2);
         }
-        
-        body.dark .checkout-items, 
-        body.dark .checkout-form {
-          background: #444;
-        }
-        
         body.dark .checkout-item {
-          border-bottom-color: #555;
+          border-bottom-color: #444;
         }
-        
-        body.dark .checkout-total {
-          border-top-color: #555;
+        body.dark .checkout-item-title { color: #dadada; }
+        body.dark .checkout-item-meta { color: #999; }
+        body.dark .checkout-item-price { color: #dda094; } /* Adjusted for dark theme */
+        body.dark .checkout-item-subtotal { color: #f0f0f0; }
+        body.dark .checkout-empty-cart { color: #888; }
+
+        body.dark .checkout-summary-details,
+        body.dark .checkout-actions {
+            border-top-color: #444;
         }
-        
-        body.dark .checkout-total strong {
-          color: #f0f0f0;
+        body.dark .checkout-summary-row span { color: #aaa; }
+        body.dark .checkout-summary-row strong { color: #e0e0e0; }
+        body.dark .checkout-total-row { border-top-color: #555; }
+        body.dark .checkout-total-row span { color: #e0e0e0; }
+        body.dark .checkout-grand-total { color: #dda094; }
+
+
+        body.dark .checkout-form-group label { 
+          color: #ddd; 
+          text-shadow: 0 1px 0 rgba(0,0,0,0.3);
         }
-        
-        body.dark .checkout-form-group label {
-          color: #f0f0f0;
+        body.dark .checkout-form-group label::before {
+          color: #dda094; /* Светлее для темной темы */
         }
-        
         body.dark .checkout-form-group input,
         body.dark .checkout-form-group textarea {
-          background: #555;
-          border-color: #666;
-          color: #f0f0f0;
+          background-color: #3f3f3f;
+          border-color: #8c886a; /* Светлее, для большей видимости в темной теме */
+          color: #e0e0e0;
+          box-shadow: 0 3px 10px rgba(0,0,0,0.2); /* Более заметная тень для темной темы */
         }
-        
         body.dark .checkout-form-group input:focus,
         body.dark .checkout-form-group textarea:focus {
           border-color: #BCB88A;
+          box-shadow: 0 0 0 3px rgba(188, 184, 138, 0.3);
         }
-        
         body.dark .checkout-cancel {
-          background: #555;
-          color: #f0f0f0;
+          background: #4a4a4a;
+          color: #ccc;
         }
-        
         body.dark .checkout-cancel:hover {
-          background: #666;
+          background: #555;
+          color: #e0e0e0;
         }
+        body.dark .modal-checkout__close-top {
+          background: rgba(255,255,255,0.1);
+          color: #aaa;
+        }
+        body.dark .modal-checkout__close-top:hover {
+          background: rgba(255,255,255,0.15);
+          color: #fff;
+        }
+        body.dark .checkout-items-container::-webkit-scrollbar-track { background: #3f3f3f; }
+        body.dark .checkout-items-container::-webkit-scrollbar-thumb { background: #8c886a; }
+        body.dark .checkout-items-container::-webkit-scrollbar-thumb:hover { background: #79755a; }
+
       `;
       document.head.appendChild(style);
     }
@@ -4229,41 +4841,12 @@ document.addEventListener('DOMContentLoaded', function() {
   // Инициализируем обработчики клавиатурных сочетаний
   initKeyboardShortcuts();
 
-  // Функция для отображения модального окна настроек
-  function showSettingsModal() {
-    // Используем функцию из модуля настроек если она доступна, в противном случае используем старую версию
-    if (window.settingsModule && typeof window.settingsModule.showSettingsModal === 'function') {
-      window.settingsModule.showSettingsModal();
-      return;
-    }
-    
-    // Проверяем, существует ли функция showSettingsModal в глобальном контексте, 
-    // но это не функция из текущего файла (т.е. из settings.js)
-    if (typeof window.settingsModule === 'undefined' && 
-        typeof window.showSettingsModal === 'function' && 
-        window.showSettingsModal !== showSettingsModal) {
-      window.showSettingsModal();
-      return;
-    }
-    
-    // Резервная версия, если модуль не загружен
-    console.warn('Модуль настроек не загружен. Используется резервная версия.');
-    
-    // Проверяем, не отображается ли уже модальное окно настроек
-    if (document.querySelector('.modal-settings')) {
-      console.warn('Модальное окно настроек уже отображается');
-      return;
-    }
-    
-    // Показываем уведомление, что функция в разработке
-    showNotification('Функция "Настройки" находится в разработке', 'info');
-    
-    // Старый код модального окна настроек здесь...
-    // ... existing code ...
-  }
 
-  // Делаем функцию showSettingsModal доступной глобально
+    
+
+  // Делаем функции доступными глобально
   window.showSettingsModal = showSettingsModal;
+  window.showNotification = showNotification;
 
   // Данные товаров с описаниями
   const productsData = {
@@ -4645,6 +5228,66 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Запускаем эффект пульсации карточек через некоторое время после загрузки страницы
   setTimeout(addProductCardsPulseEffect, 3000);
+
+  // Функция для добавления товара в корзину
+  function addToCart(productId, title, price, image) {
+    // Создаем объект товара
+    const item = {
+      id: productId || Date.now(),
+      title: title,
+      price: parseInt(price.toString().replace(/[^\d]/g, '')),
+      image: image,
+      quantity: 1
+    };
+    
+    // Проверяем, есть ли товар уже в корзине
+    const existingItemIndex = cartItems.findIndex(cartItem => cartItem.id === item.id);
+    
+    if (existingItemIndex !== -1) {
+      cartItems[existingItemIndex].quantity += 1;
+    } else {
+      cartItems.push(item);
+    }
+    
+    // Сохраняем в localStorage
+    localStorage.setItem('cartItems', JSON.stringify(cartItems));
+    updateCartCount();
+    
+    // Добавляем анимацию к иконке корзины
+    if (cartIcon) {
+      cartIcon.classList.add('item-added');
+      setTimeout(() => cartIcon.classList.remove('item-added'), 500);
+    }
+    
+    // Добавляем анимацию к счетчику корзины
+    if (cartCount) {
+      cartCount.classList.add('updating');
+      setTimeout(() => cartCount.classList.remove('updating'), 500);
+    }
+    
+    // Добавляем эффект летящего товара
+    const productImage = document.querySelector(`.product-modal__image img`) || 
+                        document.querySelector(`[data-id="${productId}"] img`);
+    if (productImage && cartIcon) {
+      createFlyingElement(productImage, cartIcon);
+    }
+    
+    // Воспроизводим звук добавления в корзину
+    if (window.settingsModule && typeof window.settingsModule.playSound === 'function') {
+      window.settingsModule.playSound('add-to-cart');
+    }
+  }
+  
+  // Проверяем, нужно ли открыть модальное окно с заказами после перезагрузки
+  if (localStorage.getItem('openOrdersAfterReload') === 'true') {
+    // Удаляем флаг, чтобы не открывать окно при следующей загрузке
+    localStorage.removeItem('openOrdersAfterReload');
+    
+    // Открываем модальное окно с заказами после небольшой задержки
+    setTimeout(() => {
+      showOrdersModal();
+    }, 1000);
+  }
 
 });  // Закрывающая скобка для DOMContentLoaded
 

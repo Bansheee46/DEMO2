@@ -443,7 +443,8 @@ body.dark .product-card {
   gap: 30px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
   z-index: 1000;
-  transition: bottom 0.5s ease, box-shadow 0.3s ease, transform 0.5s ease; /* Добавляем плавность для transform */
+  transition: all 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+  will-change: transform, width;
 }
 
 .island.visible {
@@ -465,6 +466,7 @@ body.dark .product-card {
   display: flex;
   gap: 20px;
   position: relative;
+  transition: all 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
 .island__category {
@@ -522,10 +524,17 @@ body.dark .product-card {
   align-items: center;
   gap: 20px;
   position: relative;
+  transition: all 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+  flex-wrap: nowrap;
+  min-width: 0;
 }
 
 .search-bar {
   position: relative;
+  display: inline-block;
+  width: auto;
+  transition: all 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+  overflow: visible;
 }
 
 .search-bar__input {
@@ -533,9 +542,10 @@ body.dark .product-card {
   border: none;
   border-radius: 15px;
   font-size: 14px;
-  width: 200px;
+  width: var(--search-width, 200px);
   background: rgba(255, 255, 255, 0.9);
-  transition: width 0.3s ease, box-shadow 0.3s ease, background 0.5s ease;
+  transition: all 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+  will-change: width, transform;
 }
 
 body.dark .search-bar__input {
@@ -544,8 +554,10 @@ body.dark .search-bar__input {
 }
 
 .search-bar__input:focus {
-  width: 250px;
+  --search-width: 250px;
   box-shadow: 0 0 10px rgba(201, 137, 123, 0.5);
+  outline: none;
+  transition: all 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
 .search-bar__icon {
@@ -554,11 +566,12 @@ body.dark .search-bar__input {
   top: 50%;
   transform: translateY(-50%);
   color: #C9897B;
-  transition: transform 0.3s ease;
+  transition: transform 0.5s cubic-bezier(0.25, 0.1, 0.25, 1), right 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
 .search-bar__input:focus + .search-bar__icon {
   transform: translateY(-50%) scale(1.2);
+  transition: transform 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
 .island__icon, .cart-icon {
@@ -6154,6 +6167,7 @@ body.dark .product-modal__btn-close {
   visibility: hidden;
   transition: opacity 0.6s ease, visibility 0.6s ease;
   perspective: 1000px;
+  overflow: hidden;
 }
 
 .product-modal.active {
@@ -7170,4 +7184,39 @@ body.dark .product-modal__btn-close {
   .product-modal__spec-label::before {
     left: -10px;
   }
+}
+
+/* Стили для анимации поля поиска */
+@keyframes expandSearch {
+  from {
+    width: 200px;
+  }
+  to {
+    width: 250px;
+  }
+}
+
+@keyframes shrinkSearch {
+  from {
+    width: 250px;
+  }
+  to {
+    width: 200px;
+  }
+}
+
+.search-bar--expanded {
+  transition: all 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+.search-bar--expanded .search-bar__input {
+  animation: expandSearch 0.5s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+}
+
+.search-bar:not(.search-bar--expanded) .search-bar__input:not(:focus) {
+  animation: shrinkSearch 0.5s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+}
+
+.island--search-expanded {
+  transition: all 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
 }

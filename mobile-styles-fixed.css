@@ -43,7 +43,7 @@
   padding: 0 5px;
 }
 
-/* Расположение элементов меню с центрацией - статическое */
+/* Расположение иконок с центрацией - статическое */
 .header__extra .icon-wrapper {
   position: relative;
   display: flex;
@@ -53,7 +53,7 @@
   justify-content: center;
 }
 
-/* Стиль для ссылок - скрываем иконки */
+/* Стиль для ссылок */
 .header__extra .header__icon {
   display: flex;
   align-items: center;
@@ -65,39 +65,49 @@
   z-index: 2;
 }
 
+/* Скрываем иконки */
 .header__extra .header__icon i {
-  display: none; /* Скрываем иконки */
+  display: none;
 }
 
-/* Улучшенный стиль для фона */
+/* Улучшенный стиль для фона - более изящный */
 .icon-bg {
   position: absolute;
   top: 50%;
   left: 50%;
   width: 110px !important;
-  height: 30px;
+  height: 32px;
   background: rgba(255, 255, 255, 0.2);
-  border-radius: 15px;
+  border-radius: 16px;
   transform: translate(-50%, -50%);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: -1;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-/* Text inside background всегда видимый */
+/* Text inside background - белый, изящный и эстетичный */
 .icon-text {
   font-family: 'Lato', sans-serif;
-  color: #fff;
-  font-size: 14px;
-  margin-left: 0; /* Убираем отступ слева, так как иконки нет */
+  color: #ffffff;
+  font-size: 13px;
+  margin-left: 0;
   opacity: 1 !important;
   width: auto !important;
   overflow: hidden;
   white-space: nowrap;
-  font-weight: 600;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  font-weight: 400;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
   text-align: center;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+}
+
+/* Эффект при нажатии на текст */
+.header__icon:active .icon-text {
+  transform: scale(0.98);
 }
 
 /* Убираем все анимации и переопределяем стили для любых состояний */
@@ -119,7 +129,7 @@
 .menu-icon:not(:checked) ~ .header__extra .icon-bg {
   width: 110px !important;
   background: rgba(255, 255, 255, 0.2);
-  border-radius: 15px;
+  border-radius: 16px;
 }
 
 .menu-icon:not(:checked) ~ .header__extra .icon-text {

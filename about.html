@@ -8,7 +8,618 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lato:wght@400;700&family=Dancing+Script:wght@400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lato:wght@400;700&family=Dancing+Script:wght@400;700&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* Основные стили страницы */
+    body.about-page {
+      background: radial-gradient(circle, #BCB88A 0%, #C9897B 50%, #b87a6e 75%, #BCB88A 100%);
+      background-size: 200% 200%;
+      color: #333;
+      font-family: 'Montserrat', sans-serif;
+      min-height: 100vh;
+      margin: 0;
+      padding: 0;
+      position: relative;
+      overflow-x: hidden;
+      animation: gradientPulse 12s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    
+    html {
+      overflow-x: hidden;
+    }
+    
+    @keyframes gradientPulse {
+      0% {
+        background-position: 20% 20%;
+      }
+      20% {
+        background-position: 80% 20%;
+      }
+      40% {
+        background-position: 80% 80%;
+      }
+      60% {
+        background-position: 50% 50%;
+      }
+      80% {
+        background-position: 20% 80%;
+      }
+      100% {
+        background-position: 20% 20%;
+      }
+    }
+    
+    body.about-page::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><circle cx="50" cy="50" r="1" fill="%23BCB88A10"/></svg>') repeat;
+      z-index: -1;
+      opacity: 0.7;
+    }
+    
+    .about-page {
+      position: relative;
+      overflow-x: hidden;
+      min-height: 100vh;
+      background-attachment: fixed;
+      z-index: 1;
+    }
+    
+    .about-page__container {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+      transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+    
+    .about-page__container.expanded {
+      max-width: 100%;
+      padding: 0;
+    }
+    
+    .about-page__title {
+      font-family: 'Cinzel', serif;
+      font-size: 2.5rem;
+      margin: 3rem 0 1.5rem;
+      text-align: center;
+      color: #fff;
+      position: relative;
+    }
+    
+    .about-page__content {
+      margin-bottom: 1rem;
+      display: none;
+      width: 100%;
+      max-height: 80vh;
+      overflow-y: auto;
+      overflow-x: hidden;
+      position: relative;
+      padding: 60px 2rem 2rem;
+      background-color: rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(5px);
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    }
+    
+    .about-page__content.active {
+      display: block;
+      animation: fadeIn 0.6s ease-out forwards;
+    }
+    
+    /* Улучшенный скроллбар */
+    .about-page__content::-webkit-scrollbar {
+      width: 8px;
+    }
+    
+    .about-page__content::-webkit-scrollbar-track {
+      background: rgba(245, 245, 245, 0.6);
+      border-radius: 10px;
+    }
+    
+    .about-page__content::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, #BCB88A, #C9897B);
+      border-radius: 10px;
+      border: 2px solid transparent;
+      background-clip: content-box;
+    }
+    
+    .about-page__content::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(180deg, #C9897B, #b87a6e);
+      background-clip: content-box;
+    }
+    
+    .content-block {
+      padding: 2rem 4rem;
+      margin-bottom: 2rem;
+      position: relative;
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+      background-color: rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(5px);
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    }
+    
+    .content-block::before {
+      content: '';
+      position: absolute;
+      top: -10px;
+      left: -10px;
+      right: -10px;
+      bottom: -10px;
+      background: radial-gradient(circle at top left, rgba(188, 184, 138, 0.1), transparent 70%);
+      border-radius: 20px;
+      z-index: -1;
+      pointer-events: none;
+    }
+    
+    .content-block__title {
+      font-size: 1.8rem;
+      margin: 0 auto 1.5rem;
+      color: #C9897B;
+      border-bottom: 2px solid rgba(188, 184, 138, 0.2);
+      padding-bottom: 0.8rem;
+      text-align: center;
+      max-width: 800px;
+      font-weight: 600;
+    }
+    
+    .content-block__text {
+      line-height: 1.8;
+      color: #333;
+      max-width: 100%;
+      margin: 0 auto;
+      font-size: 1.05rem;
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+      overflow-x: hidden;
+      word-wrap: break-word;
+    }
+    
+    /* Стили для кнопок */
+    .about-buttons-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+      transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+    
+    .about-buttons-container.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      position: absolute;
+    }
+    
+    .about-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1.5rem;
+      margin: 2rem auto 3rem;
+    }
+    
+    .about-button {
+      flex: 1;
+      min-width: 180px;
+      max-width: 250px;
+      border: none;
+      border-radius: 12px;
+      padding: 1.2rem 0;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      background: linear-gradient(90deg, #BCB88A, #C9897B);
+      box-shadow: 0 8px 20px rgba(188, 184, 138, 0.15);
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(5px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .about-button:before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at center, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0) 70%);
+      transform: scale(0);
+      opacity: 0;
+      transition: all 0.5s ease;
+    }
+    
+    .about-button:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 25px rgba(188, 184, 138, 0.25);
+      color: #fff;
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+    
+    .about-button:hover:before {
+      transform: scale(2);
+      opacity: 1;
+    }
+    
+    .about-button:active {
+      transform: translateY(-2px);
+    }
+    
+    .about-button i {
+      margin-right: 10px;
+      font-size: 1.2rem;
+      transition: all 0.3s ease;
+    }
+    
+    .about-button:hover i {
+      transform: scale(1.2) rotate(10deg);
+      color: #fff;
+    }
+    
+    /* Список */
+    .content-list {
+      list-style-type: none;
+      padding: 0;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    
+    .content-list div {
+      padding: 1.2rem;
+      border-bottom: 1px solid rgba(188, 184, 138, 0.1);
+      transition: all 0.3s ease;
+      border-radius: 8px;
+      background-color: transparent;
+    }
+    
+    .content-list div:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+      transform: translateX(5px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+      backdrop-filter: blur(5px);
+    }
+    
+    .content-list div:last-child {
+      border-bottom: none;
+    }
+    
+    .content-list div h3 {
+      color: #C9897B;
+      margin-bottom: 0.5rem;
+    }
+    
+    .content-list a.link {
+      color: #BCB88A;
+      text-decoration: none;
+      font-weight: 500;
+      display: inline-block;
+      margin-top: 0.5rem;
+      padding-bottom: 2px;
+      border-bottom: 1px solid transparent;
+      transition: all 0.3s ease;
+    }
+    
+    .content-list a.link:hover {
+      border-bottom-color: #BCB88A;
+    }
+    
+    /* FAQ аккордеон */
+    .faq-item {
+      margin-bottom: 1rem;
+      border: 1px solid rgba(188, 184, 138, 0.1);
+      border-radius: 10px;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      background-color: transparent;
+    }
+    
+    .faq-item:hover {
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+      border-color: #BCB88A;
+    }
+    
+    .faq-question {
+      background-color: rgba(240, 247, 255, 0.2);
+      padding: 1.2rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.3s ease;
+      color: #333;
+      backdrop-filter: blur(3px);
+    }
+    
+    .faq-question:hover {
+      background-color: rgba(225, 240, 255, 0.3);
+    }
+    
+    .faq-question:after {
+      content: '\f078';
+      font-family: 'Font Awesome 5 Free';
+      font-weight: 900;
+      transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+      color: #C9897B;
+    }
+    
+    .faq-item.active .faq-question {
+      background-color: rgba(225, 240, 255, 0.4);
+      color: #C9897B;
+    }
+    
+    .faq-item.active .faq-question:after {
+      transform: rotate(180deg);
+    }
+    
+    .faq-answer {
+      padding: 0;
+      max-height: 0;
+      overflow: hidden;
+      transition: all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+      background-color: transparent;
+    }
+    
+    .faq-item.active .faq-answer {
+      padding: 1.5rem;
+      max-height: 1000px;
+    }
+    
+    /* Таблица лицензий */
+    .licenses-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      margin-top: 1rem;
+      max-width: 900px;
+      margin-left: auto;
+      margin-right: auto;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+      border-radius: 10px;
+      overflow: hidden;
+      background-color: transparent;
+    }
+    
+    .licenses-table th, .licenses-table td {
+      border: none;
+      padding: 12px 16px;
+      text-align: left;
+      transition: all 0.3s ease;
+    }
+    
+    .licenses-table th {
+      background: linear-gradient(90deg, #BCB88A, #C9897B);
+      color: white;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      backdrop-filter: blur(3px);
+    }
+    
+    .licenses-table tr {
+      transition: all 0.3s ease;
+      background-color: transparent;
+    }
+    
+    .licenses-table tr:nth-child(even) {
+      background-color: rgba(240, 247, 255, 0.1);
+      backdrop-filter: blur(3px);
+    }
+    
+    .licenses-table tr:hover {
+      background-color: rgba(225, 240, 255, 0.2);
+      backdrop-filter: blur(5px);
+    }
+    
+    .licenses-table tr:hover td {
+      color: #C9897B;
+    }
+    
+    /* Анимации */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes slideInRight {
+      from { opacity: 0; transform: translateX(30px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    
+    @keyframes slideInLeft {
+      from { opacity: 0; transform: translateX(-30px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-5px); }
+      100% { transform: translateY(0px); }
+    }
+    
+    @keyframes rippleEffect {
+      from {
+        transform: scale(0);
+      opacity: 1;
+      }
+      to {
+        transform: scale(4);
+        opacity: 0;
+      }
+    }
+    
+    .about-button:hover i {
+      animation: pulse 0.5s ease-in-out;
+    }
+    
+    /* Эффект волны для кнопок */
+    .about-button {
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .ripple {
+      position: absolute;
+      border-radius: 50%;
+      background-color: rgba(255, 255, 255, 0.3);
+      width: 100px;
+      height: 100px;
+      margin-top: -50px;
+      margin-left: -50px;
+      animation: rippleEffect 0.6s ease-out;
+      pointer-events: none;
+    }
+    
+    /* Навигация между разделами */
+    .content-nav {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 2rem;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(188, 184, 138, 0.2);
+    }
+    
+    .content-nav__button {
+      background: linear-gradient(90deg, #BCB88A, #C9897B);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 15px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .content-nav__button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(188, 184, 138, 0.2);
+    }
+    
+    .content-nav__button--prev i {
+      margin-right: 5px;
+    }
+    
+    .content-nav__button--next i {
+      margin-left: 5px;
+    }
+    
+    /* Back button */
+    .back-button {
+      position: absolute;
+      top: 15px;
+      left: 20px;
+      background-color: rgba(245, 247, 250, 0.3);
+      color: #C9897B;
+      border: none;
+      border-radius: 50%;
+      width: 45px;
+      height: 45px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      z-index: 10;
+      overflow: hidden;
+      backdrop-filter: blur(5px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .back-button:after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle, rgba(188, 184, 138, 0.2) 0%, rgba(188, 184, 138, 0) 70%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    
+    .back-button:hover {
+      background-color: rgba(238, 244, 249, 0.9);
+      transform: scale(1.1);
+      color: #b87a6e;
+      box-shadow: 0 6px 15px rgba(201, 137, 123, 0.2);
+    }
+    
+    .back-button:hover:after {
+      opacity: 1;
+    }
+    
+    .back-button i {
+      font-size: 1.1rem;
+      transition: transform 0.3s ease;
+    }
+    
+    .back-button:hover i {
+      transform: translateX(-3px);
+    }
+    
+    /* Адаптивность */
+    @media (max-width: 768px) {
+      .about-page__title {
+        font-size: 2rem;
+      }
+      
+      .content-block__title {
+        font-size: 1.5rem;
+      }
+      
+      .about-button {
+        min-width: 150px;
+      }
+      
+      .about-page__content {
+        padding: 60px 1.5rem 1.5rem;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .about-page__title {
+        font-size: 1.7rem;
+      }
+      
+      .content-block__title {
+        font-size: 1.3rem;
+      }
+      
+      .about-page__content {
+        padding: 60px 1rem 1rem;
+      }
+      
+      .about-buttons {
+        flex-direction: column;
+      }
+      
+      .about-button {
+        width: 100%;
+        max-width: 100%;
+      }
+    }
+  </style>
 </head>
 <body class="about-page">
   <header class="header">
@@ -26,12 +637,6 @@
         </div>
       </div>
     </div>
-    <input type="checkbox" id="menu-icon" class="menu-icon" aria-expanded="false">
-    <label for="menu-icon" class="burger-menu">
-      <span class="burger-menu__line"></span>
-      <span class="burger-menu__line"></span>
-      <span class="burger-menu__line"></span>
-    </label>
     <div class="header__extra">
         <div class="header__extra-icons">
           <div class="icon-wrapper">
@@ -48,30 +653,219 @@
     </header>
 
   <section class="about-page">
-    <div class="about-page__container">
-      <div class="about-section" id="company" data-section="company">
-        <img src="https://timeseller.ru/netcat_files/2017/04/IMG_8770.jpg" alt="О компании" class="about-section__image">
-        <h2 class="about-section__title">О компании</h2>
-        <div class="about-section__content">
-          <p>Damax — это ваш надёжный магазин электроники, одежды и аксессуаров. Мы стремимся предложить лучшие товары по доступным ценам с удобной доставкой.</p>
+    <div class="about-buttons-container">
+     
+      
+      <div class="about-buttons">
+        <button class="about-button" id="about-btn"><i class="fas fa-info-circle"></i><span>О компании</span></button>
+        <button class="about-button" id="agreements-btn"><i class="fas fa-file-signature"></i><span>Соглашения</span></button>
+        <button class="about-button" id="licenses-btn"><i class="fas fa-certificate"></i><span>Лицензии</span></button>
+        <button class="about-button" id="faq-btn"><i class="fas fa-question-circle"></i><span>FAQ</span></button>
+      </div>
+    </div>
+    
+    <div class="about-page__container" id="aboutPageContainer">
+      <!-- О компании -->
+      <div class="about-page__content" id="about-content">
+        <button class="back-button"><i class="fas fa-arrow-left"></i></button>
+        <h2 class="content-block__title">О компании Damax</h2>
+        <div class="content-block__text">
+          <p>Компания Damax начала свой путь в 2016 году как небольшой магазин стильной одежды. Основатель бренда, увлеченный модой и качеством, решил создать что-то особенное – коллекции, которые сочетают в себе современные тренды и комфорт повседневной жизни.</p>
+          
+          <p>Наша миссия – предоставлять качественную, стильную и доступную одежду, которая помогает выразить себя и чувствовать уверенность каждый день.</p>
+          
+          <p>В основе нашей философии лежат следующие принципы:</p>
+          <ul>
+            <li><strong>Качество:</strong> Мы следим за каждой деталью, используем только проверенные материалы и работаем с опытными мастерами.</li>
+            <li><strong>Уникальность:</strong> Каждая коллекция имеет свой характер и оригинальный дизайн.</li>
+            <li><strong>Доступность:</strong> Мы верим, что стильная одежда должна быть доступна каждому.</li>
+            <li><strong>Этичность:</strong> Мы заботимся об окружающей среде и социальной ответственности.</li>
+          </ul>
+          
+          <p>За годы работы мы выросли из маленького магазина в развивающийся бренд с собственным производством и тысячами довольных клиентов по всей России. Мы гордимся своей историей и с оптимизмом смотрим в будущее.</p>
+        </div>
+        
+        <div class="content-nav">
+          <div></div>
+          <button class="content-nav__button content-nav__button--next" data-target="agreements-content">
+            Соглашения <i class="fas fa-arrow-right"></i>
+          </button>
         </div>
       </div>
-      <div class="about-section" id="faq" data-section="faq">
-        <img src="https://avatars.mds.yandex.net/i?id=0e97655dbae2c1c92abe8e08f07a7a97ea023919-5888121-images-thumbs&n=13" alt="FAQ" class="about-section__image">
-        <h2 class="about-section__title">FAQ</h2>
-        <div class="about-section__content">
-          <p><strong>Как сделать заказ?</strong> Добавьте товары в корзину и оформите заказ через форму.</p>
-          <p><strong>Сколько стоит доставка?</strong> Доставка бесплатна при заказе от 5000 ₽.</p>
-          <p><strong>Можно ли вернуть товар?</strong> Да, в течение 14 дней при сохранении товарного вида.</p>
+      
+      <!-- Соглашения -->
+      <div class="about-page__content" id="agreements-content">
+        <button class="back-button"><i class="fas fa-arrow-left"></i></button>
+        <h2 class="content-block__title">Пользовательские соглашения</h2>
+        <div class="content-block__text">
+          <p>На этой странице представлены все документы, регулирующие взаимодействие между Damax и нашими клиентами.</p>
+          
+          <div class="content-list">
+            <div>
+              <h3>Пользовательское соглашение</h3>
+              <p>Регулирует использование нашего веб-сайта и мобильных приложений. Включает в себя правила пользования, права и обязанности сторон.</p>
+              <a href="#" class="link">Открыть полный текст</a>
+            </div>
+            
+            <div>
+              <h3>Политика конфиденциальности</h3>
+              <p>Подробно описывает процесс сбора, хранения и использования персональных данных пользователей.</p>
+              <a href="#" class="link">Открыть полный текст</a>
+            </div>
+            
+            <div>
+              <h3>Условия доставки</h3>
+              <p>Содержит подробную информацию о сроках, стоимости и способах доставки наших товаров.</p>
+              <a href="#" class="link">Открыть полный текст</a>
+            </div>
+            
+            <div>
+              <h3>Условия возврата</h3>
+              <p>Описывает процедуру возврата товаров, права покупателя и продавца, а также сроки рассмотрения.</p>
+              <a href="#" class="link">Открыть полный текст</a>
+            </div>
+          </div>
+        </div>
+        
+        <div class="content-nav">
+          <button class="content-nav__button content-nav__button--prev" data-target="about-content">
+            <i class="fas fa-arrow-left"></i> О компании
+          </button>
+          <button class="content-nav__button content-nav__button--next" data-target="licenses-content">
+            Лицензии <i class="fas fa-arrow-right"></i>
+          </button>
         </div>
       </div>
-      <div class="about-section" id="contacts" data-section="contacts">
-        <img src="https://sc04.alicdn.com/kf/U83c1209065ee46a4b5b6287e89e58a588/968462634/U83c1209065ee46a4b5b6287e89e58a588.jpg" alt="Контакты" class="about-section__image">
-        <h2 class="about-section__title">Контакты</h2>
-        <div class="about-section__content">
-          <p>Email: <a href="mailto:support@damax.ru">support@damax.ru</a></p>
-          <p>Телефон: <a href="tel:+79991234567">+7 (999) 123-45-67</a></p>
-          <p>Адрес: г. Москва, ул. Примерная, д. 10</p>
+      
+      <!-- Лицензии -->
+      <div class="about-page__content" id="licenses-content">
+        <button class="back-button"><i class="fas fa-arrow-left"></i></button>
+        <h2 class="content-block__title">Лицензии и сертификаты</h2>
+        <div class="content-block__text">
+          <p>Ниже представлены основные документы, регулирующие нашу деятельность. Вы можете ознакомиться с ними, перейдя по соответствующим ссылкам:</p>
+          
+          <div class="content-list">
+            <div>
+              <h3><i class="fas fa-file-alt"></i> Гарантии и возврат</h3>
+              <p>Документ описывает гарантийные обязательства, сервисное обслуживание и процедуру возврата товаров.</p>
+              <a href="warranty-return.html" class="link">Открыть полный текст</a>
+            </div>
+            
+            <div>
+              <h3><i class="fas fa-shield-alt"></i> Лицензии и сертификаты</h3>
+              <p>Полный перечень лицензий, сертификатов и разрешений, необходимых для осуществления деятельности.</p>
+              <a href="licenses.html" class="link">Открыть полный текст</a>
+            </div>
+            
+            <div>
+              <h3><i class="fas fa-user-shield"></i> Политика конфиденциальности</h3>
+              <p>Правила обработки и защиты персональных данных пользователей сайта.</p>
+              <a href="privacy-policy.html" class="link">Открыть полный текст</a>
+            </div>
+            
+            <div>
+              <h3><i class="fas fa-handshake"></i> Пользовательское соглашение</h3>
+              <p>Правила пользования сайтом и условия предоставления услуг.</p>
+              <a href="terms-of-use.html" class="link">Открыть полный текст</a>
+            </div>
+            
+            <div>
+              <h3><i class="fas fa-truck"></i> Доставка и оплата</h3>
+              <p>Информация о способах доставки, сроках и стоимости, а также о доступных методах оплаты.</p>
+              <a href="delivery-payment.html" class="link">Открыть полный текст</a>
+            </div>
+          </div>
+        </div>
+        
+        <div class="content-nav">
+          <button class="content-nav__button content-nav__button--prev" data-target="agreements-content">
+            <i class="fas fa-arrow-left"></i> Соглашения
+          </button>
+          <button class="content-nav__button content-nav__button--next" data-target="faq-content">
+            FAQ <i class="fas fa-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+      
+      <!-- FAQ -->
+      <div class="about-page__content" id="faq-content">
+        <button class="back-button"><i class="fas fa-arrow-left"></i></button>
+        <h2 class="content-block__title">Часто задаваемые вопросы</h2>
+        <div class="content-block__text">
+          <div class="faq-item">
+            <div class="faq-question">Как оформить заказ на сайте?</div>
+            <div class="faq-answer">
+              <p>Для оформления заказа необходимо:</p>
+              <ol>
+                <li>Выбрать товар и добавить его в корзину</li>
+                <li>Перейти в корзину и нажать "Оформить заказ"</li>
+                <li>Заполнить форму с контактными данными</li>
+                <li>Выбрать способ доставки и оплаты</li>
+                <li>Подтвердить заказ</li>
+              </ol>
+              <p>После оформления заказа вам придет подтверждение на указанный email.</p>
+            </div>
+          </div>
+          
+          <div class="faq-item">
+            <div class="faq-question">Какие способы оплаты доступны?</div>
+            <div class="faq-answer">
+              <p>Мы предлагаем следующие способы оплаты:</p>
+              <ul>
+                <li>Банковской картой онлайн</li>
+                <li>Наличными при получении</li>
+                <li>Через систему быстрых платежей (СБП)</li>
+                <li>Банковским переводом (для юридических лиц)</li>
+              </ul>
+            </div>
+          </div>
+          
+          <div class="faq-item">
+            <div class="faq-question">Как узнать статус заказа?</div>
+            <div class="faq-answer">
+              <p>Узнать статус заказа можно несколькими способами:</p>
+              <ul>
+                <li>В личном кабинете на сайте в разделе "Мои заказы"</li>
+                <li>По номеру заказа через форму на сайте</li>
+                <li>По телефону службы поддержки: 8-800-123-45-67</li>
+              </ul>
+            </div>
+          </div>
+          
+          <div class="faq-item">
+            <div class="faq-question">Какие сроки доставки?</div>
+            <div class="faq-answer">
+              <p>Сроки доставки зависят от выбранного способа:</p>
+              <ul>
+                <li>Курьером по Москве: 1-2 рабочих дня</li>
+                <li>Почтой России: 7-14 рабочих дней</li>
+                <li>СДЭК: 3-7 рабочих дней</li>
+                <li>Boxberry: 3-7 рабочих дней</li>
+              </ul>
+              <p>Точные сроки указываются при оформлении заказа.</p>
+            </div>
+          </div>
+          
+          <div class="faq-item">
+            <div class="faq-question">Как оформить возврат товара?</div>
+            <div class="faq-answer">
+              <p>Для возврата товара надлежащего качества:</p>
+              <ol>
+                <li>Заполните заявление на возврат в личном кабинете</li>
+                <li>Упакуйте товар в оригинальную упаковку</li>
+                <li>Приложите чек и заявление на возврат</li>
+                <li>Отправьте посылку по указанному адресу или принесите в магазин</li>
+              </ol>
+              <p>Возврат денежных средств осуществляется в течение 10 дней с момента получения товара.</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="content-nav">
+          <button class="content-nav__button content-nav__button--prev" data-target="licenses-content">
+            <i class="fas fa-arrow-left"></i> Лицензии
+          </button>
+          <div></div>
         </div>
       </div>
     </div>
@@ -86,5 +880,233 @@
   </div>
 
   <script src="mobile.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Кнопки и контент
+      const buttonsContainer = document.querySelector('.about-buttons-container');
+      const buttons = document.querySelectorAll('.about-button');
+      const contentBlocks = document.querySelectorAll('.about-page__content');
+      const backButtons = document.querySelectorAll('.back-button');
+      const aboutPageContainer = document.getElementById('aboutPageContainer');
+      const contentNavButtons = document.querySelectorAll('.content-nav__button');
+      
+      // Добавляем эффект при загрузке страницы
+      buttons.forEach((button, index) => {
+        button.style.opacity = '0';
+        button.style.transform = 'translateY(20px)';
+        
+        setTimeout(() => {
+          button.style.transition = 'all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+          button.style.opacity = '1';
+          button.style.transform = 'translateY(0)';
+        }, 100 + (index * 150));
+      });
+      
+      // Направление анимации (для переходов между разделами)
+      let animationDirection = 'right';
+      
+      // Функция показа контента с анимацией
+      function showContent(contentId, direction = 'right') {
+        // Скрываем все блоки
+        contentBlocks.forEach(block => {
+          block.classList.remove('active');
+          block.style.animation = 'none';
+        });
+        
+        // Устанавливаем анимацию в зависимости от направления
+        const targetBlock = document.getElementById(contentId);
+        
+        // Небольшая задержка для сброса анимации
+        setTimeout(() => {
+          targetBlock.style.animation = direction === 'right' 
+            ? 'slideInRight 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards' 
+            : 'slideInLeft 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards';
+          targetBlock.classList.add('active');
+        }, 10);
+      }
+      
+      // Обработчики нажатия на кнопки разделов
+      buttons.forEach(button => {
+        button.addEventListener('click', function() {
+          // Анимируем нажатие на кнопку
+          this.style.transform = 'scale(0.95) translateY(-2px)';
+          
+          setTimeout(() => {
+            // Полностью скрываем кнопки и заголовок
+            buttonsContainer.classList.add('hidden');
+            
+            // Расширяем контейнер
+            aboutPageContainer.classList.add('expanded');
+            
+            // Показываем соответствующий блок контента
+            const contentId = this.id.replace('-btn', '-content');
+            showContent(contentId);
+          }, 200);
+          
+          // Добавляем эффект волны при клике
+          const ripple = document.createElement('span');
+          ripple.classList.add('ripple');
+          this.appendChild(ripple);
+          
+          const rect = this.getBoundingClientRect();
+          const x = event.clientX - rect.left;
+          const y = event.clientY - rect.top;
+          
+          ripple.style.left = `${x}px`;
+          ripple.style.top = `${y}px`;
+          
+          setTimeout(() => {
+            ripple.remove();
+          }, 600);
+        });
+        
+        // Добавляем эффект парения для кнопок
+        let floatInterval;
+        
+        button.addEventListener('mouseenter', function() {
+          clearInterval(floatInterval);
+          
+          floatInterval = setInterval(() => {
+            button.style.animation = 'float 2s ease-in-out infinite';
+          }, 100);
+        });
+        
+        button.addEventListener('mouseleave', function() {
+          clearInterval(floatInterval);
+          button.style.animation = '';
+        });
+      });
+      
+      // Обработчики кнопок навигации между разделами
+      contentNavButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          const targetId = this.getAttribute('data-target');
+          const isNext = this.classList.contains('content-nav__button--next');
+          
+          // Определяем направление анимации
+          animationDirection = isNext ? 'right' : 'left';
+          
+          // Показываем целевой контент с анимацией
+          showContent(targetId, animationDirection);
+        });
+        
+        // Добавляем эффект при наведении
+        button.addEventListener('mouseenter', function() {
+          if (this.classList.contains('content-nav__button--next')) {
+            this.querySelector('i').style.transform = 'translateX(5px)';
+          } else {
+            this.querySelector('i').style.transform = 'translateX(-5px)';
+          }
+        });
+        
+        button.addEventListener('mouseleave', function() {
+          this.querySelector('i').style.transform = 'translateX(0)';
+        });
+      });
+      
+      // Обработчики нажатия на кнопку "Назад"
+      backButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          // Эффект при нажатии
+          this.style.transform = 'scale(0.9)';
+          setTimeout(() => {
+            this.style.transform = 'scale(1.1)';
+          }, 100);
+          
+          // Добавляем анимацию исчезновения контента
+          const activeContent = document.querySelector('.about-page__content.active');
+          activeContent.style.animation = 'fadeIn 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) reverse forwards';
+          
+          // Возвращаем кнопки и заголовок с задержкой для эффекта
+          setTimeout(() => {
+            // Возвращаем кнопки и заголовок
+            buttonsContainer.classList.remove('hidden');
+            
+            // Возвращаем контейнер в исходное состояние
+            aboutPageContainer.classList.remove('expanded');
+            
+            // Скрываем блок контента
+            contentBlocks.forEach(block => block.classList.remove('active'));
+            
+            // Анимируем появление кнопок
+            buttons.forEach((button, index) => {
+              button.style.opacity = '0';
+              button.style.transform = 'translateY(20px)';
+              
+              setTimeout(() => {
+                button.style.transition = 'all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+                button.style.opacity = '1';
+                button.style.transform = 'translateY(0)';
+              }, 100 + (index * 100));
+            });
+          }, 300);
+        });
+        
+        // Добавляем эффект при наведении
+        button.addEventListener('mouseenter', function() {
+          this.querySelector('i').style.transform = 'translateX(-3px)';
+        });
+        
+        button.addEventListener('mouseleave', function() {
+          this.querySelector('i').style.transform = 'translateX(0)';
+        });
+      });
+      
+      // Аккордеон FAQ
+      const faqItems = document.querySelectorAll('.faq-item');
+      
+      faqItems.forEach(item => {
+        const question = item.querySelector('.faq-question');
+        
+        question.addEventListener('click', function() {
+          // Если элемент уже активен - деактивируем его
+          if (item.classList.contains('active')) {
+            item.classList.remove('active');
+            return;
+          }
+          
+          // Закрываем все остальные FAQ элементы
+          faqItems.forEach(otherItem => {
+            if (otherItem !== item && otherItem.classList.contains('active')) {
+              otherItem.classList.remove('active');
+            }
+          });
+          
+          // Активируем текущий элемент с небольшой задержкой
+          setTimeout(() => {
+            item.classList.add('active');
+          }, 100);
+        });
+        
+        // Добавляем эффект при наведении
+        question.addEventListener('mouseenter', function() {
+          if (!item.classList.contains('active')) {
+            this.style.backgroundColor = 'rgba(225, 240, 255, 0.7)';
+          }
+        });
+        
+        question.addEventListener('mouseleave', function() {
+          if (!item.classList.contains('active')) {
+            this.style.backgroundColor = 'rgba(240, 247, 255, 0.5)';
+          }
+        });
+      });
+      
+      // Интерактивность для списка соглашений
+      const contentListItems = document.querySelectorAll('.content-list div');
+      
+      contentListItems.forEach(item => {
+        item.addEventListener('mouseenter', function() {
+          this.style.transform = 'translateX(10px)';
+          this.style.boxShadow = '0 5px 15px rgba(0, 0, 0, 0.08)';
+        });
+        
+        item.addEventListener('mouseleave', function() {
+          this.style.transform = 'translateX(5px)';
+          this.style.boxShadow = '0 5px 15px rgba(0, 0, 0, 0.05)';
+        });
+      });
+    });
+  </script>
 </body>
 </html>

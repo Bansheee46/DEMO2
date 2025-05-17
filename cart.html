@@ -23,26 +23,20 @@
         </div>
       </div>
     </div>
-    <input type="checkbox" id="menu-icon" class="menu-icon" aria-expanded="false">
-    <label for="menu-icon" class="burger-menu">
-      <span class="burger-menu__line"></span>
-      <span class="burger-menu__line"></span>
-      <span class="burger-menu__line"></span>
-    </label>
     <div class="header__extra">
-        <div class="header__extra-icons">
-          <div class="icon-wrapper">
-            <a href="favorites.html" class="header__icon" aria-label="Избранное"><i class="fas fa-heart"></i><span class="icon-bg"><span class="icon-text">Избранное</span></span></a>
-          </div>
-          <div class="icon-wrapper search-wrapper">
-            <a href="#" class="header__icon search-icon" aria-label="Поиск"><i class="fas fa-search"></i><span class="icon-bg"><span class="icon-text">Поиск</span></span></a>
-          </div>
-          <div class="icon-wrapper">
-            <a href="about.html" class="header__icon" aria-label="О нас"><i class="fas fa-info-circle"></i><span class="icon-bg"><span class="icon-text">О нас</span></span></a>
-          </div>
+      <div class="header__extra-icons">
+        <div class="icon-wrapper">
+          <a href="favorites.html" class="header__icon" aria-label="Избранное"><i class="fas fa-heart"></i><span class="icon-bg"><span class="icon-text">Избранное</span></span></a>
+        </div>
+        <div class="icon-wrapper search-wrapper">
+          <a href="#" class="header__icon search-icon" aria-label="Поиск"><i class="fas fa-search"></i><span class="icon-bg"><span class="icon-text">Поиск</span></span></a>
+        </div>
+        <div class="icon-wrapper">
+          <a href="about.html" class="header__icon" aria-label="О нас"><i class="fas fa-info-circle"></i><span class="icon-bg"><span class="icon-text">О нас</span></span></a>
         </div>
       </div>
-    </header>
+    </div>
+  </header>
 
   <section class="cart-page">
     <div class="cart-page__container">
@@ -77,6 +71,14 @@
     <div class="custom-modal__content">
       <p class="custom-modal__message"></p>
       <button class="custom-modal__close">ОК</button>
+    </div>
+  </div>
+
+  <div class="search-popup" id="searchPopup" aria-hidden="true">
+    <div class="search-popup__overlay"></div>
+    <div class="search-popup__content">
+      <input type="text" class="search-popup__input" id="searchInput" placeholder="Найти товар..." aria-label="Поле поиска">
+      <div class="search-popup__results" id="searchResults"></div>
     </div>
   </div>
 

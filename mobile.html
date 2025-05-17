@@ -256,8 +256,29 @@
   <div class="search-popup" id="searchPopup" aria-hidden="true">
     <div class="search-popup__overlay"></div>
     <div class="search-popup__content">
-      <input type="text" class="search-popup__input" id="searchInput" placeholder="Найти товар..." aria-label="Поле поиска">
+      <div class="search-popup__header">
+        <div class="search-popup__input-wrapper">
+          <i class="fas fa-search search-popup__search-icon"></i>
+          <input type="text" class="search-popup__input" id="searchInput" placeholder="Найти товар..." aria-label="Поле поиска">
+          <button class="search-popup__clear-icon" id="clearSearch" aria-label="Очистить поиск">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <button class="search-popup__close" id="closeSearch" aria-label="Закрыть поиск">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
       <div class="search-popup__results" id="searchResults"></div>
+      <div class="search-popup__suggestions" id="searchSuggestions">
+        <p class="search-popup__suggestions-title">Популярные запросы:</p>
+        <div class="search-popup__tags">
+          <span class="search-popup__tag" data-query="наушники">Наушники</span>
+          <span class="search-popup__tag" data-query="часы">Часы</span>
+          <span class="search-popup__tag" data-query="футболка">Футболка</span>
+          <span class="search-popup__tag" data-query="чехол">Чехол</span>
+          <span class="search-popup__tag" data-query="колонка">Колонка</span>
+        </div>
+      </div>
     </div>
   </div>
 

@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="desktop-styles.css">
   <link rel="stylesheet" href="desktop-styles-fixed.css">
   <link rel="stylesheet" href="dark-theme-improved.css">
+  <link rel="stylesheet" href="island-interactions.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lato:wght@400;700&family=Dancing+Script:wght@400&display=swap" rel="stylesheet">
   <script src="https://npmcdn.com/parse/dist/parse.min.js"></script>
@@ -118,6 +119,7 @@
           </button>
           <button class="accent-menu__item" data-action="toggle-sound" data-tooltip="Вкл/выкл звук">
             <i class="fas fa-volume-up"></i>
+            <i class="fas fa-volume-mute" style="display: none;"></i>
             <span class="accent-menu__tooltip">Вкл/выкл звук</span>
           </button>
           <button class="accent-menu__item" data-action="settings" data-tooltip="Настройки">
@@ -831,5 +833,9 @@
 </div>
 
 <!-- Подключение скриптов -->
+  <link rel="stylesheet" href="checkout-styles.css">
+  <script src="checkout.js"></script>
+<script src="search-animation.js"></script>
+<script src="island-interactions.js"></script>
 </body>
 </html>

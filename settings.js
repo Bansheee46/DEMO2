@@ -246,7 +246,6 @@ function showSettingsModal() {
   // Создаем элемент модального окна
   const settingsModal = document.createElement('div');
   settingsModal.className = 'modal-settings';
-  settingsModal.setAttribute('aria-hidden', 'false');
   
   // Блокируем прокрутку основного содержимого страницы
   document.body.style.overflow = 'hidden';
@@ -825,8 +824,14 @@ function showSettingsModal() {
 function closeSettingsModal(modalElement) {
   if (!modalElement) return;
   
+  // Снимаем фокус со всех элементов внутри модального окна перед закрытием
+  const focusedElement = document.activeElement;
+  if (focusedElement && modalElement.contains(focusedElement)) {
+    focusedElement.blur();
+  }
+  
   // Установим явный флаг, что модальное окно закрывается
-  modalElement.setAttribute('aria-hidden', 'true');
+  modalElement.setAttribute('inert', '');
   modalElement.classList.add('closing');
   
   // Получаем содержимое модального окна
@@ -880,46 +885,73 @@ function closeSettingsModal(modalElement) {
 /**
  * Воспроизведение звукового эффекта
  * @param {string} soundName Имя звукового эффекта
+ * @param {number} volumeMultiplier Множитель громкости (опционально, от 0 до 1)
  */
-function playSound(soundName) {
-  // Проверяем, включены ли звуки
+function playSound(soundName, volumeMultiplier = 1) {
+  // Если звуки отключены, ничего не делаем
   const settings = loadSettings();
   if (!settings.isSoundEnabled) return;
   
-  // Находим или создаем аудио элемент
   let soundElement = document.getElementById(`sound-${soundName}`);
   
   if (!soundElement) {
     soundElement = document.createElement('audio');
     soundElement.id = `sound-${soundName}`;
     
-    // Сначала пробуем загрузить WAV, а если не удалось - пробуем MP3
+    // Функция для проверки и воспроизведения звука с учетом регистра
     const tryPlaySound = (extension) => {
-      soundElement.src = `sounds/${soundName}.${extension}`;
-      soundElement.preload = 'auto';
-      document.body.appendChild(soundElement);
+      // Массив возможных вариантов имени файла (с разным регистром)
+      const possibleFileNames = [
+        `sounds/${soundName}.${extension}`,
+        `sounds/${soundName.toLowerCase()}.${extension}`,
+        `sounds/${soundName.charAt(0).toUpperCase() + soundName.slice(1)}.${extension}`,
+        `sounds/${soundName.toUpperCase()}.${extension}`
+      ];
       
-      // Устанавливаем громкость
-      soundElement.volume = settings.volume / 100;
-      
-      // Воспроизводим звук
-      soundElement.play().catch(e => {
-        console.error(`Ошибка воспроизведения звука ${extension}:`, e);
-        
-        // Если WAV не воспроизвелся, пробуем MP3
-        if (extension === 'wav') {
-          document.body.removeChild(soundElement);
-          tryPlaySound('mp3');
+      // Функция для проверки существования файла
+      const checkAndPlay = (index) => {
+        if (index >= possibleFileNames.length) {
+          console.error(`Не удалось найти звуковой файл для ${soundName}.${extension}`);
+          // Если WAV не воспроизвелся, пробуем MP3
+          if (extension === 'wav') {
+            // Проверяем, является ли элемент частью DOM перед удалением
+            if (document.body.contains(soundElement)) {
+              document.body.removeChild(soundElement);
+            }
+            tryPlaySound('mp3');
+          }
+          return;
         }
-      });
+        
+        soundElement.src = possibleFileNames[index];
+        soundElement.preload = 'auto';
+        document.body.appendChild(soundElement);
+        
+        // Устанавливаем громкость с учетом дополнительного множителя
+        soundElement.volume = (settings.volume / 100) * volumeMultiplier;
+        
+        // Воспроизводим звук
+        soundElement.play().catch(e => {
+          console.error(`Ошибка воспроизведения звука ${extension} (${possibleFileNames[index]}):`, e);
+          // Если не удалось воспроизвести текущий вариант, пробуем следующий
+          // Проверяем, является ли элемент частью DOM перед удалением
+          if (document.body.contains(soundElement)) {
+            document.body.removeChild(soundElement);
+          }
+          checkAndPlay(index + 1);
+        });
+      };
+      
+      // Начинаем с первого варианта
+      checkAndPlay(0);
     };
     
     // Начинаем с WAV формата
     tryPlaySound('wav');
   } else {
     // Для существующего элемента просто воспроизводим
-    // Устанавливаем громкость
-    soundElement.volume = settings.volume / 100;
+    // Устанавливаем громкость с учетом дополнительного множителя
+    soundElement.volume = (settings.volume / 100) * volumeMultiplier;
     
     // Воспроизводим звук
     soundElement.currentTime = 0;
