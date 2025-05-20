@@ -837,5 +837,16 @@
   <script src="checkout.js"></script>
 <script src="search-animation.js"></script>
 <script src="island-interactions.js"></script>
+
+<!-- Подключение API для работы с товарами -->
+<script src="products-api.js"></script>
+<script>
+  // Инициализация API товаров после загрузки DOM
+  document.addEventListener('DOMContentLoaded', function() {
+    if (window.productsApi) {
+      window.productsApi.initProductsApi();
+    }
+  });
+</script>
 </body>
 </html>
