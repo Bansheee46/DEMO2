@@ -1,3 +1,6 @@
+/* Импортируем улучшенный файл стилей для темной темы */
+@import url('dark-theme-improved.css');
+
 /* Этот файл заменяет правила для переключения темы, которые мешали работе JavaScript */
 
 /* Приоритет для атрибута данных темы - обновленные цвета темной темы */
@@ -16,7 +19,7 @@ body.dark .accent-menu__item[data-action="toggle-theme"] i.fa-sun,
 body:not(.dark) .accent-menu__item[data-action="toggle-theme"] i.fa-sun,
 body.dark .accent-menu__item[data-action="toggle-theme"] i.fa-moon,
 body:not(.dark) .accent-menu__item[data-action="toggle-theme"] i.fa-moon {
-  /* Отменяем все правила display, чтобы не конфликтовать с inline стилями */
+  display: initial; /* Нейтральное значение вместо пустого блока */
 }
 
 /* Удаляем псевдоэлемент после кнопки темы в темной теме */
@@ -28,7 +31,7 @@ body.dark .accent-menu__item[data-action="toggle-theme"]::after {
 .accent-menu__item[data-action="toggle-theme"] i,
 .accent-menu__item[data-action="toggle-theme"] i.fa-sun,
 .accent-menu__item[data-action="toggle-theme"] i.fa-moon {
-  /* Переопределение будет происходить через inline стили с !important */
+  visibility: visible; /* Базовое значение вместо пустого блока */
 }
 
 /* Удаляем старые затемненные стили, теперь используем CSS Variables */
@@ -39,8 +42,19 @@ body[data-theme="dark"] .cart-panel,
 body[data-theme="dark"] .auth-modal__card,
 body[data-theme="dark"] .login-button,
 body[data-theme="dark"] .user-menu {
-  /* Переопределено в dark-theme-improved.css */
+  background: inherit; /* Базовое значение вместо пустого блока */
+} 
+
+/* Исправление для отображения артикула в карточках товаров */
+.product-card__sku {
+  font-size: 12px;
+  color: #888;
+  margin-bottom: 8px;
+  display: block !important;
 }
 
-/* Импортируем улучшенный файл стилей для темной темы */
-@import url('dark-theme-improved.css'); 
+.product-card__sku mark {
+  background-color: rgba(201, 137, 123, 0.2);
+  padding: 0 2px;
+  border-radius: 2px;
+} 

@@ -1,0 +1,243 @@
+/* Стили для формы контрагента */
+.counterparty-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 10000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  animation: fadeIn 0.3s ease;
+}
+
+.counterparty-modal__content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  width: 320px;
+  max-width: 85%;
+  max-height: 85%;
+  overflow: auto;
+  position: relative;
+  animation: slideUp 0.3s ease;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.counterparty-modal__content h2 {
+  font-family: 'Cinzel', serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: #C9897B;
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.counterparty-modal__content p {
+  font-family: 'Lato', sans-serif;
+  font-size: 14px;
+  color: #666;
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+/* Стили для индикатора шагов */
+.counterparty-steps {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.progress-line {
+  position: absolute;
+  top: 50%;
+  left: 15%;
+  right: 15%;
+  height: 2px;
+  background: rgba(188, 184, 138, 0.3);
+  z-index: 1;
+  transform: translateY(-50%);
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+}
+
+.step-circle {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  margin-bottom: 5px;
+  transition: all 0.3s ease;
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 2px solid rgba(188, 184, 138, 0.5);
+  color: #999;
+}
+
+.step-label {
+  font-size: 12px;
+  transition: all 0.3s ease;
+  color: #999;
+}
+
+/* Активный шаг */
+.step.active .step-circle {
+  background-color: #C9897B;
+  border: none;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(201, 137, 123, 0.3);
+}
+
+.step.active .step-label {
+  color: #C9897B;
+  font-weight: 600;
+}
+
+/* Завершенный шаг */
+.step.completed .step-circle {
+  background-color: #BCB88A;
+  border: none;
+  color: #fff;
+}
+
+/* Стили для контейнеров шагов */
+.step-container {
+  animation: fadeIn 0.3s ease;
+}
+
+/* Стили для формы */
+.counterparty-form .form-group {
+  margin-bottom: 15px;
+  animation: fadeIn 0.3s ease;
+}
+
+.counterparty-form label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+  font-size: 14px;
+  font-family: 'Lato', sans-serif;
+  color: #333;
+}
+
+.counterparty-form input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  box-sizing: border-box;
+  transition: border-color 0.3s ease;
+  font-family: 'Lato', sans-serif;
+  font-size: 14px;
+}
+
+.counterparty-form input:focus {
+  border-color: #C9897B;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(201, 137, 123, 0.2);
+}
+
+.counterparty-form .error-message {
+  color: red;
+  font-size: 12px;
+  margin-top: 5px;
+  font-family: 'Lato', sans-serif;
+  display: none;
+}
+
+.counterparty-form .error-message.visible {
+  display: block;
+}
+
+.counterparty-form input.error {
+  border-color: red;
+}
+
+.counterparty-form .buttons-container {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+  gap: 10px;
+}
+
+.counterparty-form .prev-button {
+  padding: 10px 15px;
+  background-color: #f1f1f1;
+  color: #333;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  flex: 1;
+  font-family: 'Lato', sans-serif;
+}
+
+.counterparty-form .prev-button:hover {
+  background-color: #e0e0e0;
+}
+
+.counterparty-form .next-button {
+  padding: 10px 15px;
+  background: linear-gradient(90deg, #BCB88A, #C9897B);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex: 1;
+  font-family: 'Lato', sans-serif;
+}
+
+.counterparty-form .next-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(201, 137, 123, 0.3);
+}
+
+.counterparty-form .submit-button {
+  padding: 10px 15px;
+  background: linear-gradient(90deg, #BCB88A, #C9897B);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex: 1;
+  font-family: 'Lato', sans-serif;
+}
+
+.counterparty-form .submit-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(201, 137, 123, 0.3);
+}
+
+/* Анимации */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+} 

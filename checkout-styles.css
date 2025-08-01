@@ -11,8 +11,8 @@
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.4s ease, visibility 0s linear 0.4s;
-  overflow: hidden; /* Важно: отключаем скролл для внешнего контейнера */
-  display: block; /* Меняем на block */
+  overflow: hidden; /* важно: отключаем скролл для внешнего контейнера */
+  display: block;
   box-sizing: border-box;
   -webkit-overflow-scrolling: touch;
   transform: translate3d(0, 0, 0);
@@ -1641,8 +1641,11 @@ body.dark .checkout-total {
 /* Дополнительные улучшения для iOS */
 @supports (-webkit-touch-callout: none) {
   .checkout-modal {
+    height: 100vh;
     height: -webkit-fill-available;
+    transform: translateZ(0);
     -webkit-transform: translateZ(0);
+    backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
   }
   
@@ -1853,5 +1856,508 @@ body.dark .checkout-view-orders:hover {
   .checkout-empty-button,
   .checkout-view-orders {
     width: 100%;
+  }
+} 
+
+/* Информационный блок в checkout-order */
+.checkout-info-block {
+  display: flex;
+  align-items: flex-start;
+  background: rgba(188, 184, 138, 0.1);
+  border-left: 3px solid #BCB88A;
+  padding: 15px;
+  border-radius: 8px;
+  margin-top: 20px;
+}
+
+.checkout-info-icon {
+  font-size: 20px;
+  color: #BCB88A;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+.checkout-info-text {
+  font-size: 14px;
+  color: #555;
+  line-height: 1.5;
+}
+
+body.dark .checkout-info-block {
+  background: rgba(188, 184, 138, 0.15);
+}
+
+body.dark .checkout-info-text {
+  color: #ddd;
+}
+
+/* Счетчик символов для комментария */
+.comment-counter {
+  text-align: right;
+  font-size: 12px;
+  color: #999;
+  margin-top: 5px;
+}
+
+.comment-counter.near-limit {
+  color: #C9897B;
+} 
+
+/* Стили для процесса оформления заказа */
+.checkout-process-steps {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.checkout-process-steps::before {
+  content: '';
+  position: absolute;
+  top: 20px;
+  left: 25px;
+  right: 25px;
+  height: 2px;
+  background: #e0e0e0;
+  z-index: 1;
+}
+
+.process-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+  flex: 1;
+}
+
+.step-number {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  margin-bottom: 8px;
+  border: 2px solid #e0e0e0;
+  color: #777;
+  transition: all 0.3s ease;
+}
+
+.process-step.active .step-number {
+  background: #BCB88A;
+  color: white;
+  border-color: #BCB88A;
+}
+
+.step-info {
+  text-align: center;
+}
+
+.step-info h4 {
+  margin: 0 0 3px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.step-info p {
+  margin: 0;
+  font-size: 12px;
+  color: #777;
+}
+
+body.dark .checkout-process-steps::before {
+  background: #444;
+}
+
+body.dark .step-number {
+  background: #333;
+  border-color: #444;
+  color: #ccc;
+}
+
+body.dark .process-step.active .step-number {
+  background: #BCB88A;
+  color: white;
+  border-color: #BCB88A;
+}
+
+/* Информационная карточка */
+.checkout-info-card {
+  background: rgba(188, 184, 138, 0.08);
+  border-radius: 12px;
+  padding: 15px;
+  margin-bottom: 20px;
+  border: 1px solid rgba(188, 184, 138, 0.2);
+}
+
+.info-card-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.info-card-header i {
+  font-size: 22px;
+  color: #BCB88A;
+  margin-right: 10px;
+}
+
+.info-card-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.info-card-content p {
+  margin: 0 0 10px;
+  font-size: 14px;
+  color: #555;
+  line-height: 1.5;
+}
+
+.info-card-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.info-card-list li {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: #555;
+}
+
+.info-card-list li i {
+  color: #4CAF50;
+  margin-right: 8px;
+  font-size: 16px;
+}
+
+body.dark .checkout-info-card {
+  background: rgba(188, 184, 138, 0.1);
+  border-color: rgba(188, 184, 138, 0.15);
+}
+
+body.dark .info-card-header h3 {
+  color: #eee;
+}
+
+body.dark .info-card-content p,
+body.dark .info-card-list li {
+  color: #ccc;
+}
+
+/* Предпочтительный способ связи */
+.contact-preference {
+  margin-bottom: 20px;
+}
+
+.contact-preference h4 {
+  font-size: 15px;
+  margin: 0 0 12px;
+  color: #333;
+}
+
+.contact-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.contact-option {
+  flex: 1;
+  min-width: 70px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.contact-option input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.contact-icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5f5f5;
+  border-radius: 50%;
+  margin-bottom: 8px;
+  transition: all 0.3s ease;
+}
+
+.contact-icon i {
+  font-size: 18px;
+  color: #777;
+  transition: all 0.3s ease;
+}
+
+.contact-label {
+  font-size: 12px;
+  color: #555;
+  transition: all 0.3s ease;
+}
+
+.contact-option:hover {
+  border-color: #BCB88A;
+}
+
+.contact-option:hover .contact-icon {
+  background: rgba(188, 184, 138, 0.1);
+}
+
+.contact-option:hover .contact-icon i {
+  color: #BCB88A;
+}
+
+.contact-option input:checked + .contact-icon {
+  background: #BCB88A;
+}
+
+.contact-option input:checked + .contact-icon i {
+  color: white;
+}
+
+.contact-option input:checked ~ .contact-label {
+  color: #BCB88A;
+  font-weight: 600;
+}
+
+body.dark .contact-preference h4 {
+  color: #eee;
+}
+
+body.dark .contact-option {
+  border-color: #444;
+}
+
+body.dark .contact-icon {
+  background: #333;
+}
+
+body.dark .contact-icon i {
+  color: #aaa;
+}
+
+body.dark .contact-label {
+  color: #ccc;
+}
+
+body.dark .contact-option:hover {
+  border-color: #BCB88A;
+}
+
+body.dark .contact-option:hover .contact-icon {
+  background: rgba(188, 184, 138, 0.2);
+}
+
+/* Информация о доставке */
+.delivery-info-toggle {
+  margin-bottom: 20px;
+}
+
+.toggle-button {
+  width: 100%;
+  background: transparent;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  padding: 12px 15px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 500;
+  color: #333;
+  transition: all 0.3s ease;
+}
+
+.toggle-button i:first-child {
+  margin-right: 8px;
+  color: #BCB88A;
+}
+
+.toggle-button i:last-child {
+  transition: transform 0.3s ease;
+}
+
+.toggle-button:hover {
+  background: #f9f9f9;
+  border-color: #ccc;
+}
+
+.toggle-button.active i:last-child {
+  transform: rotate(180deg);
+}
+
+.delivery-info-content {
+  background: #f9f9f9;
+  border: 1px solid #e0e0e0;
+  border-top: none;
+  border-radius: 0 0 10px 10px;
+  padding: 15px;
+  display: none;
+}
+
+.delivery-info-toggle.active .toggle-button {
+  border-radius: 10px 10px 0 0;
+  border-bottom-color: transparent;
+}
+
+.delivery-info-toggle.active .delivery-info-content {
+  display: block;
+}
+
+.delivery-methods {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.delivery-method {
+  display: flex;
+  align-items: center;
+  background: white;
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.delivery-method-icon {
+  width: 40px;
+  height: 40px;
+  background: rgba(188, 184, 138, 0.1);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+.delivery-method-icon i {
+  font-size: 18px;
+  color: #BCB88A;
+}
+
+.delivery-method-details h5 {
+  margin: 0 0 5px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.delivery-method-details p {
+  margin: 0;
+  font-size: 13px;
+  color: #777;
+}
+
+body.dark .toggle-button {
+  background: transparent;
+  border-color: #444;
+  color: #eee;
+}
+
+body.dark .toggle-button:hover {
+  background: #2a2a2a;
+  border-color: #555;
+}
+
+body.dark .delivery-info-content {
+  background: #2a2a2a;
+  border-color: #444;
+}
+
+body.dark .delivery-method {
+  background: #333;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+body.dark .delivery-method-details p {
+  color: #aaa;
+}
+
+/* Безопасность данных */
+.checkout-security {
+  text-align: center;
+  margin-top: 10px;
+  font-size: 12px;
+  color: #777;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.checkout-security i {
+  margin-right: 5px;
+  color: #4CAF50;
+}
+
+body.dark .checkout-security {
+  color: #aaa;
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 576px) {
+  .checkout-process-steps {
+    flex-direction: column;
+    gap: 15px;
+    align-items: flex-start;
+  }
+  
+  .checkout-process-steps::before {
+    display: none;
+  }
+  
+  .process-step {
+    flex-direction: row;
+    width: 100%;
+    justify-content: flex-start;
+  }
+  
+  .step-number {
+    margin-bottom: 0;
+    margin-right: 15px;
+  }
+  
+  .step-info {
+    text-align: left;
+  }
+  
+  .contact-options {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .contact-option {
+    flex-direction: row;
+    justify-content: flex-start;
+    padding: 8px 12px;
+  }
+  
+  .contact-icon {
+    margin-bottom: 0;
+    margin-right: 10px;
+    width: 30px;
+    height: 30px;
+  }
+  
+  .contact-icon i {
+    font-size: 16px;
   }
 } 

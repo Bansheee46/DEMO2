@@ -1,0 +1,1557 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Админ-панель | Настройки сайта</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    :root {
+      --primary-color: #3f51b5;
+      --primary-color-rgb: 63, 81, 181;
+      --primary-dark: #303f9f;
+      --primary-dark-rgb: 48, 63, 159;
+      --primary-light: #c5cae9;
+      --primary-light-rgb: 197, 202, 233;
+      --secondary-color: #00bcd4;
+      --secondary-color-rgb: 0, 188, 212;
+      --secondary-dark: #0097a7;
+      --accent-color: #ff4081;
+      --accent-color-rgb: 255, 64, 129;
+      --light-color: #f5f5f5;
+      --dark-color: #263238;
+      --success-color: #4caf50;
+      --success-color-rgb: 76, 175, 80;
+      --warning-color: #ff9800;
+      --warning-color-rgb: 255, 152, 0;
+      --danger-color: #f44336;
+      --danger-color-rgb: 244, 67, 54;
+      --info-color: #2196f3;
+      --info-color-rgb: 33, 150, 243;
+      --border-radius: 12px;
+      --card-border-radius: 16px;
+      --box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      --box-shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.12);
+      --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.6;
+      color: var(--dark-color);
+      background-color: #f8fafc;
+      background-image: linear-gradient(135deg, #f8fafc 0%, #eef2f7 100%);
+      display: flex;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    
+    /* Боковое меню */
+    .sidebar {
+      width: 280px;
+      background-color: #fff;
+      box-shadow: var(--box-shadow);
+      z-index: 100;
+      transition: var(--transition);
+      overflow-y: auto;
+      border-radius: 0 24px 24px 0;
+    }
+    
+    .sidebar-header {
+      padding: 25px 20px;
+      background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+      color: white;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .sidebar-header::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -50%;
+      width: 100%;
+      height: 200%;
+      background: rgba(255, 255, 255, 0.1);
+      transform: rotate(30deg);
+      pointer-events: none;
+    }
+    
+    .sidebar-header h2 {
+      font-size: 22px;
+      margin-bottom: 8px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+    
+    .sidebar-header p {
+      font-size: 13px;
+      opacity: 0.9;
+      letter-spacing: 0.3px;
+    }
+    
+    .user-info {
+      display: flex;
+      align-items: center;
+      padding: 20px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      margin-bottom: 10px;
+      background-color: rgba(var(--primary-light-rgb, 197, 202, 233), 0.1);
+    }
+    
+    .user-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      margin-right: 15px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    .user-details {
+      flex: 1;
+    }
+    
+    .user-name {
+      font-weight: 600;
+      font-size: 16px;
+      margin-bottom: 2px;
+      color: var(--dark-color);
+    }
+    
+    .user-role {
+      font-size: 13px;
+      color: #6b7280;
+      letter-spacing: 0.3px;
+    }
+    
+    .nav-menu {
+      list-style: none;
+      padding: 10px;
+    }
+    
+    .nav-item {
+      margin-bottom: 8px;
+    }
+    
+    .nav-link {
+      display: flex;
+      align-items: center;
+      padding: 14px 20px;
+      color: #4b5563;
+      text-decoration: none;
+      transition: var(--transition);
+      border-radius: 12px;
+      font-weight: 500;
+    }
+    
+    .nav-link:hover {
+      background-color: rgba(var(--primary-light-rgb, 197, 202, 233), 0.15);
+      color: var(--primary-color);
+      transform: translateX(5px);
+    }
+    
+    .nav-link.active {
+      background: linear-gradient(to right, rgba(var(--primary-color-rgb, 63, 81, 181), 0.1), rgba(var(--primary-color-rgb, 63, 81, 181), 0.05));
+      color: var(--primary-color);
+      font-weight: 600;
+      box-shadow: 0 2px 8px rgba(var(--primary-color-rgb), 0.1);
+    }
+    
+    .nav-icon {
+      margin-right: 10px;
+      width: 20px;
+      text-align: center;
+    }
+    
+    .nav-text {
+      flex: 1;
+    }
+    
+    .nav-badge {
+      background-color: var(--danger-color);
+      color: white;
+      border-radius: 10px;
+      padding: 2px 6px;
+      font-size: 10px;
+    }
+    
+    .nav-section {
+      padding: 10px 20px;
+      font-size: 12px;
+      color: #999;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 15px;
+    }
+    
+    /* Основной контент */
+    .main-content {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+    }
+    
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .page-title {
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--primary-color);
+    }
+    
+    .header-actions {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 20px;
+      border-radius: var(--border-radius);
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: var(--transition);
+      border: none;
+      outline: none;
+      text-decoration: none;
+      gap: 8px;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+      color: white;
+      box-shadow: 0 4px 10px rgba(var(--primary-color-rgb), 0.3);
+    }
+    
+    .btn-primary:hover {
+      box-shadow: 0 6px 15px rgba(var(--primary-color-rgb), 0.4);
+      transform: translateY(-2px);
+    }
+    
+    /* Стили для настроек */
+    .settings-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
+      gap: 24px;
+    }
+    
+    .settings-card {
+      background-color: white;
+      border-radius: var(--card-border-radius);
+      box-shadow: var(--box-shadow);
+      overflow: hidden;
+      transition: var(--transition);
+      border: 1px solid rgba(0, 0, 0, 0.03);
+    }
+    
+    .settings-card:hover {
+      box-shadow: var(--box-shadow-hover);
+      transform: translateY(-5px);
+    }
+    
+    .settings-card-header {
+      padding: 18px 25px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: rgba(var(--primary-light-rgb), 0.05);
+    }
+    
+    .settings-card-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--primary-dark);
+      letter-spacing: 0.3px;
+      position: relative;
+      padding-left: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .settings-card-title::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 4px;
+      height: 18px;
+      background: linear-gradient(to bottom, var(--primary-color), var(--secondary-color));
+      border-radius: 4px;
+    }
+    
+    .settings-card-body {
+      padding: 25px;
+    }
+    
+    .settings-group {
+      margin-bottom: 20px;
+    }
+    
+    .settings-group:last-child {
+      margin-bottom: 0;
+    }
+    
+    .settings-group-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 15px;
+      color: var(--primary-dark);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      padding-bottom: 8px;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-group:last-child {
+      margin-bottom: 0;
+    }
+    
+    .form-label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      font-size: 14px;
+      color: #4b5563;
+    }
+    
+    .form-control {
+      width: 100%;
+      padding: 12px 15px;
+      border: 1px solid #ddd;
+      border-radius: var(--border-radius);
+      font-size: 14px;
+      transition: var(--transition);
+      background-color: #fff;
+    }
+    
+    .form-control:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.2);
+      outline: none;
+    }
+    
+    .form-text {
+      font-size: 12px;
+      color: #6b7280;
+      margin-top: 5px;
+    }
+    
+    .form-check {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    
+    .form-check-input {
+      margin-right: 10px;
+      width: 18px;
+      height: 18px;
+    }
+    
+    .form-check-label {
+      font-size: 14px;
+      color: #4b5563;
+    }
+    
+    .btn-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    
+    .btn-success {
+      background: linear-gradient(135deg, var(--success-color) 0%, #2e7d32 100%);
+      color: white;
+      box-shadow: 0 4px 10px rgba(var(--success-color-rgb), 0.3);
+    }
+    
+    .btn-success:hover {
+      box-shadow: 0 6px 15px rgba(var(--success-color-rgb), 0.4);
+      transform: translateY(-2px);
+    }
+    
+    .btn-secondary {
+      background: #f1f5f9;
+      color: #4b5563;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    }
+    
+    .btn-secondary:hover {
+      background: #e2e8f0;
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+      transform: translateY(-2px);
+    }
+    
+    .btn-danger {
+      background: linear-gradient(135deg, var(--danger-color) 0%, #c62828 100%);
+      color: white;
+      box-shadow: 0 4px 10px rgba(var(--danger-color-rgb), 0.3);
+    }
+    
+    .btn-danger:hover {
+      box-shadow: 0 6px 15px rgba(var(--danger-color-rgb), 0.4);
+      transform: translateY(-2px);
+    }
+    
+    /* Уведомления */
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 15px 20px;
+      border-radius: var(--border-radius);
+      background-color: white;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transform: translateX(120%);
+      transition: transform 0.3s ease-out;
+      max-width: 400px;
+    }
+    
+    .notification.show {
+      transform: translateX(0);
+    }
+    
+    .notification-icon {
+      font-size: 20px;
+    }
+    
+    .notification-success {
+      border-left: 4px solid var(--success-color);
+    }
+    
+    .notification-success .notification-icon {
+      color: var(--success-color);
+    }
+    
+    .notification-error {
+      border-left: 4px solid var(--danger-color);
+    }
+    
+    .notification-error .notification-icon {
+      color: var(--danger-color);
+    }
+    
+    .notification-message {
+      flex: 1;
+      font-size: 14px;
+    }
+    
+    .notification-close {
+      cursor: pointer;
+      font-size: 16px;
+      color: #999;
+    }
+    
+    /* Стили для alert */
+    .alert {
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      border-radius: var(--border-radius);
+      border-left: 4px solid;
+      display: flex;
+      align-items: center;
+    }
+    
+    .alert-info {
+      background-color: rgba(var(--info-color-rgb), 0.08);
+      border-left-color: var(--info-color);
+      color: #24598a;
+    }
+    
+    .alert i {
+      margin-right: 10px;
+      font-size: 18px;
+    }
+    
+    /* Стили для подсказок */
+    .form-text {
+      font-size: 12px;
+      margin-top: 4px;
+      display: block;
+    }
+    
+    .text-muted {
+      color: #6c757d !important;
+    }
+    
+    .small {
+      font-size: 85%;
+    }
+    
+    .mb-3 {
+      margin-bottom: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <h2>Админ-панель</h2>
+      <p>Управление магазином</p>
+    </div>
+    
+    <div class="user-info">
+      <div class="user-avatar">
+        <i class="fas fa-user"></i>
+      </div>
+      <div class="user-details">
+        <div class="user-name">Администратор</div>
+        <div class="user-role">Полный доступ</div>
+      </div>
+    </div>
+    
+    <ul class="nav-menu">
+      <li class="nav-item">
+        <a href="admin-dashboard.html" class="nav-link">
+          <i class="fas fa-tachometer-alt nav-icon"></i>
+          <span class="nav-text">Дашборд</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="admin-panel.html" class="nav-link">
+          <i class="fas fa-box nav-icon"></i>
+          <span class="nav-text">Товары</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="admin-orders.html" class="nav-link">
+          <i class="fas fa-shopping-cart nav-icon"></i>
+          <span class="nav-text">Заказы</span>
+          <span class="nav-badge">12</span>
+        </a>
+      </li>
+      
+      <div class="nav-section">Система</div>
+      
+      <li class="nav-item">
+        <a href="admin-settings.html" class="nav-link active">
+          <i class="fas fa-cog nav-icon"></i>
+          <span class="nav-text">Настройки</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="#" class="nav-link">
+          <i class="fas fa-sign-out-alt nav-icon"></i>
+          <span class="nav-text">Выйти</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+  
+  <div class="main-content">
+    <div class="page-header">
+      <h1 class="page-title">Настройки сайта</h1>
+      <div class="header-actions">
+        <button class="btn btn-primary" id="saveAllSettings">
+          <i class="fas fa-save"></i> Сохранить все
+        </button>
+      </div>
+    </div>
+    
+    <div class="alert alert-info" role="alert">
+      <i class="fas fa-info-circle"></i> <strong>Подсказка:</strong> Если поле настройки оставить пустым, соответствующий элемент будет автоматически скрыт на сайте. Заполняйте только те поля, которые нужны для отображения.
+    </div>
+    
+    <div class="settings-container">
+      <!-- Основные настройки -->
+      <div class="settings-card">
+        <div class="settings-card-header">
+          <div class="settings-card-title">
+            <i class="fas fa-store"></i> Основные настройки
+          </div>
+        </div>
+        <div class="settings-card-body">
+          <div class="settings-group">
+            <div class="form-group">
+              <label class="form-label" for="site_name">Название сайта</label>
+              <input type="text" id="site_name" name="site_name" class="form-control" placeholder="Введите название сайта">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="contact_email">Контактный email</label>
+              <input type="email" id="contact_email" name="contact_email" class="form-control" placeholder="Введите email">
+              <small class="form-text text-muted">Если не указан, блок с контактным email не будет отображаться на сайте</small>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="contact_phone">Контактный телефон</label>
+              <input type="text" id="contact_phone" name="contact_phone" class="form-control" placeholder="Введите телефон">
+              <small class="form-text text-muted">Если не указан, блок с телефоном не будет отображаться на сайте</small>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="address">Адрес</label>
+              <input type="text" id="address" name="address" class="form-control" placeholder="Введите адрес">
+              <small class="form-text text-muted">Если не указан, блок с адресом не будет отображаться на сайте</small>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Соцсети и мессенджеры -->
+      <div class="settings-card">
+        <div class="settings-card-header">
+          <div class="settings-card-title">
+            <i class="fab fa-hashtag"></i> Соцсети и мессенджеры
+          </div>
+        </div>
+        <div class="settings-card-body">
+          <div class="settings-group">
+            <div class="small text-muted mb-3">Оставьте поля пустыми для соцсетей, которые вы не используете. Они не будут отображаться на сайте.</div>
+            <div class="form-group">
+              <label class="form-label" for="social_instagram">Instagram</label>
+              <input type="text" id="social_instagram" name="social_instagram" class="form-control" placeholder="Ссылка на Instagram">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="social_facebook">Facebook</label>
+              <input type="text" id="social_facebook" name="social_facebook" class="form-control" placeholder="Ссылка на Facebook">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="social_twitter">Twitter</label>
+              <input type="text" id="social_twitter" name="social_twitter" class="form-control" placeholder="Ссылка на Twitter">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="social_youtube">YouTube</label>
+              <input type="text" id="social_youtube" name="social_youtube" class="form-control" placeholder="Ссылка на YouTube">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="social_telegram">Telegram</label>
+              <input type="text" id="social_telegram" name="social_telegram" class="form-control" placeholder="Ссылка на Telegram">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="social_whatsapp">WhatsApp</label>
+              <input type="text" id="social_whatsapp" name="social_whatsapp" class="form-control" placeholder="Ссылка на WhatsApp">
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Логотип и favicon -->
+      <div class="settings-card">
+        <div class="settings-card-header">
+          <div class="settings-card-title">
+            <i class="fas fa-image"></i> Логотип и Favicon
+          </div>
+        </div>
+        <div class="settings-card-body">
+          <div class="settings-group">
+            <div class="form-group">
+              <label class="form-label" for="site_logo">Логотип сайта</label>
+              <input type="file" id="site_logo" name="site_logo" class="form-control" accept="image/*">
+              <div class="form-text">Рекомендуемый размер: 200x60px (PNG, SVG, JPG)</div>
+              <img id="site_logo_preview" src="" alt="Логотип" style="max-width:200px; max-height:60px; margin-top:10px; display:none;" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="site_favicon">Favicon</label>
+              <input type="file" id="site_favicon" name="site_favicon" class="form-control" accept="image/x-icon,image/png">
+              <div class="form-text">Рекомендуемый размер: 32x32px (ICO, PNG)</div>
+              <img id="site_favicon_preview" src="" alt="Favicon" style="max-width:32px; max-height:32px; margin-top:10px; display:none;" />
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Email для заказов и поддержки, режим работы -->
+      <div class="settings-card">
+        <div class="settings-card-header">
+          <div class="settings-card-title">
+            <i class="fas fa-envelope"></i> Email и режим работы
+          </div>
+        </div>
+        <div class="settings-card-body">
+          <div class="settings-group">
+            <div class="form-group">
+              <label class="form-label" for="order_email">Email для заказов</label>
+              <input type="email" id="order_email" name="order_email" class="form-control" placeholder="orders@example.com">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="support_email">Email для поддержки</label>
+              <input type="email" id="support_email" name="support_email" class="form-control" placeholder="support@example.com">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="working_hours">Режим работы</label>
+              <input type="text" id="working_hours" name="working_hours" class="form-control" placeholder="Например: Пн-Пт 10:00-19:00, Сб 10:00-17:00">
+            </div>
+          </div>
+        </div>
+      </div>
+      
+
+      
+      <!-- Юридические данные компании -->
+      <div class="settings-card">
+        <div class="settings-card-header">
+          <div class="settings-card-title">
+            <i class="fas fa-building"></i> Юридические данные компании
+          </div>
+        </div>
+        <div class="settings-card-body">
+          <div class="settings-group">
+            <div class="form-group">
+              <label class="form-label" for="company_name">Название компании</label>
+              <input type="text" id="company_name" name="company_name" class="form-control" placeholder="Например: ООО 'Компания'">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="company_inn">ИНН</label>
+              <input type="text" id="company_inn" name="company_inn" class="form-control" placeholder="Введите ИНН компании">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="company_ogrn">ОГРН</label>
+              <input type="text" id="company_ogrn" name="company_ogrn" class="form-control" placeholder="Введите ОГРН компании">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="company_kpp">КПП</label>
+              <input type="text" id="company_kpp" name="company_kpp" class="form-control" placeholder="Введите КПП компании">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="company_legal_address">Юридический адрес</label>
+              <input type="text" id="company_legal_address" name="company_legal_address" class="form-control" placeholder="Введите юридический адрес">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="company_actual_address">Фактический адрес</label>
+              <input type="text" id="company_actual_address" name="company_actual_address" class="form-control" placeholder="Введите фактический адрес">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="company_postal_address">Почтовый адрес</label>
+              <input type="text" id="company_postal_address" name="company_postal_address" class="form-control" placeholder="Введите почтовый адрес">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="company_email">Email компании</label>
+              <input type="email" id="company_email" name="company_email" class="form-control" placeholder="Введите email компании">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="company_privacy_email">Email для вопросов приватности</label>
+              <input type="email" id="company_privacy_email" name="company_privacy_email" class="form-control" placeholder="Введите email для вопросов приватности">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="company_phone">Телефон компании</label>
+              <input type="text" id="company_phone" name="company_phone" class="form-control" placeholder="Введите телефон компании">
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Банковские реквизиты -->
+      <div class="settings-card">
+        <div class="settings-card-header">
+          <div class="settings-card-title">
+            <i class="fas fa-university"></i> Банковские реквизиты
+          </div>
+        </div>
+        <div class="settings-card-body">
+          <div class="settings-group">
+            <div class="form-group">
+              <label class="form-label" for="company_bank_name">Название банка</label>
+              <input type="text" id="company_bank_name" name="company_bank_name" class="form-control" placeholder="Введите название банка">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="company_bank_account">Расчетный счет</label>
+              <input type="text" id="company_bank_account" name="company_bank_account" class="form-control" placeholder="Введите расчетный счет">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="company_bank_corr_account">Корреспондентский счет</label>
+              <input type="text" id="company_bank_corr_account" name="company_bank_corr_account" class="form-control" placeholder="Введите корреспондентский счет">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="company_bank_bik">БИК</label>
+              <input type="text" id="company_bank_bik" name="company_bank_bik" class="form-control" placeholder="Введите БИК банка">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Юридические документы -->
+      <div class="settings-card">
+        <div class="settings-card-header">
+          <div class="settings-card-title">
+            <i class="fas fa-file-contract"></i> Юридические документы
+          </div>
+        </div>
+        <div class="settings-card-body">
+          <div class="alert alert-info" role="alert">
+            <i class="fas fa-info-circle"></i> <strong>Информация:</strong> Дата последнего обновления теперь задаётся один раз для всех документов.
+          </div>
+          <div class="settings-group">
+            <div class="form-group">
+              <label class="form-label" for="documents_last_update">Дата последнего обновления документов</label>
+              <input type="text" id="documents_last_update" name="documents_last_update" class="form-control" placeholder="Например: 24 июля 2025">
+            </div>
+          </div>
+          
+          <div class="settings-group">
+            <h3 class="settings-group-title">Условия пользования (terms-of-use.html)</h3>
+          </div>
+          
+          <div class="settings-group">
+            <h3 class="settings-group-title">Политика конфиденциальности (privacy-policy.html)</h3>
+        
+          </div>
+          
+          <div class="settings-group">
+            <h3 class="settings-group-title">Согласие на обработку персональных данных (privacy-consent.html)</h3>
+           
+          </div>
+          
+          <div class="settings-group">
+            <h3 class="settings-group-title">Доставка и оплата (delivery-payment.html)</h3>
+           
+          </div>
+          
+          <div class="settings-group">
+            <h3 class="settings-group-title">Лицензии (licenses.html)</h3>
+            <div class="form-group">
+              <label class="form-label" for="licenses_last_update">Дата последнего обновления</label>
+              <input type="text" id="licenses_last_update" name="licenses_last_update" class="form-control" placeholder="Например: 24 июля 2025">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="trade_license_number">Номер торговой лицензии</label>
+              <input type="text" id="trade_license_number" name="trade_license_number" class="form-control" placeholder="Например: 123456">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="trade_license_date">Дата выдачи торговой лицензии</label>
+              <input type="text" id="trade_license_date" name="trade_license_date" class="form-control" placeholder="Например: 01.01.2025">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="trade_license_issuer">Кем выдана торговая лицензия</label>
+              <input type="text" id="trade_license_issuer" name="trade_license_issuer" class="form-control" placeholder="Например: Департамент торговли г. Москвы">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="trade_license_expiry">Срок действия торговой лицензии</label>
+              <input type="text" id="trade_license_expiry" name="trade_license_expiry" class="form-control" placeholder="Например: 01.01.2029">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="transport_license_number">Номер транспортной лицензии</label>
+              <input type="text" id="transport_license_number" name="transport_license_number" class="form-control" placeholder="Например: 789012">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="transport_license_date">Дата выдачи транспортной лицензии</label>
+              <input type="text" id="transport_license_date" name="transport_license_date" class="form-control" placeholder="Например: 15.02.2024">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="transport_license_issuer">Кем выдана транспортная лицензия</label>
+              <input type="text" id="transport_license_issuer" name="transport_license_issuer" class="form-control" placeholder="Например: Ространснадзор">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="transport_license_expiry">Срок действия транспортной лицензии</label>
+              <input type="text" id="transport_license_expiry" name="transport_license_expiry" class="form-control" placeholder="Например: 15.02.2029">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="certificate_number">Номер сертификата соответствия</label>
+              <input type="text" id="certificate_number" name="certificate_number" class="form-control" placeholder="Например: 345678">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="certificate_date">Дата выдачи сертификата соответствия</label>
+              <input type="text" id="certificate_date" name="certificate_date" class="form-control" placeholder="Например: 01.03.2024">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="certificate_issuer">Кем выдан сертификат соответствия</label>
+              <input type="text" id="certificate_issuer" name="certificate_issuer" class="form-control" placeholder="Например: Росстандарт">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="certificate_expiry">Срок действия сертификата соответствия</label>
+              <input type="text" id="certificate_expiry" name="certificate_expiry" class="form-control" placeholder="Например: 01.03.2027">
+            </div>
+            
+            <h4 class="settings-group-title">Партнерские программы</h4>
+            
+            <div class="form-group">
+              <label class="form-label" for="partner_program_1">Партнерская программа 1</label>
+              <input type="text" id="partner_program_1" name="partner_program_1" class="form-control" placeholder="Например: Официальный партнер ведущих производителей электроники">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="partner_program_2">Партнерская программа 2</label>
+              <input type="text" id="partner_program_2" name="partner_program_2" class="form-control" placeholder="Например: Участник программы лояльности 'Премиум'">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="partner_program_3">Партнерская программа 3</label>
+              <input type="text" id="partner_program_3" name="partner_program_3" class="form-control" placeholder="Например: Член Российской ассоциации электронной торговли">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="partner_program_4">Партнерская программа 4</label>
+              <input type="text" id="partner_program_4" name="partner_program_4" class="form-control" placeholder="Например: Сертифицированный партнер программы 'Эксперт'">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="licenses_additional_info">Дополнительная информация</label>
+              <textarea id="licenses_additional_info" name="licenses_additional_info" class="form-control" rows="3" placeholder="Дополнительная информация для документа"></textarea>
+            </div>
+          </div>
+          
+          <div class="settings-group">
+            <h3 class="settings-group-title">Гарантия и возврат (warranty-return.html)</h3>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Уведомления -->
+  <div class="notification notification-success" id="successNotification">
+    <div class="notification-icon"><i class="fas fa-check-circle"></i></div>
+    <div class="notification-message">Настройки успешно сохранены</div>
+    <div class="notification-close"><i class="fas fa-times"></i></div>
+  </div>
+  
+  <div class="notification notification-error" id="errorNotification">
+    <div class="notification-icon"><i class="fas fa-exclamation-circle"></i></div>
+    <div class="notification-message">Ошибка при сохранении настроек</div>
+    <div class="notification-close"><i class="fas fa-times"></i></div>
+  </div>
+
+  <script>
+    // --- Глобальные переменные для логотипа и favicon ---
+    let logoInput = null;
+    let logoPreview = null;
+    let logoUrl = '';
+    let faviconInput = null;
+    let faviconPreview = null;
+    let faviconUrl = '';
+    // --- Глобальные переменные ---
+    let settings = {};
+
+    // --- Исправление: функция showAlert, если не определена ---
+    if (typeof showAlert !== 'function') {
+      function showAlert(message, type) {
+        alert((type === 'danger' ? 'Ошибка: ' : '') + message);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      // Загружаем все настройки
+      loadSettings();
+      
+      // Проверка на необходимость перезагрузки страницы
+      checkReloadFlag();
+      
+      // Обработчик для формы настроек
+      const settingsForm = document.getElementById('settings-form');
+      if (settingsForm) {
+        settingsForm.addEventListener('submit', function(e) {
+          e.preventDefault();
+          saveSettings();
+        });
+      }
+      
+      // Добавляем обработчик для кнопки "Сохранить все"
+      const saveAllSettingsBtn = document.getElementById('saveAllSettings');
+      if (saveAllSettingsBtn) {
+        saveAllSettingsBtn.addEventListener('click', function() {
+          saveSettings();
+        });
+      }
+      
+      // Обработчик для чекбокса доставки
+      const deliveryEnabled = document.getElementById('delivery_enabled');
+      const deliverySettings = document.getElementById('delivery_settings');
+      if (deliveryEnabled && deliverySettings) {
+        deliveryEnabled.addEventListener('change', function() {
+          deliverySettings.style.display = this.checked ? 'block' : 'none';
+        });
+      }
+      
+      // Обработчики для методов оплаты удалены, так как методы оплаты теперь статические
+      
+      // Обработчик для добавления пункта выдачи удален, так как способы доставки теперь статические
+
+      // Логотип: предпросмотр и загрузка
+      logoInput = document.getElementById('site_logo');
+      logoPreview = document.getElementById('site_logo_preview');
+      faviconInput = document.getElementById('site_favicon');
+      faviconPreview = document.getElementById('site_favicon_preview');
+
+      // Логотип: предпросмотр и загрузка
+      if (logoInput && logoPreview) {
+        logoInput.addEventListener('change', async function() {
+          if (logoInput.files && logoInput.files[0]) {
+            const formData = new FormData();
+            formData.append('file', logoInput.files[0]);
+            const res = await fetch('http://localhost:5000/api/upload-logo', { method: 'POST', body: formData });
+            const data = await res.json();
+            if (data.success) {
+              logoUrl = '/' + data.url;
+              logoPreview.src = logoUrl;
+              logoPreview.style.display = 'block';
+            } else {
+              alert('Ошибка загрузки логотипа: ' + (data.message || ''));
+            }
+          }
+        });
+      }
+
+      // Favicon: предпросмотр и загрузка
+      if (faviconInput && faviconPreview) {
+        faviconInput.addEventListener('change', async function() {
+          if (faviconInput.files && faviconInput.files[0]) {
+            const formData = new FormData();
+            formData.append('file', faviconInput.files[0]);
+            const res = await fetch('http://localhost:5000/api/upload-favicon', { method: 'POST', body: formData });
+            const data = await res.json();
+            if (data.success) {
+              faviconUrl = '/' + data.url;
+              faviconPreview.src = faviconUrl;
+              faviconPreview.style.display = 'block';
+            } else {
+              alert('Ошибка загрузки favicon: ' + (data.message || ''));
+            }
+          }
+        });
+      }
+
+      // === Логика отображения блоков способов получения удалена, так как способы доставки теперь статические ===
+      
+      // Удален: syncDocumentsBtn.addEventListener('click', async function() { ... });
+      
+    });
+    
+    // Загрузка всех настроек с сервера
+    async function loadSettings() {
+      try {
+        
+        // Добавляем параметр для предотвращения кэширования
+        const timestamp = new Date().getTime();
+        const response = await fetch(`http://localhost:5000/api/settings?_=${timestamp}`, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+            'Cache-Control': 'no-cache'
+          },
+          mode: 'cors' // Явно указываем режим CORS
+        });
+        
+        
+        if (!response.ok) {
+          throw new Error(`Ошибка HTTP: ${response.status} ${response.statusText}`);
+        }
+        
+        const responseText = await response.text();
+        
+        let result;
+        try {
+          result = JSON.parse(responseText);
+          
+        } catch (parseError) {
+          
+          throw new Error('Ошибка при парсинге ответа сервера');
+        }
+        
+        const settings = result.settings || result; // поддержка старого формата
+        
+        // Заполняем основные настройки
+        const siteNameEl = document.getElementById('site_name');
+        const contactEmailEl = document.getElementById('contact_email');
+        const contactPhoneEl = document.getElementById('contact_phone');
+        const addressEl = document.getElementById('address');
+        const metaKeywordsEl = document.getElementById('meta_keywords');
+        const metaDescriptionEl = document.getElementById('meta_description');
+        
+        if (siteNameEl) siteNameEl.value = settings.site_name || '';
+        if (contactEmailEl) contactEmailEl.value = settings.contact_email || '';
+        if (contactPhoneEl) contactPhoneEl.value = settings.contact_phone || '';
+        if (addressEl) addressEl.value = settings.address || '';
+        if (metaKeywordsEl) metaKeywordsEl.value = settings.meta_keywords || '';
+        if (metaDescriptionEl) metaDescriptionEl.value = settings.meta_description || '';
+        
+        // Настройки методов оплаты и доставки удалены, так как они теперь статические
+
+        // Заполняем юридические данные компании
+        const companyNameEl = document.getElementById('company_name');
+        const companyInnEl = document.getElementById('company_inn');
+        const companyOgrnEl = document.getElementById('company_ogrn');
+        const companyKppEl = document.getElementById('company_kpp');
+        const companyLegalAddressEl = document.getElementById('company_legal_address');
+        const companyActualAddressEl = document.getElementById('company_actual_address');
+        const companyPostalAddressEl = document.getElementById('company_postal_address');
+        const companyEmailEl = document.getElementById('company_email');
+        const companyPrivacyEmailEl = document.getElementById('company_privacy_email');
+        const companyPhoneEl = document.getElementById('company_phone');
+        
+        if (companyNameEl) companyNameEl.value = settings.company_name || '';
+        if (companyInnEl) companyInnEl.value = settings.company_inn || '';
+        if (companyOgrnEl) companyOgrnEl.value = settings.company_ogrn || '';
+        if (companyKppEl) companyKppEl.value = settings.company_kpp || '';
+        if (companyLegalAddressEl) companyLegalAddressEl.value = settings.company_legal_address || '';
+        if (companyActualAddressEl) companyActualAddressEl.value = settings.company_actual_address || '';
+        if (companyPostalAddressEl) companyPostalAddressEl.value = settings.company_postal_address || '';
+        if (companyEmailEl) companyEmailEl.value = settings.company_email || '';
+        if (companyPrivacyEmailEl) companyPrivacyEmailEl.value = settings.company_privacy_email || '';
+        if (companyPhoneEl) companyPhoneEl.value = settings.company_phone || '';
+        
+        // Заполняем банковские реквизиты
+        const companyBankNameEl = document.getElementById('company_bank_name');
+        const companyBankAccountEl = document.getElementById('company_bank_account');
+        const companyBankCorrAccountEl = document.getElementById('company_bank_corr_account');
+        const companyBankBikEl = document.getElementById('company_bank_bik');
+        
+        if (companyBankNameEl) companyBankNameEl.value = settings.company_bank_name || '';
+        if (companyBankAccountEl) companyBankAccountEl.value = settings.company_bank_account || '';
+        if (companyBankCorrAccountEl) companyBankCorrAccountEl.value = settings.company_bank_corr_account || '';
+        if (companyBankBikEl) companyBankBikEl.value = settings.company_bank_bik || '';
+        
+        // Заполняем настройки юридических документов
+        if (document.getElementById('documents_last_update')) {
+          document.getElementById('documents_last_update').value = settings.documents_last_update || '';
+        }
+        
+        // Заполняем поля лицензий и сертификатов
+        if (document.getElementById('trade_license_number')) {
+          document.getElementById('trade_license_number').value = settings.trade_license_number || '';
+        }
+        if (document.getElementById('trade_license_date')) {
+          document.getElementById('trade_license_date').value = settings.trade_license_date || '';
+        }
+        if (document.getElementById('trade_license_issuer')) {
+          document.getElementById('trade_license_issuer').value = settings.trade_license_issuer || '';
+        }
+        if (document.getElementById('trade_license_expiry')) {
+          document.getElementById('trade_license_expiry').value = settings.trade_license_expiry || '';
+        }
+        if (document.getElementById('transport_license_number')) {
+          document.getElementById('transport_license_number').value = settings.transport_license_number || '';
+        }
+        if (document.getElementById('transport_license_date')) {
+          document.getElementById('transport_license_date').value = settings.transport_license_date || '';
+        }
+        if (document.getElementById('transport_license_issuer')) {
+          document.getElementById('transport_license_issuer').value = settings.transport_license_issuer || '';
+        }
+        if (document.getElementById('transport_license_expiry')) {
+          document.getElementById('transport_license_expiry').value = settings.transport_license_expiry || '';
+        }
+        if (document.getElementById('certificate_number')) {
+          document.getElementById('certificate_number').value = settings.certificate_number || '';
+        }
+        if (document.getElementById('certificate_date')) {
+          document.getElementById('certificate_date').value = settings.certificate_date || '';
+        }
+        if (document.getElementById('certificate_issuer')) {
+          document.getElementById('certificate_issuer').value = settings.certificate_issuer || '';
+        }
+        if (document.getElementById('certificate_expiry')) {
+          document.getElementById('certificate_expiry').value = settings.certificate_expiry || '';
+        }
+        
+        // Заполняем поля партнерских программ
+        if (document.getElementById('partner_program_1')) {
+          document.getElementById('partner_program_1').value = settings.partner_program_1 || '';
+        }
+        if (document.getElementById('partner_program_2')) {
+          document.getElementById('partner_program_2').value = settings.partner_program_2 || '';
+        }
+        if (document.getElementById('partner_program_3')) {
+          document.getElementById('partner_program_3').value = settings.partner_program_3 || '';
+        }
+        if (document.getElementById('partner_program_4')) {
+          document.getElementById('partner_program_4').value = settings.partner_program_4 || '';
+        }
+        
+        // Соцсети
+        if (document.getElementById('social_instagram')) {
+          // Проверяем разные форматы данных
+          const instagramValue = typeof settings.social_instagram === 'object' ? 
+            settings.social_instagram?.value || '' : 
+            settings.social_instagram || '';
+          document.getElementById('social_instagram').value = instagramValue;
+        }
+        
+        if (document.getElementById('social_facebook')) {
+          const facebookValue = typeof settings.social_facebook === 'object' ? 
+            settings.social_facebook?.value || '' : 
+            settings.social_facebook || '';
+          document.getElementById('social_facebook').value = facebookValue;
+        }
+        
+        if (document.getElementById('social_twitter')) {
+          const twitterValue = typeof settings.social_twitter === 'object' ? 
+            settings.social_twitter?.value || '' : 
+            settings.social_twitter || '';
+          document.getElementById('social_twitter').value = twitterValue;
+        }
+        
+        if (document.getElementById('social_youtube')) {
+          const youtubeValue = typeof settings.social_youtube === 'object' ? 
+            settings.social_youtube?.value || '' : 
+            settings.social_youtube || '';
+          document.getElementById('social_youtube').value = youtubeValue;
+        }
+        
+        if (document.getElementById('social_telegram')) {
+          const telegramValue = typeof settings.social_telegram === 'object' ? 
+            settings.social_telegram?.value || '' : 
+            settings.social_telegram || '';
+          document.getElementById('social_telegram').value = telegramValue;
+        }
+        
+        if (document.getElementById('social_whatsapp')) {
+          const whatsappValue = typeof settings.social_whatsapp === 'object' ? 
+            settings.social_whatsapp?.value || '' : 
+            settings.social_whatsapp || '';
+          document.getElementById('social_whatsapp').value = whatsappValue;
+        }
+        
+        // Email для заказов и поддержки
+        if (document.getElementById('order_email')) {
+          const orderEmailValue = typeof settings.order_email === 'object' ? 
+            settings.order_email?.value || '' : 
+            settings.order_email || '';
+          document.getElementById('order_email').value = orderEmailValue;
+        }
+        
+        if (document.getElementById('support_email')) {
+          const supportEmailValue = typeof settings.support_email === 'object' ? 
+            settings.support_email?.value || '' : 
+            settings.support_email || '';
+          document.getElementById('support_email').value = supportEmailValue;
+        }
+        
+        // Режим работы
+        if (document.getElementById('working_hours')) {
+          const workingHoursValue = typeof settings.working_hours === 'object' ? 
+            settings.working_hours?.value || '' : 
+            settings.working_hours || '';
+          document.getElementById('working_hours').value = workingHoursValue;
+        }
+        
+        // Логотип и favicon
+        if (logoPreview) {
+          const logoValue = typeof settings.site_logo === 'object' ? 
+            settings.site_logo?.value || '' : 
+            settings.site_logo || '';
+            
+          if (logoValue) {
+            logoUrl = logoValue;
+            if (logoUrl && !logoUrl.startsWith('/') && !logoUrl.startsWith('http')) {
+              logoUrl = '/' + logoUrl;
+            }
+            logoPreview.src = logoUrl;
+            logoPreview.style.display = 'block';
+          }
+        }
+        
+        if (faviconPreview) {
+          const faviconValue = typeof settings.site_favicon === 'object' ? 
+            settings.site_favicon?.value || '' : 
+            settings.site_favicon || '';
+            
+          if (faviconValue) {
+            faviconUrl = faviconValue;
+            if (faviconUrl && !faviconUrl.startsWith('/') && !faviconUrl.startsWith('http')) {
+              faviconUrl = '/' + faviconUrl;
+            }
+            faviconPreview.src = faviconUrl;
+            faviconPreview.style.display = 'block';
+          }
+        }
+
+        
+      } catch (error) {
+        
+        // Проверяем, не является ли ошибка связанной с сетью
+        if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+          
+          showNotification('error', 'Ошибка сети при загрузке настроек. Проверьте соединение и запустите сервер.');
+        } else {
+          showNotification('error', 'Ошибка при загрузке настроек: ' + error.message);
+          
+          // Добавляем информационное сообщение с инструкциями для пользователя
+          const settingsContainer = document.querySelector('.settings-container');
+          if (settingsContainer) {
+            const errorAlert = document.createElement('div');
+            errorAlert.className = 'alert alert-info';
+            errorAlert.style.gridColumn = '1 / -1';
+            errorAlert.innerHTML = `
+              <i class="fas fa-info-circle"></i>
+              <strong>Подсказка:</strong> Для корректной работы админ-панели необходимо запустить сервер Python. 
+              Выполните команду <code>python server.py</code> в терминале, находясь в корневой директории проекта.
+            `;
+            settingsContainer.prepend(errorAlert);
+          }
+        }
+        
+        // Предотвращаем перезагрузку страницы при ошибке загрузки настроек
+        localStorage.removeItem('settings_reload_flag');
+        localStorage.removeItem('settings_reload_time');
+      }
+    }
+    
+    // Проверка флага перезагрузки
+    function checkReloadFlag() {
+      const reloadFlag = localStorage.getItem('settings_reload_flag');
+      const reloadTime = localStorage.getItem('settings_reload_time');
+      
+      if (reloadFlag === 'true' && reloadTime) {
+        // Проверяем, что флаг был установлен не более 5 секунд назад
+        const now = new Date().getTime();
+        const flagTime = parseInt(reloadTime, 10);
+        
+        if (now - flagTime < 5000) {
+          
+          // Удаляем флаг, чтобы избежать циклической перезагрузки
+          localStorage.removeItem('settings_reload_flag');
+          localStorage.removeItem('settings_reload_time');
+          // Перезагружаем страницу
+          window.location.reload();
+        } else {
+          // Флаг устарел, удаляем его
+          localStorage.removeItem('settings_reload_flag');
+          localStorage.removeItem('settings_reload_time');
+        }
+      }
+    }
+    
+    // Установка флага перезагрузки для всех вкладок
+    function setReloadFlagForAllTabs() {
+      localStorage.setItem('settings_reload_flag', 'true');
+      localStorage.setItem('settings_reload_time', new Date().getTime().toString());
+    }
+
+    // Сохранение настроек на сервер
+    async function saveSettings() {
+      try {
+        // Показываем индикатор загрузки на кнопке "Сохранить все"
+        const saveAllBtn = document.getElementById('saveAllSettings');
+        const originalText = saveAllBtn.innerHTML;
+        saveAllBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Сохранение...';
+        saveAllBtn.disabled = true;
+        
+        // Собираем все настройки
+        const settings = {
+          site_name: document.getElementById('site_name')?.value || '',
+          contact_email: document.getElementById('contact_email')?.value || '',
+          contact_phone: document.getElementById('contact_phone')?.value || '',
+          address: document.getElementById('address')?.value || '',
+          meta_keywords: document.getElementById('meta_keywords')?.value || '',
+          meta_description: document.getElementById('meta_description')?.value || '',
+          
+          // Юридические данные компании
+          company_name: document.getElementById('company_name')?.value || '',
+          company_inn: document.getElementById('company_inn')?.value || '',
+          company_ogrn: document.getElementById('company_ogrn')?.value || '',
+          company_kpp: document.getElementById('company_kpp')?.value || '',
+          company_legal_address: document.getElementById('company_legal_address')?.value || '',
+          company_actual_address: document.getElementById('company_actual_address')?.value || '',
+          company_postal_address: document.getElementById('company_postal_address')?.value || '',
+          company_email: document.getElementById('company_email')?.value || '',
+          company_privacy_email: document.getElementById('company_privacy_email')?.value || '',
+          company_phone: document.getElementById('company_phone')?.value || '',
+          
+          // Банковские реквизиты
+          company_bank_name: document.getElementById('company_bank_name')?.value || '',
+          company_bank_account: document.getElementById('company_bank_account')?.value || '',
+          company_bank_corr_account: document.getElementById('company_bank_corr_account')?.value || '',
+          company_bank_bik: document.getElementById('company_bank_bik')?.value || '',
+          
+          // Настройки юридических документов
+          documents_last_update: document.getElementById('documents_last_update')?.value || '',
+          
+          // Социальные сети
+          social_instagram: document.getElementById('social_instagram')?.value || '',
+          social_facebook: document.getElementById('social_facebook')?.value || '',
+          social_twitter: document.getElementById('social_twitter')?.value || '',
+          social_youtube: document.getElementById('social_youtube')?.value || '',
+          social_telegram: document.getElementById('social_telegram')?.value || '',
+          social_whatsapp: document.getElementById('social_whatsapp')?.value || '',
+          
+          // Email и режим работы
+          order_email: document.getElementById('order_email')?.value || '',
+          support_email: document.getElementById('support_email')?.value || '',
+          working_hours: document.getElementById('working_hours')?.value || '',
+          
+          // Логотип и favicon
+          site_logo: logoUrl || '',
+          site_favicon: faviconUrl || '',
+          
+          // Лицензии и сертификаты
+          trade_license_number: document.getElementById('trade_license_number')?.value || '',
+          trade_license_date: document.getElementById('trade_license_date')?.value || '',
+          trade_license_issuer: document.getElementById('trade_license_issuer')?.value || '',
+          trade_license_expiry: document.getElementById('trade_license_expiry')?.value || '',
+          transport_license_number: document.getElementById('transport_license_number')?.value || '',
+          transport_license_date: document.getElementById('transport_license_date')?.value || '',
+          transport_license_issuer: document.getElementById('transport_license_issuer')?.value || '',
+          transport_license_expiry: document.getElementById('transport_license_expiry')?.value || '',
+          certificate_number: document.getElementById('certificate_number')?.value || '',
+          certificate_date: document.getElementById('certificate_date')?.value || '',
+          certificate_issuer: document.getElementById('certificate_issuer')?.value || '',
+          certificate_expiry: document.getElementById('certificate_expiry')?.value || '',
+          
+          // Партнерские программы
+          partner_program_1: document.getElementById('partner_program_1')?.value || '',
+          partner_program_2: document.getElementById('partner_program_2')?.value || '',
+          partner_program_3: document.getElementById('partner_program_3')?.value || '',
+          partner_program_4: document.getElementById('partner_program_4')?.value || ''
+        };
+        
+        // Сохраняем настройки на сервер
+        const response = await fetch('http://localhost:5000/api/settings', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(settings)
+        });
+        
+        if (!response.ok) throw new Error('Ошибка сохранения настроек');
+        
+        const responseData = await response.json();
+        
+        // Синхронизируем данные компании с документами
+        try {
+          const syncResponse = await fetch('http://localhost:5000/api/sync-company-data', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              document_dates: {
+                documents_last_update: settings.documents_last_update
+              },
+              licenses: {
+                trade_license_number: settings.trade_license_number,
+                trade_license_date: settings.trade_license_date,
+                trade_license_issuer: settings.trade_license_issuer,
+                trade_license_expiry: settings.trade_license_expiry,
+                transport_license_number: settings.transport_license_number,
+                transport_license_date: settings.transport_license_date,
+                transport_license_issuer: settings.transport_license_issuer,
+                transport_license_expiry: settings.transport_license_expiry,
+                certificate_number: settings.certificate_number,
+                certificate_date: settings.certificate_date,
+                certificate_issuer: settings.certificate_issuer,
+                certificate_expiry: settings.certificate_expiry
+              },
+              partner_programs: {
+                partner_program_1: settings.partner_program_1,
+                partner_program_2: settings.partner_program_2,
+                partner_program_3: settings.partner_program_3,
+                partner_program_4: settings.partner_program_4
+              }
+            })
+          });
+          
+          if (syncResponse.ok) {
+            const syncResult = await syncResponse.json();
+            showNotification('success', `Настройки сохранены и документы синхронизированы. Обновлено файлов: ${syncResult.updated_files?.length || 0}`);
+          } else {
+            console.error('Ошибка синхронизации данных компании');
+            showNotification('success', 'Настройки сохранены, но возникла ошибка при синхронизации документов');
+          }
+        } catch (syncError) {
+          console.error('Ошибка при вызове API синхронизации:', syncError);
+          showNotification('success', 'Настройки сохранены, но возникла ошибка при синхронизации документов');
+        }
+        
+        // Очищаем метку времени синхронизации
+        sessionStorage.removeItem('company_data_sync_timestamp');
+        
+        // Устанавливаем флаг перезагрузки для всех вкладок
+        setReloadFlagForAllTabs();
+        
+        // Перезагрузка текущей страницы через 1 секунду после успешного сохранения
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+        
+      } catch (error) {
+        console.error('Ошибка при сохранении настроек:', error);
+        showNotification('error', 'Ошибка при сохранении настроек: ' + error.message);
+      } finally {
+        // Восстанавливаем исходный вид кнопки
+        const saveAllBtn = document.getElementById('saveAllSettings');
+        if (saveAllBtn) {
+          saveAllBtn.innerHTML = originalText;
+          saveAllBtn.disabled = false;
+        }
+      }
+    }
+    
+    // Функции addPickupPoint и updatePickupPointsContainer удалены, так как способы доставки теперь статические
+    
+    // Функция getPickupPoints удалена, так как способы доставки теперь статические
+    
+    // Показ уведомления
+    function showNotification(type, message) {
+      const notification = document.getElementById(type === 'success' ? 'successNotification' : 'errorNotification');
+      notification.querySelector('.notification-message').textContent = message;
+      notification.classList.add('show');
+      
+      setTimeout(() => {
+        notification.classList.remove('show');
+      }, 5000);
+    }
+    
+    // Проверка статуса сайта
+    (async function() {
+      try {
+        const res = await fetch('/api/site-status');
+        if (res.ok) {
+          const data = await res.json();
+          if (!data.enabled) {
+            // Проверяем, есть ли у нас токен администратора
+            const cookies = document.cookie.split(';').map(s => s.trim());
+            const adminToken = cookies.find(s => s.startsWith('admin_token='));
+            if (!adminToken || !data.admin_token || adminToken.split('=')[1] !== data.admin_token) {
+              window.location.href = '/site-offline.html';
+            }
+          }
+        }
+      } catch (e) {}
+    })();
+  </script>
+</body>
+</html> 

@@ -7,6 +7,7 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='80' font-size='80' font-family='Arial'>D</text></svg>" type="image/svg+xml">
   <link rel="stylesheet" href="mobile-styles.css">
   <link rel="stylesheet" href="mobile-styles-fixed.css">
+  <link rel="stylesheet" href="counterparty-form.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,6 +16,49 @@
   
   <!-- Подключение улучшенных стилей уведомлений -->
   <link rel="stylesheet" href="notifications.css">
+  
+  <!-- Подключение скрипта настроек для динамической загрузки favicon -->
+  <script src="settings.js"></script>
+
+  <script>
+  (async function() {
+    async function checkStatus(apiUrl) {
+      try {
+        const res = await fetch(apiUrl);
+        if (res.ok) {
+          const data = await res.json();
+          if (!data.enabled) {
+            // Загружаем offline-страницу
+            try {
+              const offlineRes = await fetch('/site-offline.html');
+              if (offlineRes.ok) {
+                const offlineHtml = await offlineRes.text();
+                document.open();
+                document.write(offlineHtml);
+                document.close();
+              } else {
+                document.body.innerHTML = '<div style="display:flex;justify-content:center;align-items:center;height:100vh;font-family:Arial;"><h1>Сайт временно недоступен</h1></div>';
+              }
+            } catch (err) {
+              console.error('Ошибка загрузки страницы обслуживания:', err);
+            }
+            return true;
+          }
+        }
+      } catch (e) {
+        // Ошибка сети или CORS
+      }
+      return false;
+    }
+
+    // 1. Пробуем локальный API (относительно домена)
+    let found = await checkStatus('/api/site-status');
+    if (!found) {
+      // 2. Пробуем абсолютный адрес Flask-сервера
+      found = await checkStatus('http://localhost:5000/api/site-status');
+    }
+  })();
+  </script>
 </head>
 <body>
   <header class="header">
@@ -56,143 +100,21 @@
   <main>
     <section class="carousel">
       <div class="carousel__track">
-        <div class="carousel__item" data-active data-category="electronics">
-          <div class="carousel__box">
-            <img src="../images/electronics.png" alt="Электроника" loading="lazy">
-            <span class="carousel__text">Электроника</span>
-          </div>
-        </div>
-        <div class="carousel__item" data-category="toys">
-          <div class="carousel__box">
-            <img src="../images/toys.png" alt="Игрушки" loading="lazy">
-            <span class="carousel__text">Игрушки</span>
-          </div>
-        </div>
-        <div class="carousel__item" data-category="accessories">
-          <div class="carousel__box">
-            <img src="../images/accessories.png" alt="Аксессуары" loading="lazy">
-            <span class="carousel__text">Аксессуары</span>
-          </div>
-        </div>
-        <div class="carousel__item" data-category="clothes">
-          <div class="carousel__box">
-            <img src="../images/clothes.png" alt="Одежда" loading="lazy">
-            <span class="carousel__text">Одежда</span>
-          </div>
-        </div>
-        <div class="carousel__item" data-category="appliances">
-          <div class="carousel__box">
-            <img src="../images/appliances.png" alt="Бытовая техника" loading="lazy">
-            <span class="carousel__text">Бытовая техника</span>
-          </div>
+        <!-- Категории будут подгружаться динамически через JS -->
+      </div>
+      
+      <!-- Мини-карусель для подкатегорий -->
+      <div class="subcategory-carousel">
+        <div class="subcategory-carousel__track">
+          <!-- Подкатегории будут загружаться динамически через JS -->
         </div>
       </div>
     </section>
 
     <section class="products">
-      <h2 class="products__heading">Товары - Электроника</h2>
+      <h2 class="products__heading">Товары</h2>
       <div class="products__grid" role="list">
-        <!-- Электроника -->
-        <article class="product-card" role="listitem" data-id="1" data-category="electronics">
-          <img src="https://avatars.mds.yandex.net/i?id=16c02de528eae0501192dc54a8435a018ff02154-9674922-images-thumbs&n=13" alt="Наушники Wireless" loading="lazy">
-          <div class="product-card__info">
-            <h3 class="product-card__title">Наушники Wireless</h3>
-            <p class="product-card__price"><span class="price-icon"><i class="fas fa-ruble-sign"></i></span> 4 990</p>
-            <button class="product-card__button"><i class="fas fa-cart-plus"></i> В корзину</button>
-          </div>
-        </article>
-        <article class="product-card" role="listitem" data-id="2" data-category="electronics">
-          <img src="https://avatars.mds.yandex.net/get-mpic/5234463/img_id2819387384900565932.jpeg/orig" alt="Смарт-часы X" loading="lazy">
-          <div class="product-card__info">
-            <h3 class="product-card__title">Смарт-часы X</h3>
-            <p class="product-card__price"><span class="price-icon"><i class="fas fa-ruble-sign"></i></span> 9 990</p>
-            <button class="product-card__button"><i class="fas fa-cart-plus"></i> В корзину</button>
-          </div>
-        </article>
-        <article class="product-card" role="listitem" data-id="3" data-category="electronics">
-          <img src="https://avatars.mds.yandex.net/i?id=16ef61d4342030c97b8f9425389cfa01584686c6-8497871-images-thumbs&n=13" alt="Беспроводная колонка" loading="lazy">
-          <div class="product-card__info">
-            <h3 class="product-card__title">Беспроводная колонка</h3>
-            <p class="product-card__price"><span class="price-icon"><i class="fas fa-ruble-sign"></i></span> 6 490</p>
-            <button class="product-card__button"><i class="fas fa-cart-plus"></i> В корзину</button>
-          </div>
-        </article>
-        <article class="product-card" role="listitem" data-id="4" data-category="electronics">
-          <img src="https://avatars.mds.yandex.net/get-mpic/5277894/img_id5035057075377151185.jpeg/orig" alt="Геймпад Pro" loading="lazy">
-          <div class="product-card__info">
-            <h3 class="product-card__title">Геймпад Pro</h3>
-            <p class="product-card__price"><span class="price-icon"><i class="fas fa-ruble-sign"></i></span> 3 990</p>
-            <button class="product-card__button"><i class="fas fa-cart-plus"></i> В корзину</button>
-          </div>
-        </article>
-        <!-- Игрушки -->
-        <article class="product-card" role="listitem" data-id="5" data-category="toys">
-          <img src="https://cdn1.ozone.ru/s3/multimedia-n/6390484175.jpg" alt="Конструктор LEGO" loading="lazy">
-          <div class="product-card__info">
-            <h3 class="product-card__title">Конструктор LEGO</h3>
-            <p class="product-card__price"><span class="price-icon"><i class="fas fa-ruble-sign"></i></span> 2 490</p>
-            <button class="product-card__button"><i class="fas fa-cart-plus"></i> В корзину</button>
-          </div>
-        </article>
-        <article class="product-card" role="listitem" data-id="6" data-category="toys">
-          <img src="https://avatars.mds.yandex.net/i?id=3c2ae0790660e6eda9ed894f1b6c834b_l-5888823-images-thumbs&n=13" alt="Мягкая игрушка" loading="lazy">
-          <div class="product-card__info">
-            <h3 class="product-card__title">Мягкая игрушка</h3>
-            <p class="product-card__price"><span class="price-icon"><i class="fas fa-ruble-sign"></i></span> 1 290</p>
-            <button class="product-card__button"><i class="fas fa-cart-plus"></i> В корзину</button>
-          </div>
-        </article>
-        <!-- Аксессуары -->
-        <article class="product-card" role="listitem" data-id="7" data-category="accessories">
-          <img src="https://avatars.mds.yandex.net/i?id=aa263e508ec674c52a0688d4475a332a_l-5232592-images-thumbs&n=13" alt="Чехол для телефона" loading="lazy">
-          <div class="product-card__info">
-            <h3 class="product-card__title">Чехол для телефона</h3>
-            <p class="product-card__price"><span class="price-icon"><i class="fas fa-ruble-sign"></i></span> 990</p>
-            <button class="product-card__button"><i class="fas fa-cart-plus"></i> В корзину</button>
-          </div>
-        </article>
-        <article class="product-card" role="listitem" data-id="8" data-category="accessories">
-          <img src="https://sun9-61.userapi.com/impg/rznlMMisstS7zTo5JWQlnuiajaWmQtXj23u92Q/hsGhE-w0Lro.jpg?size=604x604&quality=95&sign=3ab4b632741c41d9e11d089208d60a23&c_uniq_tag=WB0nHh4JN0TYTDMMr4BYj9mtvLa3fFLP1VEhy-T1E20&type=album" alt="Ремешок для часов" loading="lazy">
-          <div class="product-card__info">
-            <h3 class="product-card__title">Ремешок для часов</h3>
-            <p class="product-card__price"><span class="price-icon"><i class="fas fa-ruble-sign"></i></span> 1 490</p>
-            <button class="product-card__button"><i class="fas fa-cart-plus"></i> В корзину</button>
-          </div>
-        </article>
-        <!-- Одежда -->
-        <article class="product-card" role="listitem" data-id="9" data-category="clothes">
-          <img src="https://avatars.mds.yandex.net/i?id=13f4064d615ee794b369927e695532a5_l-5649481-images-thumbs&n=13" alt="Футболка" loading="lazy">
-          <div class="product-card__info">
-            <h3 class="product-card__title">Футболка</h3>
-            <p class="product-card__price"><span class="price-icon"><i class="fas fa-ruble-sign"></i></span> 1 990</p>
-            <button class="product-card__button"><i class="fas fa-cart-plus"></i> В корзину</button>
-          </div>
-        </article>
-        <article class="product-card" role="listitem" data-id="10" data-category="clothes">
-          <img src="https://cdn1.ozone.ru/s3/multimedia-1-b/7087002023.jpg" alt="Джинсы" loading="lazy">
-          <div class="product-card__info">
-            <h3 class="product-card__title">Джинсы</h3>
-            <p class="product-card__price"><span class="price-icon"><i class="fas fa-ruble-sign"></i></span> 3 490</p>
-            <button class="product-card__button"><i class="fas fa-cart-plus"></i> В корзину</button>
-          </div>
-        </article>
-        <!-- Бытовая техника -->
-        <article class="product-card" role="listitem" data-id="11" data-category="appliances">
-          <img src="https://cdn1.ozone.ru/s3/multimedia-1-n/7077880103.jpg" alt="Электрочайник" loading="lazy">
-          <div class="product-card__info">
-            <h3 class="product-card__title">Электрочайник</h3>
-            <p class="product-card__price"><span class="price-icon"><i class="fas fa-ruble-sign"></i></span> 2 990</p>
-            <button class="product-card__button"><i class="fas fa-cart-plus"></i> В корзину</button>
-          </div>
-        </article>
-        <article class="product-card" role="listitem" data-id="12" data-category="appliances">
-          <img src="https://goods-photos.static1-sima-land.com/items/2163349/0/700.jpg?v=0" alt="Микроволновка" loading="lazy">
-          <div class="product-card__info">
-            <h3 class="product-card__title">Микроволновка</h3>
-            <p class="product-card__price"><span class="price-icon"><i class="fas fa-ruble-sign"></i></span> 5 990</p>
-            <button class="product-card__button"><i class="fas fa-cart-plus"></i> В корзину</button>
-          </div>
-        </article>
+        <!-- Товары будут загружены динамически через JavaScript -->
       </div>
     </section>
   </main>
@@ -201,28 +123,30 @@
     <div class="footer__container">
       <div class="footer__contacts">
         <h4 class="footer__title">Контакты</h4>
-        <p>Телефон: <a href="tel:+79991234567">+7 (999) 123-45-67</a></p>
-        <p>Email: <a href="mailto:info@example.com">info@example.com</a></p>
-        <p>Адрес: г. Москва, ул. Центральная, д. 1</p>
+        <p class="footer__contact footer__phone">Телефон: <a href="tel:+79991234567">+7 (999) 123-45-67</a></p>
+        <p class="footer__contact footer__email">Email: <a href="mailto:info@example.com">info@example.com</a></p>
+        <p class="footer__contact footer__address">Адрес: г. Москва, ул. Центральная, д. 1</p>
+        <p class="footer__contact footer__hours">Режим работы: Пн-Пт 10:00-19:00</p>
       </div>
       <div class="footer__social">
         <h4 class="footer__title">Мы в соцсетях</h4>
         <div class="footer__social-icons">
-          <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-          <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-          <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-          <a href="#" aria-label="Telegram"><i class="fab fa-telegram-plane"></i></a>
+          <a href="#" aria-label="Instagram" class="footer__social-link footer__social-instagram"><i class="fab fa-instagram"></i></a>
+          <a href="#" aria-label="Facebook" class="footer__social-link footer__social-facebook"><i class="fab fa-facebook-f"></i></a>
+          <a href="#" aria-label="Twitter" class="footer__social-link footer__social-twitter"><i class="fab fa-twitter"></i></a>
+          <a href="#" aria-label="Telegram" class="footer__social-link footer__social-telegram"><i class="fab fa-telegram-plane"></i></a>
+          <a href="#" aria-label="WhatsApp" class="footer__social-link footer__social-whatsapp"><i class="fab fa-whatsapp"></i></a>
         </div>
       </div>
     </div>
     <div class="footer__bottom">
-      <p class="footer__copyright">© 2025 Ваш магазин. Все права защищены.</p>
+      <p class="footer__copyright">© 2025 <span class="footer__company-name">Damax</span>. Все права защищены.</p>
       <p class="footer__made-by">Made by <span class="gradient-text">Bansheebbyy</span></p>
     </div>
   </footer>
 
   <div class="floating-contact">
-    <a href="tel:+79274008865" class="floating-contact__link" aria-label="Позвонить">
+    <a href="tel:+79274008865" class="floating-contact__link floating-contact__link--reverse" aria-label="Позвонить">
       <i class="fas fa-phone"></i>
       <span class="floating-contact__text">Позвонить</span>
     </a>
@@ -284,20 +208,10 @@
 
   <!-- Подключение скриптов -->
   <script src="mobile.js"></script>
+  <script src="admin-login.js"></script>
   <script>
     document.addEventListener("DOMContentLoaded", function() {
       document.body.classList.add("loaded");
-    });
-  </script>
-  
-  <!-- Подключение API для работы с товарами -->
-  <script src="products-api.js"></script>
-  <script>
-    // Инициализация API товаров после загрузки DOM
-    document.addEventListener('DOMContentLoaded', function() {
-      if (window.productsApi) {
-        window.productsApi.initProductsApi();
-      }
     });
   </script>
 </body>

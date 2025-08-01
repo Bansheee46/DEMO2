@@ -284,7 +284,7 @@ body, body *,
   left: 0;
   width: 100%;
   height: 100%;
-  background: radial-gradient(circle, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0) 70%);
+  background: none; /* Удаляем радиальный градиент */
   transform: scale(0);
   opacity: 0;
   transition: transform 0.5s ease, opacity 0.5s ease;
@@ -292,7 +292,7 @@ body, body *,
 }
 
 .accent-menu__item[data-action="toggle-theme"]:active::before {
-  transform: scale(2);
-  opacity: 1;
+  transform: scale(0); /* Отключаем эффект увеличения */
+  opacity: 0; /* Делаем полностью прозрачным */
   transition: transform 0.3s ease, opacity 0.3s ease;
 } 

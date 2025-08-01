@@ -6,6 +6,23 @@
   <title>Корзина</title>
   <link rel="stylesheet" href="mobile-styles.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <script>
+  // Устанавливаем глобальные URL для API
+  window.API_BASE_URL = 'http://localhost:5000/api';
+  window.API_BACKUP_URL = 'http://localhost:5000/api';
+  
+  (async function() {
+    try {
+      const res = await fetch('/api/site-status');
+      if (res.ok) {
+        const data = await res.json();
+        if (!data.enabled) {
+          window.location.href = '/site-offline.html';
+        }
+      }
+    } catch (e) {}
+  })();
+  </script>
 </head>
 <body class="cart-page">
   <header class="header">
@@ -46,23 +63,152 @@
         <p class="cart-page__total">Итого: <span>0 ₽</span></p>
         <button class="cart-page__checkout">Оформить заказ</button>
       </div>
-      <form class="cart-page__checkout-form">
-        <h3>Оформление заказа</h3>
-        <div class="form-group">
-          <label for="checkout-name">Имя</label>
-          <input type="text" id="checkout-name" placeholder="Ваше имя" required>
+      
+      <div class="checkout-form" id="checkout-form">
+        <h2 class="checkout-modal__title">Оформление заказа</h2>
+        
+        <div class="checkout-process-steps">
+          <div class="process-step active">
+            <div class="step-number">1</div>
+            <div class="step-info">
+              <h4>Оформление</h4>
+              <p>Отправка заказа</p>
+            </div>
+          </div>
+          <div class="process-step">
+            <div class="step-number">2</div>
+            <div class="step-info">
+              <h4>Обработка</h4>
+              <p>Менеджер свяжется с вами</p>
+            </div>
+          </div>
+          <div class="process-step">
+            <div class="step-number">3</div>
+            <div class="step-info">
+              <h4>Доставка</h4>
+              <p>Согласование деталей</p>
+            </div>
+          </div>
         </div>
-        <div class="form-group">
-          <label for="checkout-phone">Телефон</label>
-          <input type="tel" id="checkout-phone" placeholder="+7 (XXX) XXX-XX-XX" required>
+        
+        <div class="checkout-info-card">
+          <div class="info-card-header">
+            <i class="fas fa-headset"></i>
+            <h3>Персональный подход к каждому заказу</h3>
+          </div>
+          <div class="info-card-content">
+            <p>После оформления заказа наш менеджер свяжется с вами в течение <strong>2 часов</strong> (в рабочее время) для:</p>
+            <ul class="info-card-list">
+              <li><i class="fas fa-check-circle"></i> Уточнения деталей доставки</li>
+              <li><i class="fas fa-check-circle"></i> Подбора оптимального способа оплаты</li>
+              <li><i class="fas fa-check-circle"></i> Ответа на все ваши вопросы</li>
+            </ul>
+          </div>
         </div>
-        <div class="form-group">
-          <label for="checkout-address">Адрес доставки</label>
-          <input type="text" id="checkout-address" placeholder="Введите адрес" required>
+        
+        <div class="contact-preference">
+          <h4>Предпочтительный способ связи</h4>
+          <div class="contact-options">
+            <label class="contact-option">
+              <input type="radio" name="contact-method" value="phone" checked>
+              <span class="contact-icon"><i class="fas fa-phone-alt"></i></span>
+              <span class="contact-label">Телефон</span>
+            </label>
+            <label class="contact-option">
+              <input type="radio" name="contact-method" value="whatsapp">
+              <span class="contact-icon"><i class="fab fa-whatsapp"></i></span>
+              <span class="contact-label">WhatsApp</span>
+            </label>
+            <label class="contact-option">
+              <input type="radio" name="contact-method" value="telegram">
+              <span class="contact-icon"><i class="fab fa-telegram-plane"></i></span>
+              <span class="contact-label">Telegram</span>
+            </label>
+            <label class="contact-option">
+              <input type="radio" name="contact-method" value="email">
+              <span class="contact-icon"><i class="fas fa-envelope"></i></span>
+              <span class="contact-label">Email</span>
+            </label>
+          </div>
         </div>
-        <button type="submit" class="cart-page__submit">Подтвердить заказ</button>
-        <button type="button" class="cart-page__back">Назад</button>
-      </form>
+        
+        <!-- Добавляем поле для ввода имени клиента -->
+        <div class="checkout-form-group">
+          <label for="customer-name">Ваше имя*</label>
+          <input type="text" id="customer-name" class="checkout-input" placeholder="Введите ваше имя" required>
+        </div>
+        
+        <div class="checkout-form-group">
+          <label for="checkout-comment">Комментарий к заказу</label>
+          <textarea id="checkout-comment" class="checkout-input" placeholder="Укажите удобное время для звонка, особые пожелания или вопросы по заказу" rows="3"></textarea>
+          <div class="comment-counter">0/500</div>
+        </div>
+        
+        <div class="delivery-info-toggle">
+          <button type="button" class="toggle-button" id="delivery-info-toggle">
+            <i class="fas fa-truck"></i> Информация о доставке <i class="fas fa-chevron-down"></i>
+          </button>
+          <div class="delivery-info-content" id="delivery-info-content">
+            <div class="delivery-methods">
+              <div class="delivery-method">
+                <div class="delivery-method-icon">
+                  <i class="fas fa-truck"></i>
+                </div>
+                <div class="delivery-method-details">
+                  <h5>Курьерская доставка</h5>
+                  <p>Доставка до двери в удобное для вас время</p>
+                </div>
+              </div>
+              <div class="delivery-method">
+                <div class="delivery-method-icon">
+                  <i class="fas fa-store-alt"></i>
+                </div>
+                <div class="delivery-method-details">
+                  <h5>Самовывоз</h5>
+                  <p>Из пунктов выдачи или точек самовывоза</p>
+                </div>
+              </div>
+              <div class="delivery-method">
+                <div class="delivery-method-icon">
+                  <i class="fas fa-boxes"></i>
+                </div>
+                <div class="delivery-method-details">
+                  <h5>Транспортными компаниями</h5>
+                  <p>Доставка в любой регион России</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="checkout-summary-sticky">
+          <div class="checkout-subtotal">
+            <div class="subtotal-label">Сумма заказа:</div>
+            <div class="subtotal-value cart-total-value">0 ₽</div>
+          </div>
+          <div class="delivery-cost">
+            <div class="delivery-cost-label">Доставка:</div>
+            <div class="delivery-cost-value" id="delivery-cost">Согласовывается</div>
+          </div>
+          <div class="checkout-total">
+            <div class="total-label">Итого:</div>
+            <div class="total-value cart-total-value">0 ₽</div>
+          </div>
+          <div class="checkout-actions">
+            <button type="submit" class="checkout-submit">
+              <i class="fas fa-check"></i>
+              Оформить заказ
+            </button>
+            <button type="button" class="checkout-cancel">
+              <i class="fas fa-times"></i>
+              Отмена
+            </button>
+          </div>
+          <div class="checkout-security">
+            <i class="fas fa-shield-alt"></i> Ваши данные защищены и используются только для обработки заказа
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -81,7 +227,629 @@
       <div class="search-popup__results" id="searchResults"></div>
     </div>
   </div>
-
+  
+  <script src="settings.js"></script>
   <script src="mobile.js"></script>
+  <style>
+    /* Скрываем форму оформления заказа при загрузке */
+    #checkout-form {
+      display: none;
+    }
+    
+    /* Стили для неактивной кнопки оформления заказа */
+    .cart-page__checkout.disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      background-color: #cccccc;
+      border-color: #aaaaaa;
+      pointer-events: none;
+    }
+    
+    /* Стили для пустой корзины */
+    .cart-empty {
+      text-align: center;
+      padding: 30px 0;
+      font-size: 18px;
+      color: #888;
+    }
+  </style>
+  <script>
+  document.addEventListener('DOMContentLoaded', async function() {
+    // Загрузка корзины
+    loadCart();
+    
+    // Обновление счетчика корзины
+    if (typeof window.updateCartCount === 'function') {
+      window.updateCartCount();
+    }
+    
+    // Обработка переключателя информации о доставке
+    const deliveryInfoToggle = document.getElementById('delivery-info-toggle');
+    const deliveryInfoContent = document.getElementById('delivery-info-content');
+    
+    if (deliveryInfoToggle && deliveryInfoContent) {
+      deliveryInfoToggle.addEventListener('click', function() {
+        const isExpanded = deliveryInfoContent.style.display === 'block';
+        deliveryInfoContent.style.display = isExpanded ? 'none' : 'block';
+        deliveryInfoToggle.classList.toggle('active', !isExpanded);
+        
+        // Поворот стрелки
+        const arrow = deliveryInfoToggle.querySelector('i:last-child');
+        if (arrow) {
+          arrow.className = isExpanded ? 'fas fa-chevron-down' : 'fas fa-chevron-up';
+        }
+      });
+    }
+    
+    // Счетчик символов в комментарии
+    const commentTextarea = document.getElementById('checkout-comment');
+    const commentCounter = document.querySelector('.comment-counter');
+    
+    if (commentTextarea && commentCounter) {
+      const maxLength = 500;
+      
+      commentTextarea.addEventListener('input', function() {
+        const currentLength = this.value.length;
+        commentCounter.textContent = currentLength + '/' + maxLength;
+        
+        // Изменение цвета счетчика при приближении к лимиту
+        if (currentLength > maxLength * 0.8) {
+          commentCounter.classList.add('near-limit');
+        } else {
+          commentCounter.classList.remove('near-limit');
+        }
+        
+        // Ограничение ввода
+        if (currentLength > maxLength) {
+          this.value = this.value.substring(0, maxLength);
+          commentCounter.textContent = maxLength + '/' + maxLength;
+        }
+      });
+    }
+    
+    // Обработка кнопок оформления заказа
+    const checkoutButton = document.querySelector('.cart-page__checkout');
+    const checkoutForm = document.getElementById('checkout-form');
+    const cartItems = document.querySelector('.cart-page__items');
+    const cartFooter = document.querySelector('.cart-page__footer');
+    const cancelButton = document.querySelector('.checkout-cancel');
+    const submitButton = document.querySelector('.checkout-submit');
+    
+    if (checkoutButton && checkoutForm && cartItems && cartFooter) {
+      // Показать форму оформления заказа
+      checkoutButton.addEventListener('click', function() {
+        cartItems.style.display = 'none';
+        cartFooter.style.display = 'none';
+        checkoutForm.style.display = 'flex';
+      });
+      
+      // Отмена оформления
+      if (cancelButton) {
+        cancelButton.addEventListener('click', function() {
+          cartItems.style.display = 'block';
+          cartFooter.style.display = 'block';
+          checkoutForm.style.display = 'none';
+        });
+      }
+      
+      // Отправка формы
+      if (submitButton) {
+        submitButton.addEventListener('click', function(e) {
+          e.preventDefault();
+          
+          // Получение данных формы
+          const contactMethod = document.querySelector('input[name="contact-method"]:checked')?.value || 'phone';
+          const customerName = document.getElementById('customer-name')?.value || '';
+          const comment = document.getElementById('checkout-comment')?.value || '';
+          
+          // Проверяем, что имя клиента заполнено
+          if (!customerName.trim()) {
+            showNotification('Пожалуйста, укажите ваше имя');
+            return;
+          }
+          
+          // Получение данных корзины
+          const cartData = JSON.parse(localStorage.getItem('cartItems') || '[]');
+          
+          // Проверяем, что корзина не пуста
+          if (cartData.length === 0) {
+            showNotification('Ваша корзина пуста. Добавьте товары перед оформлением заказа.');
+            return;
+          }
+          
+          // Валидация корзины перед отправкой
+          const validation = validateCartBeforeOrder();
+          if (validation.invalidItems.length > 0) {
+            console.error('Некорректные товары в корзине:', validation.invalidItems);
+            
+            // Очищаем корзину от некорректных товаров
+            localStorage.setItem('cartItems', JSON.stringify(validation.validItems));
+            
+            let errorMessage = 'В корзине были некорректные товары:\n';
+            validation.invalidItems.forEach(invalidItem => {
+              errorMessage += `- ${invalidItem.reason}\n`;
+            });
+            errorMessage += '\nКорзина очищена от некорректных товаров. Пожалуйста, добавьте товары заново.';
+            
+            showNotification(errorMessage);
+            
+            // Перезагружаем страницу, чтобы показать очищенную корзину
+            setTimeout(() => {
+              window.location.reload();
+            }, 3000);
+            return;
+          }
+          
+          // Создание объекта заказа с валидированными данными
+          const order = {
+            id: generateOrderId(),
+            date: new Date().toISOString(),
+            items: validation.validItems.map(item => ({
+              product_id: item.id,
+              quantity: item.quantity,
+              title: item.title,
+              price: item.price,
+              image: item.image
+            })),
+            contactMethod: contactMethod,
+            customerName: customerName,
+            comment: comment,
+            status: 'new'
+          };
+          
+          // Сохранение заказа в localStorage
+          saveOrder(order);
+          
+          // Отправка заказа на сервер
+          sendOrderToServer(order)
+            .then(response => {
+              
+              // Очистка корзины
+              localStorage.setItem('cartItems', '[]');
+              
+              // Показ уведомления
+              showNotification('Заказ успешно оформлен! Наш менеджер свяжется с вами в ближайшее время.');
+              
+              // Возврат к пустой корзине
+              setTimeout(() => {
+                window.location.reload();
+              }, 2000);
+            })
+            .catch(error => {
+              console.error('Ошибка при оформлении заказа:', error);
+              
+              // Показываем более информативное сообщение об ошибке
+              let errorMessage = 'Произошла ошибка при оформлении заказа. ';
+              
+              if (error.message.includes('некорректные товары')) {
+                errorMessage = error.message;
+              } else if (error.message.includes('не найден')) {
+                errorMessage = 'В корзине есть товары, которых больше нет в каталоге. Корзина будет очищена.';
+                localStorage.setItem('cartItems', '[]');
+              } else if (error.message.includes('сеть') || error.message.includes('network')) {
+                errorMessage = 'Ошибка соединения с сервером. Проверьте интернет-соединение и попробуйте снова.';
+              } else {
+                errorMessage += 'Пожалуйста, попробуйте еще раз или свяжитесь с нами.';
+              }
+              
+              showNotification(errorMessage);
+              
+              // Если корзина была очищена из-за ошибки, перезагружаем страницу
+              if (error.message.includes('очищена') || error.message.includes('некорректные товары')) {
+                setTimeout(() => {
+                  window.location.reload();
+                }, 3000);
+              }
+            });
+        });
+      }
+    }
+    
+    // === Загрузка корзины ===
+    function loadCart() {
+      const cartItemsList = document.querySelector('.cart-page__items');
+      const cartTotalElements = document.querySelectorAll('.cart-total-value');
+      
+      if (!cartItemsList) return;
+      
+      // Получаем актуальные данные из localStorage
+      const cart = JSON.parse(localStorage.getItem('cartItems') || '[]');
+      
+      let html = '';
+      let total = 0;
+      
+      if (cart.length === 0) {
+        cartItemsList.innerHTML = '<li class="cart-empty">Ваша корзина пуста</li>';
+        cartTotalElements.forEach(el => el.textContent = '0 ₽');
+        
+        // Отключаем кнопку оформления заказа
+        const checkoutButton = document.querySelector('.cart-page__checkout');
+        if (checkoutButton) {
+          checkoutButton.disabled = true;
+          checkoutButton.classList.add('disabled');
+        }
+        return;
+      }
+      
+      // Включаем кнопку оформления заказа
+      const checkoutButton = document.querySelector('.cart-page__checkout');
+      if (checkoutButton) {
+        checkoutButton.disabled = false;
+        checkoutButton.classList.remove('disabled');
+      }
+      
+      cart.forEach(item => {
+        // Проверяем наличие необходимых полей
+        if (!item.id || !item.title || !item.price) {
+          return;
+        }
+        
+        // Убедимся, что quantity всегда есть и это число
+        if (!item.quantity || isNaN(parseInt(item.quantity))) {
+          item.quantity = 1;
+        }
+        
+        const itemTotal = item.price * item.quantity;
+        total += itemTotal;
+        
+        // Форматируем цену для отображения
+        const formattedPrice = typeof item.price.toLocaleString === 'function' 
+          ? item.price.toLocaleString() 
+          : parseInt(item.price).toLocaleString();
+        
+        html += `
+          <li data-id="${item.id}">
+            <img src="${item.image || 'https://via.placeholder.com/100x100?text=Нет+фото'}" alt="${item.title}" onerror="this.src='https://via.placeholder.com/100x100?text=Ошибка+загрузки'">
+            <div class="cart-page__item-details">
+              <div class="cart-page__item-title">${item.title}</div>
+              <div class="cart-page__item-price">${formattedPrice} ₽</div>
+              <div class="cart-page__quantity-controls">
+                <button class="cart-page__quantity-btn decrease">-</button>
+                <span class="cart-page__quantity-value">${item.quantity}</span>
+                <button class="cart-page__quantity-btn increase">+</button>
+              </div>
+            </div>
+            <button class="cart-page__remove-btn"><i class="fas fa-times"></i></button>
+          </li>
+        `;
+      });
+      
+      cartItemsList.innerHTML = html;
+      cartTotalElements.forEach(el => el.textContent = total.toLocaleString() + ' ₽');
+      
+      // Добавляем обработчики для кнопок
+      const decreaseButtons = cartItemsList.querySelectorAll('.cart-page__quantity-btn.decrease');
+      const increaseButtons = cartItemsList.querySelectorAll('.cart-page__quantity-btn.increase');
+      const removeButtons = cartItemsList.querySelectorAll('.cart-page__remove-btn');
+      
+      decreaseButtons.forEach(btn => {
+        btn.addEventListener('click', handleQuantityChange);
+      });
+      
+      increaseButtons.forEach(btn => {
+        btn.addEventListener('click', handleQuantityChange);
+      });
+      
+      removeButtons.forEach(btn => {
+        btn.addEventListener('click', handleRemoveItem);
+      });
+      
+      // Обновляем счетчик корзины в шапке
+      if (typeof window.updateCartCount === 'function') {
+        window.updateCartCount();
+      }
+    }
+    
+    // Обработка изменения количества
+    function handleQuantityChange(e) {
+      const btn = e.currentTarget;
+      const li = btn.closest('li');
+      const id = li.dataset.id;
+      const cart = JSON.parse(localStorage.getItem('cartItems') || '[]');
+      
+      // Используем нестрогое сравнение для поддержки строковых и числовых ID
+      const itemIndex = cart.findIndex(item => item.id == id);
+      
+      if (itemIndex === -1) return;
+      
+      if (btn.classList.contains('increase')) {
+        cart[itemIndex].quantity++;
+        showNotification('Количество товара увеличено');
+      } else if (btn.classList.contains('decrease')) {
+        if (cart[itemIndex].quantity > 1) {
+          cart[itemIndex].quantity--;
+          showNotification('Количество товара уменьшено');
+        } else {
+          cart.splice(itemIndex, 1);
+          showNotification('Товар удален из корзины');
+        }
+      }
+      
+      localStorage.setItem('cartItems', JSON.stringify(cart));
+      loadCart();
+      
+      // Обновляем счетчик корзины
+      if (typeof window.updateCartCount === 'function') {
+        window.updateCartCount(true);
+      }
+    }
+    
+    // Обработка удаления товара
+    function handleRemoveItem(e) {
+      const btn = e.currentTarget;
+      const li = btn.closest('li');
+      const id = li.dataset.id;
+      const cart = JSON.parse(localStorage.getItem('cartItems') || '[]');
+      
+      // Используем нестрогое сравнение для поддержки строковых и числовых ID
+      const itemIndex = cart.findIndex(item => item.id == id);
+      
+      if (itemIndex === -1) return;
+      
+      cart.splice(itemIndex, 1);
+      localStorage.setItem('cartItems', JSON.stringify(cart));
+      loadCart();
+      showNotification('Товар удален из корзины');
+      
+      // Обновляем счетчик корзины
+      if (typeof window.updateCartCount === 'function') {
+        window.updateCartCount(true);
+      }
+    }
+    
+    // Генерация ID заказа
+    function generateOrderId() {
+      return 'ORD-' + Date.now().toString().slice(-6) + '-' + Math.floor(Math.random() * 1000);
+    }
+    
+    // Валидация корзины перед отправкой заказа
+    function validateCartBeforeOrder() {
+      const cart = JSON.parse(localStorage.getItem('cartItems') || '[]');
+      const validItems = [];
+      const invalidItems = [];
+      
+      cart.forEach(item => {
+        // Проверяем наличие обязательных полей
+        if (!item.id || !item.title || !item.price) {
+          invalidItems.push({
+            item: item,
+            reason: 'Отсутствуют обязательные поля (id, title, price)'
+          });
+          return;
+        }
+        
+        // Проверяем, что ID является числом
+        const numericId = parseInt(item.id);
+        if (isNaN(numericId)) {
+          invalidItems.push({
+            item: item,
+            reason: `Некорректный ID товара: ${item.id}`
+          });
+          return;
+        }
+        
+        // Проверяем, что цена является числом
+        const numericPrice = parseFloat(item.price);
+        if (isNaN(numericPrice) || numericPrice <= 0) {
+          invalidItems.push({
+            item: item,
+            reason: `Некорректная цена: ${item.price}`
+          });
+          return;
+        }
+        
+        // Проверяем количество
+        const quantity = parseInt(item.quantity || 1);
+        if (isNaN(quantity) || quantity <= 0) {
+          invalidItems.push({
+            item: item,
+            reason: `Некорректное количество: ${item.quantity}`
+          });
+          return;
+        }
+        
+        validItems.push({
+          ...item,
+          id: numericId,
+          price: numericPrice,
+          quantity: quantity
+        });
+      });
+      
+      return { validItems, invalidItems };
+    }
+    
+    // Сохранение заказа
+    function saveOrder(order) {
+      const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+      orders.push(order);
+      localStorage.setItem('orders', JSON.stringify(orders));
+    }
+    
+    // Отправка заказа на сервер
+    async function sendOrderToServer(order) {
+      
+      try {
+        // Получаем базовый URL API из настроек или используем значение по умолчанию
+        const apiBaseUrl = window.API_BASE_URL || 'http://localhost:5000/api';
+        const orderEndpoint = `${apiBaseUrl}/orders`;
+        
+        // Подготавливаем данные для отправки на сервер
+        const orderData = {
+          ...order,
+          customer_name: order.customerName, // Преобразуем customerName в customer_name для сервера
+        };
+        
+        // Отправка данных на сервер
+        const response = await fetch(orderEndpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Client-Version': '1.0.0',
+            'X-Platform': 'mobile-web'
+          },
+          body: JSON.stringify(orderData)
+        });
+        
+        // Если ответ не успешный, выбрасываем ошибку
+        if (!response.ok) {
+          const errorText = await response.text();
+          let errorData;
+          try {
+            errorData = JSON.parse(errorText);
+          } catch (e) {
+            errorData = { message: errorText };
+          }
+          
+          // Если сервер вернул информацию о некорректных товарах, очищаем корзину
+          if (errorData.invalid_items && errorData.invalid_items.length > 0) {
+            console.error('Некорректные товары в корзине:', errorData.invalid_items);
+            localStorage.setItem('cartItems', '[]');
+            throw new Error('В корзине были некорректные товары. Корзина очищена. Пожалуйста, добавьте товары заново.');
+          }
+          
+          throw new Error(errorData.message || `Ошибка сервера: ${response.status} ${errorText}`);
+        }
+        
+        // Парсим JSON ответ
+        const data = await response.json();
+        
+        // Сохраняем информацию об успешной отправке
+        const successfulOrders = JSON.parse(localStorage.getItem('successfulOrders') || '[]');
+        successfulOrders.push({
+          order: order,
+          response: data,
+          timestamp: new Date().toISOString()
+        });
+        localStorage.setItem('successfulOrders', JSON.stringify(successfulOrders));
+        
+        return data;
+      } catch (error) {
+        
+        // Сохраняем информацию о неудачной отправке
+        const failedOrders = JSON.parse(localStorage.getItem('failedOrders') || '[]');
+        failedOrders.push({
+          order: order,
+          error: error.message,
+          timestamp: new Date().toISOString()
+        });
+        localStorage.setItem('failedOrders', JSON.stringify(failedOrders));
+        
+        // Пробуем отправить данные через альтернативный метод
+        try {
+          
+          // Используем JSON для резервного метода вместо FormData
+          const backupEndpoint = `${window.API_BACKUP_URL || 'http://localhost:5000/api'}/orders`;
+          
+          const backupResponse = await fetch(backupEndpoint, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Client-Version': '1.0.0',
+              'X-Platform': 'mobile-web-backup'
+            },
+            body: JSON.stringify(order)
+          });
+          
+          if (backupResponse.ok) {
+            const backupData = await backupResponse.json();
+            return backupData;
+          } else {
+            throw new Error('Резервный метод также не сработал');
+          }
+        } catch (backupError) {
+          throw backupError;
+        }
+        
+        // Если все попытки не удались, перебрасываем исходную ошибку
+        throw error;
+      }
+    }
+    
+    // Показ уведомления
+    function showNotification(message) {
+      // Проверяем, доступна ли функция из mobile.js
+      if (typeof window.showCartNotification === 'function') {
+        window.showCartNotification(message);
+        return;
+      }
+      
+      // Если функция из mobile.js недоступна, используем встроенное уведомление
+      let notif = document.getElementById('cartNotification');
+      if (!notif) {
+        notif = document.createElement('div');
+        notif.id = 'cartNotification';
+        notif.style.position = 'fixed';
+        notif.style.bottom = '60px';
+        notif.style.left = '50%';
+        notif.style.transform = 'translateX(-50%)';
+        notif.style.background = '#C9897B';
+        notif.style.color = '#fff';
+        notif.style.padding = '10px 22px';
+        notif.style.borderRadius = '20px';
+        notif.style.fontSize = '15px';
+        notif.style.boxShadow = '0 2px 10px rgba(0,0,0,0.15)';
+        notif.style.zIndex = '2000';
+        notif.style.opacity = '0';
+        notif.style.transition = 'opacity 0.3s';
+        document.body.appendChild(notif);
+      }
+      notif.textContent = message;
+      notif.style.opacity = '1';
+      setTimeout(() => notif.style.opacity = '0', 1600);
+    }
+    
+    // === Динамика способов получения ===
+    if (window.location.pathname.includes('cart.html')) {
+      const deliveryOptionsContainer = document.querySelector('.delivery-options');
+      const pickupPointsGroup = document.getElementById('pickup-points-group');
+      const deliveryAddressGroup = document.getElementById('delivery-address-group');
+      
+      if (deliveryOptionsContainer && pickupPointsGroup && deliveryAddressGroup) {
+        const deliveryMethods = window.STATIC_DELIVERY_METHODS;
+        let html = '';
+        if (deliveryMethods.courier) {
+          html += `<label class="delivery-option"><input type="radio" name="delivery" value="courier" checked><span class="delivery-option__icon"><i class="fas fa-truck"></i></span><span class="delivery-option__text">Курьер</span></label>`;
+        }
+        if (deliveryMethods.pickup) {
+          html += `<label class="delivery-option"><input type="radio" name="delivery" value="pickup"${!deliveryMethods.courier ? ' checked' : ''}><span class="delivery-option__icon"><i class="fas fa-store"></i></span><span class="delivery-option__text">Самовывоз</span></label>`;
+        }
+        if (deliveryMethods.post) {
+          html += `<label class="delivery-option"><input type="radio" name="delivery" value="post"${(!deliveryMethods.courier && !deliveryMethods.pickup) ? ' checked' : ''}><span class="delivery-option__icon"><i class="fas fa-mail-bulk"></i></span><span class="delivery-option__text">Почта</span></label>`;
+        }
+        deliveryOptionsContainer.innerHTML = html;
+        // Пункты самовывоза
+        if (deliveryMethods.pickup) {
+          let pointsHtml = '';
+          if (Array.isArray(deliveryMethods.pickupParams.points) && deliveryMethods.pickupParams.points.length > 0) {
+            pointsHtml = deliveryMethods.pickupParams.points.map((p, i) => `
+              <label class="pickup-point">
+                <input type="radio" name="pickup" value="${p.address || ''}"${i === 0 ? ' checked' : ''}>
+                <div class="pickup-point__content">
+                  <div class="pickup-point__name">${p.address || 'Пункт №' + (i+1)}</div>
+                  <div class="pickup-point__address">${p.address || ''}</div>
+                  <div class="pickup-point__time">${p.working_hours || ''}</div>
+                </div>
+              </label>
+            `).join('');
+          } else {
+            pointsHtml = '<div class="form-text">Пока не добавлено ни одного пункта самовывоза</div>';
+          }
+          pickupPointsGroup.querySelector('.pickup-points').innerHTML = pointsHtml;
+        }
+        // Скрытие/отображение блоков
+        function updateDeliveryGroups() {
+          const val = document.querySelector('input[name="delivery"]:checked').value;
+          deliveryAddressGroup.style.display = (val === 'courier' || val === 'post') ? '' : 'none';
+          pickupPointsGroup.style.display = (val === 'pickup') ? '' : 'none';
+        }
+        document.querySelectorAll('input[name="delivery"]').forEach(radio => {
+          radio.addEventListener('change', updateDeliveryGroups);
+        });
+        updateDeliveryGroups();
+      }
+    }
+  });
+  </script>
 </body>
 </html>

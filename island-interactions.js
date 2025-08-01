@@ -105,4 +105,40 @@ document.addEventListener('DOMContentLoaded', function() {
       }, 300);
     });
   }
+
+  /* === Логика неактивности (взаимодействие с островом) === */
+  let inactivityTimer;
+
+  // Функция для деактивации острова
+  const setIslandInactive = () => {
+    if (island) {
+      island.classList.add('island--inactive');
+    }
+  };
+
+  // Функция для активации острова и сброса таймера
+  const makeIslandActive = () => {
+    if (island) {
+      island.classList.remove('island--inactive');
+    }
+    clearTimeout(inactivityTimer);
+  };
+  
+  // Функция для запуска таймера неактивности
+  const startInactivityTimer = () => {
+    clearTimeout(inactivityTimer);
+    inactivityTimer = setTimeout(setIslandInactive, 5000); // 5 секунд
+  };
+
+  // События, указывающие на активность на острове
+  island.addEventListener('mouseenter', makeIslandActive);
+  island.addEventListener('focusin', makeIslandActive); // Для доступности с клавиатуры
+  island.addEventListener('touchstart', makeIslandActive, { passive: true });
+
+  // События, указывающие на уход с острова
+  island.addEventListener('mouseleave', startInactivityTimer);
+  island.addEventListener('focusout', startInactivityTimer); // Для доступности с клавиатуры
+
+  // Изначально запускаем таймер, чтобы остров стал неактивным
+  startInactivityTimer();
 }); 

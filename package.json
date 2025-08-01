@@ -1,0 +1,14 @@
+{
+  "name": "damax-shop",
+  "version": "1.0.0",
+  "description": "Damax Shop",
+  "main": "server.py",
+  "scripts": {
+    "start": "python server.py",
+    "update-documents": "node update_all_documents.js",
+    "update-dates": "node update_document_dates.js"
+  },
+  "dependencies": {
+    "node-fetch": "^2.6.7"
+  }
+}

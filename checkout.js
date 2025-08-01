@@ -102,18 +102,18 @@ const checkoutModule = (function() {
         </div>
         <div class="checkout-summary-row">
           <span>Доставка:</span>
-          <strong id="summary-delivery-cost">300 ₽</strong>
+          <strong id="summary-delivery-cost">Уточняется</strong>
         </div>
         <div class="checkout-summary-row checkout-total-row">
           <span>Итого:</span>
-          <strong class="checkout-grand-total">${(totalPrice + 300).toLocaleString()} ₽</strong>
+          <strong class="checkout-grand-total">${totalPrice.toLocaleString()} ₽</strong>
         </div>
       </div>
     `;
   }
   
   // Показать модальное окно оформления заказа
-  function showCheckoutModal() {
+  async function showCheckoutModal() {
     // Проверяем наличие товаров в корзине
     const cartItems = loadCartItems();
     if (cartItems.length === 0) {
@@ -124,6 +124,20 @@ const checkoutModule = (function() {
       }
       return;
     }
+    
+    // Используем статические методы оплаты
+    let paymentMethods = window.STATIC_PAYMENT_METHODS || [
+      { value: 'card', label: 'Банковская карта' },
+      { value: 'cash', label: 'Наличными при получении' },
+      { value: 'online', label: 'Онлайн-оплата' }
+    ];
+    
+    // Используем статические методы доставки
+    let deliveryMethods = window.STATIC_DELIVERY_METHODS || [
+      { value: 'courier', label: 'Курьер' },
+      { value: 'pickup', label: 'Самовывоз' },
+      { value: 'post', label: 'Почта' }
+    ];
     
     // Закрываем панель корзины, если она открыта
     const cartPanel = document.querySelector('.cart-panel');
@@ -184,253 +198,127 @@ const checkoutModule = (function() {
             <div class="checkout-order">
               <h2 class="checkout-modal__title">Ваш заказ</h2>
               ${renderCartItemsList()}
+              
+              <div class="checkout-info-block">
+                <div class="checkout-info-icon">
+                  <i class="fas fa-info-circle"></i>
+                </div>
+                <div class="checkout-info-text">
+                  После оформления заказа наш менеджер свяжется с вами для уточнения деталей доставки и оплаты.
+                </div>
+              </div>
             </div>
             
             <div class="checkout-delivery">
-              <h2 class="checkout-modal__title">Варианты получения</h2>
-              <div class="delivery-options-tabs">
-                <button class="delivery-tab active" data-delivery="courier">
-                  <i class="fas fa-truck"></i>
-                  <span>Курьер</span>
-                </button>
-                <button class="delivery-tab" data-delivery="pickup">
-                  <i class="fas fa-store-alt"></i>
-                  <span>Самовывоз</span>
-                </button>
-                <button class="delivery-tab" data-delivery="post">
-                  <i class="fas fa-mail-bulk"></i>
-                  <span>Почта</span>
-                </button>
-              </div>
-              
-              <div class="delivery-options-content">
-                <!-- Секция с курьерской доставкой (активна по умолчанию) -->
-                <div class="delivery-option-panel active" id="courier-panel">
-                  <div class="delivery-timeframe">
-                    <div class="timeframe-header">
-                      <i class="fas fa-clock"></i>
-                      <h3>Выберите удобное время доставки</h3>
-                    </div>
-                    <div class="delivery-days">
-                      <div class="delivery-day" data-date="${formatDate(new Date())}">
-                        <div class="date-label">Сегодня</div>
-                        <div class="time-slots">
-                          <button class="time-slot">9:00-12:00</button>
-                          <button class="time-slot">12:00-15:00</button>
-                          <button class="time-slot" disabled>15:00-18:00</button>
-                          <button class="time-slot">18:00-21:00</button>
-                        </div>
-                      </div>
-                      <div class="delivery-day" data-date="${formatDate(getTomorrow())}">
-                        <div class="date-label">Завтра</div>
-                        <div class="time-slots">
-                          <button class="time-slot">9:00-12:00</button>
-                          <button class="time-slot">12:00-15:00</button>
-                          <button class="time-slot">15:00-18:00</button>
-                          <button class="time-slot">18:00-21:00</button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="address-map-section">
-                    <div class="address-input-group">
-                      <label for="delivery-address">Адрес доставки</label>
-                      <div class="address-field-wrapper">
-                        <input type="text" id="delivery-address" class="checkout-input address-autocomplete" placeholder="Начните вводить адрес...">
-                        <button class="locate-me-btn" title="Определить моё местоположение">
-                          <i class="fas fa-crosshairs"></i>
-                        </button>
-                      </div>
-                    </div>
-                    <div class="address-map">
-                      <div class="map-placeholder">
-                        <i class="fas fa-map-marked-alt"></i>
-                        <span>Карта загрузится после ввода адреса</span>
-                      </div>
-                      <!-- Здесь будет подключена карта -->
-                    </div>
-                  </div>
-                </div>
-                
-                <!-- Секция с пунктами самовывоза -->
-                <div class="delivery-option-panel" id="pickup-panel">
-                  <div class="pickup-search">
-                    <input type="text" class="checkout-input" placeholder="Введите адрес для поиска ближайших пунктов">
-                    <button class="pickup-search-btn">
-                      <i class="fas fa-search"></i>
-                    </button>
-                  </div>
-                  <div class="pickup-points">
-                    <div class="pickup-point">
-                      <div class="pickup-info">
-                        <h4>Пункт выдачи №1</h4>
-                        <p class="pickup-address">ул. Ленина, 25</p>
-                        <p class="pickup-schedule">
-                          <i class="far fa-clock"></i> 09:00-21:00, без выходных
-                        </p>
-                        <div class="pickup-details">
-                          <span><i class="fas fa-money-bill-wave"></i> Наличная оплата</span>
-                          <span><i class="fas fa-credit-card"></i> Картой на месте</span>
-                        </div>
-                      </div>
-                      <button class="pickup-select-btn">Выбрать</button>
-                    </div>
-                    <div class="pickup-point">
-                      <div class="pickup-info">
-                        <h4>Пункт выдачи №2</h4>
-                        <p class="pickup-address">ул. Гагарина, 54</p>
-                        <p class="pickup-schedule">
-                          <i class="far fa-clock"></i> 10:00-22:00, ежедневно
-                        </p>
-                        <div class="pickup-details">
-                          <span><i class="fas fa-money-bill-wave"></i> Наличная оплата</span>
-                          <span><i class="fas fa-credit-card"></i> Картой на месте</span>
-                        </div>
-                      </div>
-                      <button class="pickup-select-btn">Выбрать</button>
-                    </div>
-                    <div class="pickup-point">
-                      <div class="pickup-info">
-                        <h4>Пункт выдачи №3</h4>
-                        <p class="pickup-address">пр. Победы, 112</p>
-                        <p class="pickup-schedule">
-                          <i class="far fa-clock"></i> 08:00-20:00, ежедневно
-                        </p>
-                        <div class="pickup-details">
-                          <span><i class="fas fa-money-bill-wave"></i> Наличная оплата</span>
-                          <span><i class="fas fa-credit-card"></i> Картой на месте</span>
-                        </div>
-                      </div>
-                      <button class="pickup-select-btn">Выбрать</button>
-                    </div>
-                  </div>
-                </div>
-                
-                <!-- Секция с почтовой доставкой -->
-                <div class="delivery-option-panel" id="post-panel">
-                  <div class="post-types">
-                    <div class="post-type active">
-                      <input type="radio" name="post-type" id="post-regular" checked>
-                      <label for="post-regular">
-                        <div class="post-icon">
-                          <i class="fas fa-envelope"></i>
-                        </div>
-                        <div class="post-info">
-                          <span>Обычное отправление</span>
-                          <p>5-7 дней, от 300 ₽</p>
-                        </div>
-                      </label>
-                    </div>
-                    <div class="post-type">
-                      <input type="radio" name="post-type" id="post-express">
-                      <label for="post-express">
-                        <div class="post-icon">
-                          <i class="fas fa-shipping-fast"></i>
-                        </div>
-                        <div class="post-info">
-                          <span>Экспресс-доставка</span>
-                          <p>2-3 дня, от 500 ₽</p>
-                        </div>
-                      </label>
-                    </div>
-                    <div class="post-type">
-                      <input type="radio" name="post-type" id="post-insured">
-                      <label for="post-insured">
-                        <div class="post-icon">
-                          <i class="fas fa-shield-alt"></i>
-                        </div>
-                        <div class="post-info">
-                          <span>С объявленной ценностью</span>
-                          <p>5-7 дней, от 350 ₽</p>
-                        </div>
-                      </label>
-                    </div>
-                  </div>
-                  
-                  <div class="postal-details">
-                    <div class="checkout-form-group">
-                      <label for="post-address">Почтовый адрес</label>
-                      <textarea id="post-address" class="checkout-input" rows="3" placeholder="Индекс, город, улица, дом, квартира"></textarea>
-                    </div>
-                    <div class="checkout-form-group">
-                      <label for="post-recipient">ФИО получателя</label>
-                      <input type="text" id="post-recipient" class="checkout-input" placeholder="Фамилия Имя Отчество">
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <h2 class="checkout-modal__title">Оформление заказа</h2>
               
               <form class="checkout-form" id="checkout-form">
-                <!-- Основные контактные данные для всех типов доставки -->
-                <div class="checkout-form-comment">Основные контактные данные</div>
-                <div class="checkout-form-row">
-                  <div class="checkout-form-group">
-                    <label for="checkout-name">Имя</label>
-                    <input type="text" id="checkout-name" class="checkout-input" value="${userData.name || ''}" placeholder="Имя" required>
+                <div class="checkout-process-steps">
+                  <div class="process-step active">
+                    <div class="step-number">1</div>
+                    <div class="step-info">
+                      <h4>Оформление</h4>
+                      <p>Отправка заказа</p>
+                    </div>
                   </div>
-                  
-                  <div class="checkout-form-group">
-                    <label for="checkout-surname">Фамилия</label>
-                    <input type="text" id="checkout-surname" class="checkout-input" value="${userData.surname || ''}" placeholder="Фамилия" required>
+                  <div class="process-step">
+                    <div class="step-number">2</div>
+                    <div class="step-info">
+                      <h4>Обработка</h4>
+                      <p>Менеджер свяжется с вами</p>
+                    </div>
+                  </div>
+                  <div class="process-step">
+                    <div class="step-number">3</div>
+                    <div class="step-info">
+                      <h4>Доставка</h4>
+                      <p>Согласование деталей</p>
+                    </div>
                   </div>
                 </div>
                 
-                <div class="checkout-form-row">
-                  <div class="checkout-form-group">
-                    <label for="checkout-email">Email</label>
-                    <input type="email" id="checkout-email" class="checkout-input" value="${userData.email || ''}" placeholder="example@domain.com" required>
+                <div class="checkout-info-card">
+                  <div class="info-card-header">
+                    <i class="fas fa-headset"></i>
+                    <h3>Персональный подход к каждому заказу</h3>
                   </div>
-                  
-                  <div class="checkout-form-group">
-                    <label for="checkout-phone">Телефон</label>
-                    <input type="tel" id="checkout-phone" class="checkout-input" value="${userData.phone || ''}" placeholder="+7 (XXX) XXX-XX-XX" required>
+                  <div class="info-card-content">
+                    <p>После оформления заказа наш менеджер свяжется с вами в течение <strong>2 часов</strong> (в рабочее время) для:</p>
+                    <ul class="info-card-list">
+                      <li><i class="fas fa-check-circle"></i> Уточнения деталей доставки</li>
+                      <li><i class="fas fa-check-circle"></i> Подбора оптимального способа оплаты</li>
+                      <li><i class="fas fa-check-circle"></i> Ответа на все ваши вопросы</li>
+                    </ul>
                   </div>
                 </div>
                 
-                <div class="payment-section">
-                  <h3 class="payment-title">
-                    <i class="fas fa-credit-card"></i>
-                    Способ оплаты
-                  </h3>
-                  <div class="payment-methods">
-                    <div class="payment-method active" data-method="card">
-                      <input type="radio" id="payment-card" name="payment-method" value="card" checked>
-                      <label for="payment-card" class="payment-method-label">
-                        <i class="fas fa-credit-card"></i>
-                        <div>
-                          <span>Банковская карта</span>
-                          <small>Visa, MasterCard, МИР</small>
-                        </div>
-                      </label>
-                    </div>
-                    
-                    <div class="payment-method" data-method="cash">
-                      <input type="radio" id="payment-cash" name="payment-method" value="cash">
-                      <label for="payment-cash" class="payment-method-label">
-                        <i class="fas fa-money-bill-wave"></i>
-                        <div>
-                          <span>Наличными при получении</span>
-                          <small>Для курьера и самовывоза</small>
-                        </div>
-                      </label>
-                    </div>
-                    
-                    <div class="payment-method" data-method="online">
-                      <input type="radio" id="payment-online" name="payment-method" value="online">
-                      <label for="payment-online" class="payment-method-label">
-                        <i class="fas fa-mobile-alt"></i>
-                        <div>
-                          <span>Онлайн-оплата</span>
-                          <small>СБП, ЮMoney, QIWI</small>
-                        </div>
-                      </label>
-                    </div>
+                <div class="contact-preference">
+                  <h4>Предпочтительный способ связи</h4>
+                  <div class="contact-options">
+                    <label class="contact-option">
+                      <input type="radio" name="contact-method" value="phone" checked>
+                      <span class="contact-icon"><i class="fas fa-phone-alt"></i></span>
+                      <span class="contact-label">Телефон</span>
+                    </label>
+                    <label class="contact-option">
+                      <input type="radio" name="contact-method" value="whatsapp">
+                      <span class="contact-icon"><i class="fab fa-whatsapp"></i></span>
+                      <span class="contact-label">WhatsApp</span>
+                    </label>
+                    <label class="contact-option">
+                      <input type="radio" name="contact-method" value="telegram">
+                      <span class="contact-icon"><i class="fab fa-telegram-plane"></i></span>
+                      <span class="contact-label">Telegram</span>
+                    </label>
+                    <label class="contact-option">
+                      <input type="radio" name="contact-method" value="email">
+                      <span class="contact-icon"><i class="fas fa-envelope"></i></span>
+                      <span class="contact-label">Email</span>
+                    </label>
                   </div>
                 </div>
                 
                 <div class="checkout-form-group">
                   <label for="checkout-comment">Комментарий к заказу</label>
-                  <textarea id="checkout-comment" class="checkout-input" placeholder="Ваши пожелания (необязательно)" rows="2"></textarea>
+                  <textarea id="checkout-comment" class="checkout-input" placeholder="Укажите удобное время для звонка, особые пожелания или вопросы по заказу" rows="3"></textarea>
+                  <div class="comment-counter">0/500</div>
+                </div>
+                
+                <div class="delivery-info-toggle">
+                  <button type="button" class="toggle-button" id="delivery-info-toggle">
+                    <i class="fas fa-truck"></i> Информация о доставке <i class="fas fa-chevron-down"></i>
+                  </button>
+                  <div class="delivery-info-content" id="delivery-info-content">
+                    <div class="delivery-methods">
+                      <div class="delivery-method">
+                        <div class="delivery-method-icon">
+                          <i class="fas fa-truck"></i>
+                        </div>
+                        <div class="delivery-method-details">
+                          <h5>Курьерская доставка</h5>
+                          <p>Доставка до двери в удобное для вас время</p>
+                        </div>
+                      </div>
+                      <div class="delivery-method">
+                        <div class="delivery-method-icon">
+                          <i class="fas fa-store-alt"></i>
+                        </div>
+                        <div class="delivery-method-details">
+                          <h5>Самовывоз</h5>
+                          <p>Из пунктов выдачи или точек самовывоза</p>
+                        </div>
+                      </div>
+                      <div class="delivery-method">
+                        <div class="delivery-method-icon">
+                          <i class="fas fa-boxes"></i>
+                        </div>
+                        <div class="delivery-method-details">
+                          <h5>Транспортными компаниями</h5>
+                          <p>Доставка в любой регион России</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
                 
                 <div class="checkout-summary-sticky">
@@ -440,11 +328,11 @@ const checkoutModule = (function() {
                   </div>
                   <div class="delivery-cost">
                     <div class="delivery-cost-label">Доставка:</div>
-                    <div class="delivery-cost-value" id="delivery-cost">300 ₽</div>
+                    <div class="delivery-cost-value" id="delivery-cost">Согласовывается</div>
                   </div>
                   <div class="checkout-total">
                     <div class="total-label">Итого:</div>
-                    <div class="total-value">${(totalPrice + 300).toLocaleString()} ₽</div>
+                    <div class="total-value">${totalPrice.toLocaleString()} ₽</div>
                   </div>
                   <div class="checkout-actions">
                     <button type="submit" class="checkout-submit">
@@ -455,6 +343,9 @@ const checkoutModule = (function() {
                       <i class="fas fa-times"></i>
                       Отмена
                     </button>
+                  </div>
+                  <div class="checkout-security">
+                    <i class="fas fa-shield-alt"></i> Ваши данные защищены и используются только для обработки заказа
                   </div>
                 </div>
               </form>
@@ -503,7 +394,7 @@ const checkoutModule = (function() {
     forceEnableScrolling();
     
     // Инициализируем стоимость доставки при загрузке
-    updateDeliveryCost('courier');
+    updateDeliveryCost();
   }
   
   // Функция для принудительной активации скролла
@@ -519,22 +410,11 @@ const checkoutModule = (function() {
           scrollContainer.style.webkitOverflowScrolling = 'touch !important';
           scrollContainer.style.pointerEvents = 'auto';
           
-          // Отладочное сообщение
-          console.log('Принудительно активирован скролл:', scrollContainer);
-          
           // Фокусировка на контейнере для улучшения скроллинга
           scrollContainer.focus();
-          
-          // Проверка скролла один раз через секунду
-          setTimeout(() => {
-            console.log('Статус скролла:', scrollContainer.scrollHeight, scrollContainer.clientHeight);
-            scrollContainer.classList.add('scrollable');
-            scrollContainer.style.overflowY = 'auto';
-            scrollContainer.style.webkitOverflowScrolling = 'touch';
-          }, 1000);
         }
       }
-    }, 300);
+    }, 100);
   }
   
   // Функция для гарантированного сброса позиции прокрутки при необходимости (например, после успешного заказа)
@@ -756,31 +636,6 @@ const checkoutModule = (function() {
       phoneInput.addEventListener('input', () => formatPhoneNumber(phoneInput));
     }
     
-    // Переключение вкладок способов доставки
-    const deliveryTabs = checkoutModal.querySelectorAll('.delivery-tab');
-    const deliveryPanels = checkoutModal.querySelectorAll('.delivery-option-panel');
-    
-    deliveryTabs.forEach(tab => {
-      tab.addEventListener('click', () => {
-        // Удаляем активный класс у всех вкладок
-        deliveryTabs.forEach(t => t.classList.remove('active'));
-        // Делаем текущую вкладку активной
-        tab.classList.add('active');
-        
-        // Скрываем все панели
-        deliveryPanels.forEach(panel => panel.classList.remove('active'));
-        
-        // Показываем нужную панель
-        const targetPanel = document.getElementById(`${tab.dataset.delivery}-panel`);
-        if (targetPanel) {
-          targetPanel.classList.add('active');
-          
-          // Обновляем стоимость доставки в зависимости от выбранного способа
-          updateDeliveryCost(tab.dataset.delivery);
-        }
-      });
-    });
-    
     // Выбор способа оплаты
     const paymentMethods = checkoutModal.querySelectorAll('.payment-method');
     paymentMethods.forEach(method => {
@@ -799,184 +654,74 @@ const checkoutModule = (function() {
       });
     });
     
-    // Обработка выбора временного слота
-    const timeSlots = checkoutModal.querySelectorAll('.time-slot:not([disabled])');
-    timeSlots.forEach(slot => {
-      slot.addEventListener('click', () => {
-        // Снимаем выделение со всех слотов
-        timeSlots.forEach(s => s.classList.remove('selected'));
-        // Выделяем выбранный слот
-        slot.classList.add('selected');
-        
-        // Обновляем данные о выбранном времени доставки
-        const dayElement = slot.closest('.delivery-day');
-        if (dayElement) {
-          selectedDeliveryDate = dayElement.dataset.date;
-          selectedDeliveryTime = slot.textContent;
-        }
-      });
-    });
-    
-    // Обработка выбора пункта самовывоза
-    const pickupPoints = checkoutModal.querySelectorAll('.pickup-select-btn');
-    pickupPoints.forEach(button => {
-      button.addEventListener('click', () => {
-        // Снимаем выделение со всех пунктов
-        pickupPoints.forEach(b => {
-          const point = b.closest('.pickup-point');
-          if (point) point.classList.remove('selected');
-          b.textContent = 'Выбрать';
-        });
-        
-        // Выделяем выбранный пункт
-        const selectedPoint = button.closest('.pickup-point');
-        if (selectedPoint) {
-          selectedPoint.classList.add('selected');
-          button.textContent = 'Выбрано';
-          
-          // Сохраняем информацию о выбранном пункте
-          const pointTitle = selectedPoint.querySelector('h4').textContent;
-          const pointAddress = selectedPoint.querySelector('.pickup-address').textContent;
-          selectedPickupPoint = { title: pointTitle, address: pointAddress };
-        }
-      });
-    });
-    
-    // Обработка выбора типа почтовой доставки
-    const postTypes = checkoutModal.querySelectorAll('.post-type');
-    postTypes.forEach(type => {
-      type.addEventListener('click', () => {
-        // Снимаем выделение со всех типов
-        postTypes.forEach(t => t.classList.remove('active'));
-        // Выделяем выбранный тип
-        type.classList.add('active');
-        
-        // Отмечаем соответствующий radio
-        const radio = type.querySelector('input[type="radio"]');
-        if (radio) {
-          radio.checked = true;
-          
-          // Обновляем стоимость доставки в зависимости от типа
-          let deliveryCost = 300;
-          if (radio.id === 'post-express') {
-            deliveryCost = 500;
-          } else if (radio.id === 'post-insured') {
-            deliveryCost = 350;
-          } else {
-            deliveryCost = 300;
-          }
-          
-          updateDeliveryCostValue(deliveryCost);
-          selectedPostType = radio.id;
-        }
-      });
-    });
-    
-    // Имитация кнопки геолокации
-    const locateMeBtn = checkoutModal.querySelector('.locate-me-btn');
-    if (locateMeBtn) {
-      locateMeBtn.addEventListener('click', () => {
-        // Имитируем определение местоположения
-        const deliveryAddressInput = document.getElementById('delivery-address');
-        if (deliveryAddressInput) {
-          // Для демонстрации заполняем поле адресом
-          deliveryAddressInput.value = 'г. Казань, ул. Баумана, 12';
-          
-          // Показываем уведомление
-          if (typeof window.showNotification === 'function') {
-            window.showNotification('Ваше местоположение определено', 'success');
-          }
-          
-          // Имитируем отображение карты
-          const mapPlaceholder = checkoutModal.querySelector('.map-placeholder');
-          if (mapPlaceholder) {
-            mapPlaceholder.innerHTML = '<div class="map-loaded"><i class="fas fa-map-pin"></i> Адрес определен на карте</div>';
-          }
-        }
-      });
-    }
-    
-    // Обработка отправки формы
+    // Обработка отправки формы заказа
     const checkoutForm = document.getElementById('checkout-form');
     if (checkoutForm) {
       checkoutForm.addEventListener('submit', handleFormSubmit);
     }
     
-    // Добавляем обработчик изменения размера окна для правильного отображения модального окна
-    window.addEventListener('resize', () => {
-      if (checkoutModal && checkoutModal.getAttribute('aria-hidden') === 'false') {
-        // Настраиваем высоту модального окна
-        adjustModalHeight();
-        
-        // Проверяем и исправляем пустое пространство
-        setTimeout(() => {
-          checkEmptySpace();
-          forceScrollToTop();
-        }, 100);
+    // Добавляем обработчик для комментария
+    const commentTextarea = document.getElementById('checkout-comment');
+    if (commentTextarea) {
+      // Инициализируем счетчик при загрузке
+      const counter = document.querySelector('.comment-counter');
+      if (counter) {
+        counter.textContent = `0/500`;
       }
-    });
-    
-    // Вызываем функцию настройки высоты модального окна при инициализации
-    adjustModalHeight();
-    
-    // Сбрасываем позицию прокрутки в начало с несколькими задержками для надежности
-    [10, 50, 100, 200, 300, 500].forEach(delay => {
-      setTimeout(() => {
-        if (checkoutModal) {
-          const scrollContainer = checkoutModal.querySelector('.checkout-modal__scroller');
-          if (scrollContainer) {
-            scrollContainer.scrollTop = 0;
+      
+      commentTextarea.addEventListener('input', function() {
+        if (this.value.length > 500) {
+          this.value = this.value.substring(0, 500);
+        }
+        
+        // Обновляем счётчик символов
+        const counter = document.querySelector('.comment-counter');
+        if (counter) {
+          counter.textContent = `${this.value.length}/500`;
+          
+          // Меняем цвет счётчика, когда приближается к лимиту
+          if (this.value.length > 400) {
+            counter.classList.add('near-limit');
+          } else {
+            counter.classList.remove('near-limit');
           }
         }
-      }, delay);
-    });
+      });
+    }
     
-    // Принудительно сбрасываем прокрутку после инициализации
-    setTimeout(forceScrollToTop, 50);
+    // Обработчик для переключателя информации о доставке
+    const deliveryInfoToggle = document.getElementById('delivery-info-toggle');
+    if (deliveryInfoToggle) {
+      deliveryInfoToggle.addEventListener('click', function() {
+        const parent = this.closest('.delivery-info-toggle');
+        if (parent) {
+          parent.classList.toggle('active');
+          this.classList.toggle('active');
+          
+          // Воспроизводим звук клика, если доступен
+          if (window.settingsModule && typeof window.settingsModule.playSound === 'function') {
+            window.settingsModule.playSound('click', 0.2);
+          }
+        }
+      });
+    }
     
-    // Добавляем обработчик для мобильных устройств при изменении ориентации
-    window.addEventListener('orientationchange', () => {
-      if (checkoutModal && checkoutModal.getAttribute('aria-hidden') === 'false') {
-        // Небольшая задержка для корректного расчета новых размеров после поворота
-        setTimeout(() => {
-          adjustModalHeight();
-          checkEmptySpace();
-        }, 300);
-      }
+    // Обработчик для выбора способа связи
+    const contactOptions = document.querySelectorAll('.contact-option input');
+    contactOptions.forEach(option => {
+      option.addEventListener('change', function() {
+        // Воспроизводим звук клика, если доступен
+        if (window.settingsModule && typeof window.settingsModule.playSound === 'function') {
+          window.settingsModule.playSound('click', 0.2);
+        }
+      });
     });
   }
   
-  // Обновление стоимости доставки в зависимости от способа
-  function updateDeliveryCost(deliveryType) {
-    let cost = 300; // Базовая стоимость доставки всегда 300 рублей
-    
-    switch (deliveryType) {
-      case 'courier':
-        cost = 300;
-        break;
-      case 'pickup':
-        cost = 300; // Изменяем с 0 на 300 рублей
-        break;
-      case 'post':
-        // Для почты берем стоимость в зависимости от выбранного типа
-        const selectedPostRadio = document.querySelector('input[name="post-type"]:checked');
-        if (selectedPostRadio) {
-          if (selectedPostRadio.id === 'post-express') {
-            cost = 500;
-          } else if (selectedPostRadio.id === 'post-insured') {
-            cost = 350;
-          } else {
-            cost = 300;
-          }
-        } else {
-          cost = 300;
-        }
-        break;
-      default:
-        cost = 300;
-    }
-    
-    updateDeliveryCostValue(cost);
+  // Обновление стоимости доставки
+  function updateDeliveryCost() {
+    // Устанавливаем статус "Уточняется" для стоимости доставки
+    updateDeliveryCostValue();
   }
   
   // Функция для анимированного изменения числа
@@ -1041,48 +786,29 @@ const checkoutModule = (function() {
   }
   
   // Обновление отображаемой стоимости доставки и итоговой суммы
-  function updateDeliveryCostValue(cost) {
+  function updateDeliveryCostValue() {
     // Получаем все нужные элементы
     const deliveryCostElement = document.getElementById('delivery-cost');
     const summaryDeliveryCostElement = document.getElementById('summary-delivery-cost');
     const totalElement = checkoutModal.querySelector('.total-value');
     const grandTotalElement = checkoutModal.querySelector('.checkout-grand-total');
     
-    // Функция для получения числового значения из элемента
-    function getNumberFromElement(element) {
-      if (!element) return 0;
-      const text = element.textContent;
-      const match = text.match(/(\d[\d\s]*)/);
-      if (match) {
-        return parseInt(match[0].replace(/\s/g, ''), 10);
-      }
-      return 0;
-    }
-    
-    // Обновляем стоимость доставки в нижнем блоке с анимацией
+    // Устанавливаем текст "Уточняется" для стоимости доставки
     if (deliveryCostElement) {
-      const currentCost = getNumberFromElement(deliveryCostElement);
-      animateNumber(deliveryCostElement, currentCost, cost);
+      deliveryCostElement.textContent = 'Согласовывается';
     }
     
-    // Обновляем стоимость доставки в верхнем блоке товаров с анимацией
     if (summaryDeliveryCostElement) {
-      const currentCost = getNumberFromElement(summaryDeliveryCostElement);
-      animateNumber(summaryDeliveryCostElement, currentCost, cost);
+      summaryDeliveryCostElement.textContent = 'Уточняется';
     }
     
-    // Обновляем итоговую сумму в нижнем блоке с анимацией
+    // Устанавливаем итоговую сумму равной сумме товаров
     if (totalElement) {
-      const currentTotal = getNumberFromElement(totalElement);
-      const newTotal = totalPrice + cost;
-      animateNumber(totalElement, currentTotal, newTotal);
+      totalElement.textContent = `${totalPrice.toLocaleString()} ₽`;
     }
     
-    // Обновляем итоговую сумму в верхнем блоке товаров с анимацией
     if (grandTotalElement) {
-      const currentTotal = getNumberFromElement(grandTotalElement);
-      const newTotal = totalPrice + cost;
-      animateNumber(grandTotalElement, currentTotal, newTotal);
+      grandTotalElement.textContent = `${totalPrice.toLocaleString()} ₽`;
     }
   }
   
@@ -1095,348 +821,420 @@ const checkoutModule = (function() {
       return redirectToLogin('Для оформления заказа необходимо войти в аккаунт');
     }
     
-    // Проверка формы
-    const name = document.getElementById('checkout-name').value;
-    const surname = document.getElementById('checkout-surname').value;
-    const email = document.getElementById('checkout-email').value;
-    const phone = document.getElementById('checkout-phone').value;
-    const comment = document.getElementById('checkout-comment').value;
+    // Получаем комментарий к заказу, если есть
+    const comment = document.getElementById('checkout-comment')?.value || '';
     
-    if (!name || !surname || !email || !phone) {
-      if (typeof window.showNotification === 'function') {
-        window.showNotification('Пожалуйста, заполните все обязательные поля', 'error');
-      } else {
-        alert('Пожалуйста, заполните все обязательные поля');
-      }
-      return;
-    }
+    // Получаем предпочтительный способ связи
+    const contactMethod = document.querySelector('input[name="contact-method"]:checked')?.value || 'phone';
     
-    // Определяем выбранный способ доставки
-    const activeTab = checkoutModal.querySelector('.delivery-tab.active');
-    if (!activeTab) {
-      if (typeof window.showNotification === 'function') {
-        window.showNotification('Пожалуйста, выберите способ доставки', 'error');
-      } else {
-        alert('Пожалуйста, выберите способ доставки');
-      }
-      return;
-    }
-    
-    const deliveryType = activeTab.dataset.delivery;
-    let deliveryData = {};
-    let deliveryCost = 0;
-    
-    // Собираем данные в зависимости от выбранного способа доставки
-    switch (deliveryType) {
-      case 'courier':
-        const address = document.getElementById('delivery-address').value;
-        const selectedTimeSlot = checkoutModal.querySelector('.time-slot.selected');
-        
-        if (!address) {
-          if (typeof window.showNotification === 'function') {
-            window.showNotification('Пожалуйста, укажите адрес доставки', 'error');
-          } else {
-            alert('Пожалуйста, укажите адрес доставки');
-          }
-          return;
-        }
-        
-        if (!selectedTimeSlot) {
-          if (typeof window.showNotification === 'function') {
-            window.showNotification('Пожалуйста, выберите время доставки', 'error');
-          } else {
-            alert('Пожалуйста, выберите время доставки');
-          }
-          return;
-        }
-        
-        deliveryData = {
-          type: 'courier',
-          address: address,
-          date: selectedDeliveryDate,
-          time: selectedDeliveryTime
-        };
-        deliveryCost = 300;
-        break;
-        
-      case 'pickup':
-        if (!selectedPickupPoint) {
-          if (typeof window.showNotification === 'function') {
-            window.showNotification('Пожалуйста, выберите пункт самовывоза', 'error');
-          } else {
-            alert('Пожалуйста, выберите пункт самовывоза');
-          }
-          return;
-        }
-        
-        deliveryData = {
-          type: 'pickup',
-          point: selectedPickupPoint
-        };
-        deliveryCost = 300; // Фиксируем стоимость в 300 рублей
-        break;
-        
-      case 'post':
-        const postAddress = document.getElementById('post-address').value;
-        const recipient = document.getElementById('post-recipient').value;
-        
-        if (!postAddress || !recipient) {
-          if (typeof window.showNotification === 'function') {
-            window.showNotification('Пожалуйста, заполните почтовый адрес и ФИО получателя', 'error');
-          } else {
-            alert('Пожалуйста, заполните почтовый адрес и ФИО получателя');
-          }
-          return;
-        }
-        
-        deliveryData = {
-          type: 'post',
-          address: postAddress,
-          recipient: recipient,
-          postType: selectedPostType || 'post-regular'
-        };
-        
-        // Определяем стоимость в зависимости от типа
-        if (selectedPostType === 'post-express') {
-          deliveryCost = 500;
-        } else if (selectedPostType === 'post-insured') {
-          deliveryCost = 350;
-        } else {
-          deliveryCost = 300;
-        }
-        break;
-    }
-    
-    // Создаем объект заказа
-    const order = {
-      id: 'ORD-' + Date.now(),
-      date: new Date().toLocaleString('ru-RU'),
-      items: loadCartItems(),
-      subtotal: totalPrice,
-      deliveryCost: deliveryCost,
-      totalPrice: totalPrice + deliveryCost,
-      total: totalPrice + deliveryCost, // Дублируем для совместимости с desktop.js
-      status: 'Выполнен', // Статус для совместимости с desktop.js
-      customer: {
-        name,
-        surname,
-        email,
-        phone,
-        comment
-      },
-      // Добавляем поля для совместимости с отображением в modal_orders
-      name: name + ' ' + surname,
-      phone: phone,
-      address: deliveryData.type === 'courier' ? deliveryData.address : 
-               deliveryData.type === 'pickup' ? (deliveryData.point ? deliveryData.point.address : 'Самовывоз') : 
-               deliveryData.type === 'post' ? deliveryData.address : 'Не указан',
-      delivery: deliveryData,
-      paymentMethod: selectedPaymentMethod
+    // Формируем данные заказа
+    const orderData = {
+      items: cartItems,
+      user: userData,
+      comment: comment,
+      contactMethod: contactMethod,
+      timestamp: new Date().getTime(),
+      orderNumber: generateOrderNumber(),
+      totalPrice: totalPrice,
+      status: 'Новый',
+      adminProcessed: false
     };
     
-    // Сохраняем данные пользователя
-    userData = {
-      name,
-      surname,
-      email,
-      phone
-    };
-    localStorage.setItem('userData', JSON.stringify(userData));
-    
-    // Сохраняем заказ в историю заказов
-    saveOrder(order);
+    // Сохраняем заказ
+    saveOrder(orderData);
     
     // Очищаем корзину
     clearCart();
     
     // Показываем подтверждение заказа
-    showOrderConfirmation(order);
+    showOrderConfirmation(orderData);
   }
   
-  // Сохранение заказа в истории
+  // Генерация номера заказа
+  function generateOrderNumber() {
+    const date = new Date();
+    const year = date.getFullYear().toString().substr(-2);
+    const month = ('0' + (date.getMonth() + 1)).slice(-2);
+    const day = ('0' + date.getDate()).slice(-2);
+    const randomPart = Math.floor(10000 + Math.random() * 90000);
+    return `ORD-${year}${month}${day}-${randomPart}`;
+  }
+  
+  // Сохранение заказа
   function saveOrder(order) {
-    // Проверка авторизации перед сохранением заказа
-    if (!isUserLoggedIn()) {
-      return redirectToLogin('Для сохранения заказа необходимо войти в аккаунт');
+    // Получаем существующие заказы из localStorage
+    const existingOrders = JSON.parse(localStorage.getItem('adminOrders') || '[]');
+    
+    // Добавляем дополнительные поля для админки
+    const adminOrder = {
+      ...order,
+      createdAt: new Date().toISOString(),
+      adminNotes: '',
+      invoiceNumber: '',
+      contactDetails: {
+        method: order.contactMethod,
+        status: 'Ожидает звонка',
+        contactTime: null
+      },
+      deliveryDetails: {
+        type: null,
+        address: null,
+        cost: null,
+        date: null
+      },
+      paymentDetails: {
+        method: null,
+        status: 'Не оплачен',
+        date: null
+      },
+      exportedTo: {
+        excel: false,
+        onec: false
+      }
+    };
+    
+    // Добавляем новый заказ в localStorage (для совместимости со старым кодом)
+    existingOrders.push(adminOrder);
+    localStorage.setItem('adminOrders', JSON.stringify(existingOrders));
+    
+    // Также сохраняем в обычных заказах для клиента
+    const clientOrders = JSON.parse(localStorage.getItem('orders') || '[]');
+    clientOrders.push(order);
+    localStorage.setItem('orders', JSON.stringify(clientOrders));
+    
+    // Отправляем заказ на сервер через API
+    sendOrderToServer(adminOrder);
+    
+    return adminOrder;
+  }
+  
+  // Функция для отправки заказа на сервер
+  async function sendOrderToServer(order) {
+    try {
+      // Подготавливаем данные для отправки в формате, ожидаемом сервером
+      const serverOrderData = {
+        customer_name: order.user.name || order.user.fullName || '',
+        customer_email: order.user.email || '',
+        customer_phone: order.user.phone || '',
+        shipping_address: order.user.address || '',
+        items: order.items.map(item => ({
+          product_id: item.id,
+          quantity: item.quantity,
+          price: item.price
+        })),
+        total_amount: order.totalPrice,
+        order_number: order.orderNumber,
+        status: 'new',
+        comment: order.comment || '',
+        contact_method: order.contactMethod,
+        // Добавляем данные о контрагенте, если они есть
+        counterparty_data: order.user.counterpartyData || null
+      };
+      
+      console.log('Отправка заказа на сервер:', serverOrderData);
+      
+      // Добавляем отладочную информацию
+      const apiUrl = 'http://localhost:5000/api/orders';
+      console.log('URL запроса:', apiUrl);
+      console.log('Метод запроса:', 'POST');
+      console.log('Заголовки запроса:', {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Origin': window.location.origin,
+        'Access-Control-Request-Method': 'POST'
+      });
+      console.log('Тело запроса (JSON):', JSON.stringify(serverOrderData, null, 2));
+      
+      // Сначала отправляем preflight запрос для проверки CORS
+      const preflightResponse = await fetch(apiUrl, {
+        method: 'OPTIONS',
+        headers: {
+          'Origin': window.location.origin,
+          'Access-Control-Request-Method': 'POST',
+          'Access-Control-Request-Headers': 'Content-Type, Accept'
+        }
+      });
+      
+      console.log('Preflight ответ:', preflightResponse.status, preflightResponse.statusText);
+      console.log('Preflight заголовки:', Object.fromEntries([...preflightResponse.headers.entries()]));
+      
+      // Отправляем запрос на сервер напрямую, минуя прокси
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Origin': window.location.origin
+        },
+        mode: 'cors',
+        credentials: 'omit',
+        body: JSON.stringify(serverOrderData)
+      });
+      
+      // Добавляем отладочную информацию о полученном ответе
+      console.log('Статус ответа:', response.status, response.statusText);
+      console.log('Заголовки ответа:', Object.fromEntries([...response.headers.entries()]));
+      
+      // Проверяем статус ответа перед обработкой JSON
+      if (!response.ok) {
+        console.error('Ошибка при отправке заказа на сервер:', response.status, response.statusText);
+        // Показываем уведомление о локальном сохранении
+        showLocalStorageNotification();
+        return;
+      }
+      
+      // Проверяем, есть ли содержимое в ответе
+      const text = await response.text();
+      console.log('Текст ответа:', text);
+      
+      if (!text) {
+        console.error('Пустой ответ от сервера');
+        // Показываем уведомление о локальном сохранении
+        showLocalStorageNotification();
+        return;
+      }
+      
+      // Преобразуем текст в JSON
+      const result = JSON.parse(text);
+      
+      if (!result.success) {
+        console.error('Ошибка при отправке заказа на сервер:', result.message);
+        // Показываем уведомление о локальном сохранении
+        showLocalStorageNotification();
+      } else {
+        console.log('Заказ успешно отправлен на сервер:', result);
+        // Обновляем номер заказа, если сервер вернул новый
+        if (result.order_number && result.order_number !== order.orderNumber) {
+          order.orderNumber = result.order_number;
+          // Обновляем заказ в localStorage
+          updateOrderInLocalStorage(order);
+        }
+        
+        // Добавляем заказ в профиль пользователя для отображения в "Мои заказы"
+        saveOrderToUserProfile(order);
+      }
+    } catch (error) {
+      console.error('Ошибка при отправке заказа на сервер:', error);
+      // Показываем уведомление о локальном сохранении
+      showLocalStorageNotification();
+      
+      // Даже при ошибке сохраняем заказ в профиле пользователя
+      saveOrderToUserProfile(order);
     }
-    
-    // Получаем данные пользователя
-    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-    
-    // Добавляем email пользователя к заказу для связи с аккаунтом
-    order.userEmail = userData.email;
-    
-    // Сохраняем заказ в общей истории заказов
-    let orderHistory = JSON.parse(localStorage.getItem('orderHistory') || '[]');
-    orderHistory.push(order);
-    localStorage.setItem('orderHistory', JSON.stringify(orderHistory));
-    
-    // Также добавляем заказ в список заказов пользователя
-    // Получаем список зарегистрированных пользователей
-    const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
-    const userIndex = registeredUsers.findIndex(user => user.email === userData.email);
-    
-    if (userIndex !== -1) {
-      // Если пользователь найден, добавляем заказ в его список заказов
+  }
+  
+  // Функция для сохранения заказа в профиле пользователя
+  function saveOrderToUserProfile(order) {
+    try {
+      // Получаем текущего пользователя
+      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+      if (!userData.email) {
+        console.log('Пользователь не авторизован, заказ не будет сохранен в профиле');
+        return;
+      }
+      
+      // Получаем список зарегистрированных пользователей
+      const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+      const userIndex = registeredUsers.findIndex(user => user.email === userData.email);
+      
+      if (userIndex === -1) {
+        console.log('Пользователь не найден в списке зарегистрированных пользователей');
+        return;
+      }
+      
+      // Форматируем заказ для отображения в профиле
+      const profileOrder = {
+        id: order.orderNumber,
+        date: new Date().toLocaleDateString('ru-RU'),
+        status: 'Новый',
+        total: order.totalPrice,
+        items: order.items,
+        userEmail: userData.email,
+        address: userData.address || '',
+        phone: userData.phone || '',
+        name: userData.name || '',
+        delivery: {
+          type: 'courier',
+          address: userData.address || ''
+        },
+        paymentMethod: order.paymentMethod || 'card',
+        customer: {
+          name: userData.name || '',
+          phone: userData.phone || '',
+          email: userData.email || ''
+        }
+      };
+      
+      // Добавляем заказ в профиль пользователя
       if (!registeredUsers[userIndex].orders) {
         registeredUsers[userIndex].orders = [];
       }
-      registeredUsers[userIndex].orders.push(order);
+      
+      // Проверяем, нет ли уже такого заказа (по номеру)
+      const existingOrderIndex = registeredUsers[userIndex].orders.findIndex(o => o.id === profileOrder.id);
+      if (existingOrderIndex !== -1) {
+        // Если заказ уже есть, обновляем его
+        registeredUsers[userIndex].orders[existingOrderIndex] = profileOrder;
+      } else {
+        // Если заказа нет, добавляем новый
+        registeredUsers[userIndex].orders.push(profileOrder);
+      }
       
       // Сохраняем обновленный список пользователей
       localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
-      console.log('Заказ успешно привязан к аккаунту пользователя', userData.email);
+      
+      // Также добавляем заказ в общую историю заказов
+      const orderHistory = JSON.parse(localStorage.getItem('orderHistory') || '[]');
+      
+      // Проверяем, нет ли уже такого заказа в истории
+      const existingHistoryIndex = orderHistory.findIndex(o => o.id === profileOrder.id);
+      if (existingHistoryIndex !== -1) {
+        // Если заказ уже есть, обновляем его
+        orderHistory[existingHistoryIndex] = profileOrder;
+      } else {
+        // Если заказа нет, добавляем новый
+        orderHistory.push(profileOrder);
+      }
+      
+      // Сохраняем обновленную историю заказов
+      localStorage.setItem('orderHistory', JSON.stringify(orderHistory));
+      
+      console.log('Заказ успешно сохранен в профиле пользователя:', profileOrder);
+    } catch (error) {
+      console.error('Ошибка при сохранении заказа в профиле пользователя:', error);
+    }
+  }
+  
+  // Функция для отображения уведомления о локальном сохранении
+  function showLocalStorageNotification() {
+    // Проверяем, есть ли функция для показа уведомлений
+    if (typeof window.showNotification === 'function') {
+      window.showNotification({
+        title: 'Заказ сохранен локально',
+        message: 'Не удалось отправить заказ на сервер, но он сохранен в локальном хранилище.',
+        type: 'info',
+        duration: 5000
+      });
     } else {
-      console.warn('Пользователь не найден в списке зарегистрированных пользователей');
+      // Если функции нет, просто выводим в консоль
+      console.log('Заказ сохранен локально, но не отправлен на сервер');
+    }
+  }
+  
+  // Функция для обновления заказа в localStorage
+  function updateOrderInLocalStorage(updatedOrder) {
+    // Обновляем в adminOrders
+    const adminOrders = JSON.parse(localStorage.getItem('adminOrders') || '[]');
+    const adminOrderIndex = adminOrders.findIndex(order => order.timestamp === updatedOrder.timestamp);
+    if (adminOrderIndex !== -1) {
+      adminOrders[adminOrderIndex] = updatedOrder;
+      localStorage.setItem('adminOrders', JSON.stringify(adminOrders));
+    }
+    
+    // Обновляем в обычных заказах
+    const clientOrders = JSON.parse(localStorage.getItem('orders') || '[]');
+    const clientOrderIndex = clientOrders.findIndex(order => order.timestamp === updatedOrder.timestamp);
+    if (clientOrderIndex !== -1) {
+      clientOrders[clientOrderIndex] = updatedOrder;
+      localStorage.setItem('orders', JSON.stringify(clientOrders));
     }
   }
   
   // Очистка корзины
   function clearCart() {
-    localStorage.setItem('cartItems', '[]');
     cartItems = [];
+    localStorage.setItem('cartItems', JSON.stringify(cartItems));
     
-    // Обновляем счетчик корзины
-    const cartCount = document.querySelector('.cart-count');
-    if (cartCount) {
-      cartCount.textContent = '0';
-      cartCount.classList.remove('updating');
-      void cartCount.offsetWidth;
-      cartCount.classList.add('updating');
+    // Обновляем отображение корзины, если она открыта
+    if (typeof window.updateCartPanel === 'function') {
+      window.updateCartPanel();
     }
     
-    // Обновляем данные пользователя, чтобы быть уверенными что авторизация сохраняется
-    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-    if (userData && userData.email) {
-      userData.loggedIn = true;
-      userData.lastActivity = new Date().getTime();
-      localStorage.setItem('userData', JSON.stringify(userData));
+    // Обновляем счетчик товаров в корзине
+    if (typeof window.updateCartCounter === 'function') {
+      window.updateCartCounter(0);
     }
   }
   
   // Показ подтверждения заказа
   function showOrderConfirmation(order) {
-    // Проверка авторизации перед показом подтверждения заказа
-    if (!isUserLoggedIn()) {
-      closeCheckoutModal();
-      return redirectToLogin('Для просмотра заказа необходимо войти в аккаунт');
+    // Определяем иконку и текст для выбранного способа связи
+    let contactIcon, contactText;
+    switch (order.contactMethod) {
+      case 'whatsapp':
+        contactIcon = 'fab fa-whatsapp';
+        contactText = 'WhatsApp';
+        break;
+      case 'telegram':
+        contactIcon = 'fab fa-telegram-plane';
+        contactText = 'Telegram';
+        break;
+      case 'email':
+        contactIcon = 'fas fa-envelope';
+        contactText = 'Email';
+        break;
+      default:
+        contactIcon = 'fas fa-phone-alt';
+        contactText = 'телефон';
     }
     
-    // Собираем имя + фамилию для обращения
-    const fullName = order.customer.name.split(' ');
-    const firstName = fullName[0] || '';
-    
-    // Создаем HTML для подтверждения
-    const confirmationHtml = `
-      <div class="checkout-success">
-        <div class="checkout-success-icon">
-          <i class="fas fa-check-circle"></i>
-        </div>
-        <h2 class="checkout-success-title">Заказ успешно оформлен!</h2>
-        <p class="checkout-success-text">
-          ${firstName ? `${firstName}, с` : 'С'}пасибо за ваш заказ. Мы свяжемся с вами в ближайшее время для подтверждения деталей.
-        </p>
-        <div class="checkout-success-number">
-          Номер заказа: <strong>${order.id}</strong>
-        </div>
-        <div class="checkout-success-buttons">
-          <button class="checkout-empty-button">
-            <i class="fas fa-home"></i> На главную
-          </button>
-        </div>
-      </div>
-    `;
-    
     // Обновляем содержимое модального окна
-    const scrollContainer = checkoutModal.querySelector('.checkout-modal__scroller');
-    if (scrollContainer) {
-      const modalContent = scrollContainer.querySelector('.checkout-modal__content');
+    if (checkoutModal) {
+      const modalContent = checkoutModal.querySelector('.checkout-modal__content');
       if (modalContent) {
-        // Сохраняем кнопку закрытия
-        const closeButton = modalContent.querySelector('.checkout-modal__close');
+        modalContent.innerHTML = `
+          <div class="checkout-success">
+            <div class="checkout-success-icon">
+              <i class="fas fa-check-circle"></i>
+            </div>
+            <h2 class="checkout-success-title">Заказ успешно оформлен</h2>
+            <p class="checkout-success-text">
+              Благодарим за ваш заказ! В течение 2 часов наш менеджер свяжется с вами через <strong><i class="${contactIcon}"></i> ${contactText}</strong> для уточнения деталей доставки и оплаты.
+            </p>
+            <div class="checkout-success-number">
+              <span>Номер заказа:</span>
+              <strong>${order.orderNumber}</strong>
+            </div>
+            <div class="checkout-success-buttons">
+              <button class="checkout-view-orders">
+                <i class="fas fa-list-ul"></i>
+                Мои заказы
+              </button>
+              <button class="checkout-empty-button">
+                <i class="fas fa-shopping-bag"></i>
+                Продолжить покупки
+              </button>
+            </div>
+          </div>
+        `;
         
-        // Обновляем содержимое
-        modalContent.innerHTML = '';
-        if (closeButton) {
-          modalContent.appendChild(closeButton);
-        }
-        
-        // Добавляем подтверждение
-        const confirmationDiv = document.createElement('div');
-        confirmationDiv.innerHTML = confirmationHtml;
-        modalContent.appendChild(confirmationDiv.firstElementChild);
-        
-        // Обработчик для кнопки "На главную"
-        const homeButton = modalContent.querySelector('.checkout-empty-button');
-        if (homeButton) {
-          homeButton.addEventListener('click', (event) => {
-            // Предотвращаем стандартное поведение кнопки
-            event.preventDefault();
-            event.stopPropagation();
-            
-            // Проверяем и обновляем данные авторизации перед закрытием
-            const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-            if (userData && (userData.email || userData.name)) {
-              // Обновляем дату последнего действия, чтобы не сбрасывалась авторизация
-              userData.loggedIn = true;
-              userData.lastActivity = new Date().getTime();
-              localStorage.setItem('userData', JSON.stringify(userData));
-              console.log('Данные пользователя обновлены перед возвратом на главную', userData);
-            }
-            
+        // Добавляем обработчик для кнопки "Мои заказы"
+        const viewOrdersBtn = modalContent.querySelector('.checkout-view-orders');
+        if (viewOrdersBtn) {
+          viewOrdersBtn.addEventListener('click', () => {
             // Закрываем модальное окно
             closeCheckoutModal();
             
-            // Показываем уведомление о перезагрузке
-            if (typeof window.showNotification === 'function') {
-              window.showNotification('Заказ успешно оформлен! Перезагрузка страницы...', 'success');
+            // Если есть функция показа заказов, вызываем её
+            if (typeof window.showOrdersModal === 'function') {
+              setTimeout(() => {
+                window.showOrdersModal();
+              }, 300);
             }
-            
-            // Анимированная перезагрузка страницы с флагом для открытия заказов и праздничной темой
-            animatedReload(400, true, 'openOrdersAfterReload', 'true', 'festive');
           });
         }
         
-        // Обработчик для кнопки "Мои заказы"
-        const ordersButton = modalContent.querySelector('.checkout-view-orders');
-        if (ordersButton) {
-          ordersButton.addEventListener('click', (event) => {
-            // Предотвращаем стандартное поведение кнопки
-            event.preventDefault();
-            event.stopPropagation();
-            
-            // Проверяем и обновляем данные авторизации перед закрытием
-            const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-            if (userData && (userData.email || userData.name)) {
-              // Обновляем дату последнего действия, чтобы не сбрасывалась авторизация
-              userData.loggedIn = true;
-              userData.lastActivity = new Date().getTime();
-              localStorage.setItem('userData', JSON.stringify(userData));
-            }
-            
-            // Закрываем модальное окно
-            closeCheckoutModal();
-            
-            // Показываем уведомление о перезагрузке
-            if (typeof window.showNotification === 'function') {
-              window.showNotification('Заказ успешно оформлен! Перезагрузка страницы...', 'success');
-            }
-            
-            // Анимированная перезагрузка страницы с флагом для открытия заказов и праздничной темой
-            animatedReload(400, true, 'openOrdersAfterReload', 'true', 'festive');
-          });
+        // Добавляем обработчик для кнопки "Продолжить покупки"
+        const continueBtn = modalContent.querySelector('.checkout-empty-button');
+        if (continueBtn) {
+          continueBtn.addEventListener('click', closeCheckoutModal);
         }
       }
     }
     
-    // Воспроизводим звук успеха, если он есть
+    // Воспроизводим звук успешного оформления заказа
     if (window.settingsModule && typeof window.settingsModule.playSound === 'function') {
       window.settingsModule.playSound('success');
-    }
-    
-    // Показываем уведомление
-    if (typeof window.showNotification === 'function') {
-      window.showNotification('Заказ успешно оформлен!', 'success');
     }
   }
   

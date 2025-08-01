@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Гарантии и возврат - Damax</title>
+    <title>Гарантии и возврат - Damax </title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='80' font-size='80' font-family='Cinzel'>D</text></svg>" type="image/svg+xml">
     <link rel="stylesheet" href="desktop-styles.css">
     <link rel="stylesheet" href="desktop-styles-fixed.css">
@@ -155,6 +155,55 @@
             color: var(--text-secondary);
         }
     </style>
+    <script>
+    (async function() {
+      if (window.location.pathname.startsWith('/admin')) return;
+      try {
+        const res = await fetch('/api/site-status');
+        if (res.ok) {
+          const data = await res.json();
+          if (!data.enabled) {
+            const cookies = document.cookie.split(';').map(s => s.trim());
+            const adminToken = cookies.find(s => s.startsWith('admin_token='));
+            if (!adminToken || !data.admin_token || adminToken.split('=')[1] !== data.admin_token) {
+              window.location.href = '/site-offline.html';
+            }
+          }
+        }
+      } catch (e) {}
+    })();
+    </script>
+    <!-- Скрипт для синхронизации данных компании -->
+    <script>
+    document.addEventListener('DOMContentLoaded', async function() {
+      try {
+        // Проверяем, была ли уже выполнена синхронизация в текущей сессии
+        const syncTimestamp = sessionStorage.getItem('company_data_sync_timestamp');
+        const currentTime = new Date().getTime();
+        
+        // Если синхронизация не выполнялась или прошло более 1 часа
+        if (!syncTimestamp || (currentTime - parseInt(syncTimestamp)) > 3600000) {
+          // Вызываем API для синхронизации данных компании
+          const response = await fetch('http://localhost:5000/api/sync-company-data', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          });
+          
+          if (response.ok) {
+            console.log('Данные компании успешно синхронизированы');
+            // Сохраняем метку времени синхронизации
+            sessionStorage.setItem('company_data_sync_timestamp', currentTime.toString());
+          }
+        } else {
+          console.log('Синхронизация данных компании пропущена (выполнялась недавно)');
+        }
+      } catch (error) {
+        console.error('Ошибка при синхронизации данных компании:', error);
+      }
+    });
+    </script>
 </head>
 <body>
     <div class="page-wrapper">
@@ -162,7 +211,7 @@
             <div class="warranty-return" data-aos="fade-up">
                 <div class="warranty-return__header">
                     <h1 class="warranty-return__title">Гарантии и возврат</h1>
-                    <p class="warranty-return__date">Последнее обновление: 1 марта 2025</p>
+                    <p class="terms__date">Последнее обновление: 24 июля 2025</p>
                 </div>
 
                 <div class="warranty-return__section">
@@ -171,7 +220,7 @@
                         Общие положения
                     </h2>
                     <p class="warranty-return__text">
-                        ООО "Дамакс" (ИНН: 1650421897, ОГРН: 1231600009740) предоставляет гарантии на товары и осуществляет их возврат в соответствии с Законом о защите прав потребителей и настоящими условиями.
+                        <span id="company_name">НАЗКОМП</span> (<span id="company_inn">ИНН!!!ы</span>, <span id="company_ogrn">ОГРН</span>) предоставляет гарантии на товары и осуществляет их возврат в соответствии с Законом о защите прав потребителей и настоящими условиями.
                     </p>
                 </div>
 
@@ -299,6 +348,21 @@
                     </p>
                 </div>
 
+                <div class="warranty-return__section">
+                    <h2 class="warranty-return__section-title">
+                        <i class="fas fa-phone-alt"></i>
+                        Контактная информация
+                    </h2>
+                    <p class="warranty-return__text">
+                        По всем вопросам, связанным с гарантиями и возвратом, Вы можете обратиться к нам:
+                    </p>
+                    <ul class="warranty-return__list">
+                        <li class="warranty-return__list-item">Почтовый адрес: <span id="company_postal_address">ПОЧТАДР</span></li>
+                        <li class="warranty-return__list-item">Электронная почта: <span id="company_email">ЭМАЙЛКОМП</span></li>
+                        <li class="warranty-return__list-item">Телефон: <span id="company_phone">!!!</span></li>
+                    </ul>
+                </div>
+
                 <a href="index.html" class="warranty-return__back-link">
                     <i class="fas fa-arrow-left"></i>
                     Вернуться на главную
@@ -312,6 +376,43 @@
         AOS.init({
             duration: 800,
             once: true
+        });
+        
+        // Загружаем настройки компании
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                const response = await fetch('http://localhost:5000/api/settings');
+                if (response.ok) {
+                    const settings = await response.json();
+                    
+                    // Обновляем данные на странице
+                    if (settings.company_name) {
+                        document.getElementById('company_name').textContent = settings.company_name;
+                    }
+                    
+                    if (settings.company_inn) {
+                        document.getElementById('company_inn').textContent = settings.company_inn;
+                    }
+                    
+                    if (settings.company_ogrn) {
+                        document.getElementById('company_ogrn').textContent = settings.company_ogrn;
+                    }
+                    
+                    if (settings.company_postal_address) {
+                        document.getElementById('company_postal_address').textContent = settings.company_postal_address;
+                    }
+                    
+                    if (settings.company_email) {
+                        document.getElementById('company_email').textContent = settings.company_email;
+                    }
+                    
+                    if (settings.company_phone) {
+                        document.getElementById('company_phone').textContent = settings.company_phone;
+                    }
+                }
+            } catch (error) {
+                console.error('Ошибка при загрузке настроек компании:', error);
+            }
         });
     </script>
 </body>

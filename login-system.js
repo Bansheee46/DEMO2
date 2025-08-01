@@ -5,10 +5,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const authOverlay = document.querySelector('.auth-modal__overlay');
     const closeButton = document.querySelector('.auth-modal__close');
     const tabs = document.querySelectorAll('.auth-tab');
-    const forms = document.querySelectorAll('.auth-form');
+    let forms = document.querySelectorAll('.auth-form');
     const loginForm = document.getElementById('loginForm');
     const registerForm = document.getElementById('registerForm');
     const forgotPasswordForm = document.getElementById('forgotPasswordForm');
+    const counterpartyForm = document.getElementById('counterpartyForm');
     const backButton = document.querySelector('.back-button');
     const successScreen = document.querySelector('.auth-success');
     const togglePasswordButtons = document.querySelectorAll('.toggle-password');
@@ -28,23 +29,25 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     */
     
-    // Проверка сохраненного состояния темы
-    /*
-    if (localStorage.getItem('theme') === 'dark') {
-        document.body.classList.add('dark');
-    }
-    */
+ 
     
     // Проверка статуса авторизации при загрузке
     checkLoginStatus();
+    
+    // Инициализация карточки контрагента
+    if (counterpartyForm) {
+        initCounterpartyCard();
+    }
     
     // Функция для отображения уведомлений
     function showNotification(message, type = 'info', duration = 5000) {
         // Проверяем, существует ли уже глобальная функция showNotification
         if (window.showNotification && typeof window.showNotification === 'function' && window.showNotification !== showNotification) {
-            window.showNotification(message, type, duration);
-            return;
+            return window.showNotification(message, type, duration);
         }
+        
+        // Если глобальная функция недоступна, используем локальную реализацию
+        console.log('Используем локальную функцию showNotification:', message);
         
         // Проверка, загружены ли стили
         if (!document.getElementById('notification-styles-link')) {
@@ -158,39 +161,14 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // Получаем текущий список пользователей или создаем пустой массив
-        let users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
-        
-        // Если список пуст, добавляем тестовых пользователей
-        if (users.length === 0) {
-            users.push({
-                name: 'Иван',
-                email: 'test@example.com',
-                hashedPassword: 'kxspb7$1jm2hs', // пароль: password123
-                registrationDate: new Date().toISOString(),
-                lastLogin: new Date().toISOString(),
-                orders: []
-            });
-            
-            users.push({
-                name: 'Мария',
-                email: 'maria@example.com',
-                hashedPassword: 'kxspb7$1jm2hs', // пароль: password123
-                registrationDate: new Date().toISOString(),
-                lastLogin: new Date().toISOString(),
-                orders: []
-            });
-            
-            // Сохраняем обновленный список пользователей
-            localStorage.setItem('registeredUsers', JSON.stringify(users));
-            
-            // Отмечаем, что тестовые пользователи созданы
-            localStorage.setItem('testUsersCreated', 'true');
-            
-            console.log('Созданы тестовые пользователи');
+        // Очищаем старые данные для избежания конфликтов
+        localStorage.removeItem('registeredUsers');
+        localStorage.removeItem('testUsersCreated');
         }
-    }
+        
     
+
+        
     // Вызываем функцию создания тестовых пользователей
     createTestUsers();
     
@@ -242,13 +220,56 @@ document.addEventListener('DOMContentLoaded', function() {
     // Вернуться к форме входа из формы восстановления пароля
     if (backButton) {
         backButton.addEventListener('click', function() {
-            switchTab('login');
+            const returnTo = this.getAttribute('data-return-to') || 'login';
+            switchTab(returnTo);
         });
     }
     
     // Переключение видимости пароля
     if (togglePasswordButtons && togglePasswordButtons.length > 0) {
         togglePasswordButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const input = this.parentElement.querySelector('input');
+                const icon = this.querySelector('i');
+                
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                } else {
+                    input.type = 'password';
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                }
+            });
+        });
+    }
+    
+    // Обработчик для ссылки "Забыли пароль?"
+    if (forgotPasswordLink) {
+        forgotPasswordLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            switchTab('forgot');
+        });
+    }
+    
+    // Обработчики отправки форм
+    if (loginForm) {
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            handleFormSubmit(this, 'login');
+        });
+    }
+    
+    if (registerForm) {
+        registerForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            handleFormSubmit(this, 'register');
+        });
+    }
+    
+    if (forgotPasswordForm) {
+        forgotPasswordForm.addEventListener('submit', function(e) {
             // Добавляем событие на клик для каждой кнопки
             button.addEventListener('click', function(e) {
                 e.preventDefault(); // Предотвращаем поведение по умолчанию
@@ -367,206 +388,524 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Обработка отправки форм
     async function handleFormSubmit(form, type) {
-        // Валидация формы
+        // Предотвращаем стандартное поведение формы
+        event.preventDefault();
+        
+        // Проверяем, валидна ли форма
         if (!validateForm(form)) {
+            return false;
+        }
+        
+        // Показываем индикатор загрузки
+        const submitButton = form.querySelector('.submit-button');
+        submitButton.classList.add('loading');
+        submitButton.disabled = true;
+        
+        try {
+            // В зависимости от типа формы выполняем соответствующие действия
+            if (type === 'login') {
+                const email = form.querySelector('#loginEmail').value;
+                const password = form.querySelector('#loginPassword').value;
+                const rememberMe = form.querySelector('#rememberMe').checked;
+                
+                // Проверка блокировки аккаунта
+                const blockStatus = isAccountBlocked(email);
+                if (blockStatus.blocked) {
+                    showNotification(blockStatus.message || 'Аккаунт временно заблокирован из-за слишком большого количества неудачных попыток входа. Попробуйте позже.', 'error');
+                    submitButton.classList.remove('loading');
+                    submitButton.disabled = false;
+                    return;
+                }
+                
+                // Получаем список зарегистрированных пользователей
+                const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+                
+                // Ищем пользователя с указанным email
+                const user = users.find(user => user.email.toLowerCase() === email.toLowerCase());
+                
+                // Если пользователь найден и пароль совпадает
+                if (user && user.password === password) {
+                    // Обновляем информацию о последнем входе
+                    user.lastLogin = new Date().toISOString();
+                    localStorage.setItem('registeredUsers', JSON.stringify(users));
+                    
+                    // Сохраняем информацию о текущем пользователе
+                    const userData = {
+                        name: user.name,
+                        email: user.email,
+                        loggedIn: true,
+                        loginTime: new Date().toISOString()
+                    };
+                    
+                    localStorage.setItem('userData', JSON.stringify(userData));
+                    
+                    // Если пользователь выбрал "Запомнить меня", устанавливаем куки
+                    if (rememberMe) {
+                        // В реальном приложении здесь должна быть более безопасная логика
+                        const expirationDate = new Date();
+                        expirationDate.setDate(expirationDate.getDate() + 30); // 30 дней
+                        document.cookie = `remembered_user=${email}; expires=${expirationDate.toUTCString()}; path=/`;
+                    }
+                    
+                    // Отслеживаем успешную попытку входа
+                    trackLoginAttempts(email, true);
+                    
+                    // Очищаем данные о попытках входа для этого пользователя
+                    clearLoginAttempts(email);
+                    
+                    // Показываем экран успешного входа
+                    setTimeout(() => {
+                        showSuccessScreen('login');
+                        
+                        // Закрываем модальное окно через 2 секунды
+                        setTimeout(() => {
+                            closeModal();
+                            
+                            // Обновляем UI после успешного входа
+                            checkLoginStatus();
+                            
+                            // Перезагружаем страницу, если это не главная страница
+                            if (!window.location.pathname.endsWith('/') && !window.location.pathname.endsWith('/index.html')) {
+                                window.location.reload();
+                            }
+                        }, 2000);
+                    }, 500);
+                } else {
+                    // Отслеживаем неудачную попытку входа
+                    trackLoginAttempts(email, false);
+                    
+                    // Показываем ошибку
+                    showNotification('Неверный email или пароль', 'error');
+                }
+            } else if (type === 'register') {
+                const name = form.querySelector('#registerName').value;
+                const email = form.querySelector('#registerEmail').value;
+                const password = form.querySelector('#registerPassword').value;
+                
+                console.log('Начинаем регистрацию пользователя:', { name, email });
+                
+                // Получаем список зарегистрированных пользователей
+                const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+                
+                // Проверяем, не зарегистрирован ли уже пользователь с таким email
+                if (users.some(user => user.email.toLowerCase() === email.toLowerCase())) {
+                    showNotification('Пользователь с таким email уже зарегистрирован', 'error');
+                    return;
+                }
+                
+                // Сохраняем пароль в открытом виде для совместимости
+                const hashedPassword = password;
+                
+                // Создаем нового пользователя
+                const newUser = {
+                    name,
+                    email,
+                    password: hashedPassword,
+                    registrationDate: new Date().toISOString(),
+                    lastLogin: null,
+                    orders: []
+                };
+                
+                console.log('Создан новый пользователь:', { name: newUser.name, email: newUser.email });
+                
+                // Сохраняем пользователя во временное хранилище для завершения регистрации после заполнения карточки контрагента
+                sessionStorage.setItem('tempUser', JSON.stringify(newUser));
+                console.log('Пользователь сохранен в sessionStorage');
+                
+                // Переключаемся на форму карточки контрагента
+                switchTab('counterparty');
+                
+            } else if (type === 'forgotPassword') {
+                const email = form.querySelector('#forgotEmail').value;
+                
+                // В реальном приложении здесь должна быть логика для отправки письма для сброса пароля
+                // Для демонстрации просто показываем уведомление
+                showNotification(`Инструкции по сбросу пароля отправлены на ${email}`, 'success');
+                
+                // Возвращаемся к форме входа через 2 секунды
+                setTimeout(() => {
+                    switchTab('login');
+                }, 2000);
+            } else if (type === 'counterparty') {
+                // Получаем данные карточки контрагента
+                const orgName = form.querySelector('#orgName').value;
+                const legalAddress = form.querySelector('#legalAddress').value;
+                const inn = form.querySelector('#inn').value;
+                const kpp = form.querySelector('#kpp').value;
+                const ogrn = form.querySelector('#ogrn').value;
+                const contactPerson = form.querySelector('#contactPerson').value;
+                const contactPosition = form.querySelector('#contactPosition').value;
+                const workPhone = form.querySelector('#workPhone').value;
+                const contactEmail = form.querySelector('#contactEmail').value;
+                const contactMethod = form.querySelector('input[name="contactMethod"]:checked')?.value || '';
+                const bankName = form.querySelector('#bankName').value;
+                const bankAccount = form.querySelector('#bankAccount').value;
+                const corrAccount = form.querySelector('#corrAccount').value;
+                const bik = form.querySelector('#bik').value;
+                
+                // Создаем объект с данными контрагента
+                const counterpartyData = {
+                    orgName,
+                    legalAddress,
+                    inn,
+                    kpp,
+                    ogrn,
+                    contactPerson,
+                    contactPosition,
+                    workPhone,
+                    contactEmail,
+                    contactMethod,
+                    bankDetails: {
+                        bankName,
+                        bankAccount,
+                        corrAccount,
+                        bik
+                    }
+                };
+                
+                // Получаем данные пользователя из временного хранилища
+                let tempUser = JSON.parse(sessionStorage.getItem('tempUser'));
+                
+                // Если tempUser не найден, попробуем получить из localStorage
+                if (!tempUser) {
+                    console.warn('tempUser не найден в sessionStorage, проверяем localStorage...');
+                    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+                    if (userData.name && userData.email) {
+                        // Создаем временного пользователя из данных в localStorage
+                        tempUser = {
+                            name: userData.name,
+                            email: userData.email,
+                            hashedPassword: '', // Пароль не сохраняется в userData
+                            registrationDate: userData.registrationDate || new Date().toISOString(),
+                            lastLogin: null,
+                            orders: []
+                        };
+                        console.log('Создан tempUser из localStorage:', tempUser);
+                    }
+                }
+                
+                if (tempUser) {
+                    // Добавляем данные контрагента к пользователю
+                    tempUser.counterparty = counterpartyData;
+                    
+                    // Получаем список зарегистрированных пользователей
+                    const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+                    
+                    // Проверяем, не зарегистрирован ли уже пользователь с таким email
+                    const existingUserIndex = users.findIndex(user => user.email.toLowerCase() === tempUser.email.toLowerCase());
+                    if (existingUserIndex !== -1) {
+                        // Обновляем существующего пользователя
+                        users[existingUserIndex] = { ...users[existingUserIndex], ...tempUser };
+                        console.log('Обновлен существующий пользователь');
+                    } else {
+                        // Добавляем нового пользователя
+                        users.push(tempUser);
+                        console.log('Добавлен новый пользователь');
+                    }
+                    
+                    // Сохраняем обновленный список пользователей
+                    localStorage.setItem('registeredUsers', JSON.stringify(users));
+                    
+                    // Очищаем временное хранилище
+                    sessionStorage.removeItem('tempUser');
+                    
+                    // Автоматически входим в систему
+                    const userData = {
+                        name: tempUser.name,
+                        email: tempUser.email,
+                        loggedIn: true,
+                        loginTime: new Date().toISOString()
+                    };
+                    
+                    localStorage.setItem('userData', JSON.stringify(userData));
+                    
+                    // Показываем экран успешной регистрации
+                    setTimeout(() => {
+                        showSuccessScreen('register');
+                        
+                        // Создаем конфетти для эффекта празднования
+                        createConfetti();
+                        
+                        // Закрываем модальное окно через 3 секунды
+                        setTimeout(() => {
+                            closeModal();
+                            
+                            // Обновляем UI после успешного входа
+                            checkLoginStatus();
+                            
+                            // Перезагружаем страницу, если это не главная страница
+                            if (!window.location.pathname.endsWith('/') && !window.location.pathname.endsWith('/index.html')) {
+                                window.location.reload();
+                            }
+                        }, 3000);
+                    }, 500);
+                } else {
+                    console.error('Не удалось получить данные пользователя для завершения регистрации');
+                    console.log('sessionStorage tempUser:', sessionStorage.getItem('tempUser'));
+                    console.log('localStorage userData:', localStorage.getItem('userData'));
+                    
+                    // Проверяем, может быть пользователь уже зарегистрирован
+                    const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+                    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+                    
+                    if (userData.loggedIn && userData.name && userData.email) {
+                        console.log('Пользователь уже в системе, показываем успешное завершение');
+                        
+                        // Показываем экран успешной регистрации
+                        setTimeout(() => {
+                            showSuccessScreen('register');
+                            
+                            // Создаем конфетти для эффекта празднования
+                            createConfetti();
+                            
+                            // Закрываем модальное окно через 3 секунды
+                            setTimeout(() => {
+                                closeModal();
+                                
+                                // Обновляем UI после успешного входа
+                                checkLoginStatus();
+                                
+                                // Перезагружаем страницу, если это не главная страница
+                                if (!window.location.pathname.endsWith('/') && !window.location.pathname.endsWith('/index.html')) {
+                                    window.location.reload();
+                                }
+                            }, 3000);
+                        }, 500);
+                    } else {
+                        showNotification('Произошла ошибка при регистрации. Пожалуйста, попробуйте снова.', 'error');
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Ошибка:', error);
+            showNotification('Произошла ошибка. Пожалуйста, попробуйте снова.', 'error');
+        } finally {
+            // Убираем индикатор загрузки
+            submitButton.classList.remove('loading');
+            submitButton.disabled = false;
+        }
+    }
+    
+    // Функция для обработки карточки контрагента
+    function initCounterpartyCard() {
+        console.log('Вызвана функция initCounterpartyCard');
+        
+        const counterpartyForm = document.getElementById('counterpartyForm');
+        console.log('Поиск формы контрагента в initCounterpartyCard:', counterpartyForm ? 'Найдена' : 'Не найдена');
+        
+        // Проверяем существование формы контрагента
+        if (!counterpartyForm) {
+            console.warn('Форма контрагента не найдена в initCounterpartyCard');
+            
+            // Проверяем содержимое модального окна
+            const modalContent = document.querySelector('.auth-modal__content-wrapper');
+            console.log('Содержимое модального окна в initCounterpartyCard:', 
+                modalContent ? `Найдено (первые 100 символов: ${modalContent.innerHTML.substring(0, 100)}...)` : 'Не найдено');
+            
+            // Проверяем все формы в DOM
+            const allForms = document.querySelectorAll('form');
+            console.log('Все формы в DOM в initCounterpartyCard:', 
+                Array.from(allForms).map(form => `${form.id} (class: ${form.className})`));
+            
             return;
         }
         
-        // Показать состояние загрузки
-        const submitButton = form.querySelector('.submit-button');
-        submitButton.classList.add('loading');
+        console.log('Форма контрагента найдена, начинаем инициализацию');
         
-        try {
-            // Сохранение данных пользователя
-            if (type === 'login') {
-                const email = document.getElementById('loginEmail').value;
-                const password = document.getElementById('loginPassword').value;
-                
-                // Проверяем, заблокирован ли аккаунт из-за множества неудачных попыток
-                const accountStatus = isAccountBlocked(email);
-                if (accountStatus.blocked) {
-                    // Показываем ошибку - аккаунт временно заблокирован
-                    const formGroup = document.getElementById('loginEmail').closest('.form-group');
-                    formGroup.classList.add('error');
-                    formGroup.querySelector('.error-message').textContent = accountStatus.message;
-                    submitButton.classList.remove('loading');
-                    return;
-                }
-                
-                // Получаем массив зарегистрированных пользователей
-                const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
-                const existingUser = registeredUsers.find(user => user.email.toLowerCase() === email.toLowerCase());
-                
-                // Проверяем существует ли пользователь
-                if (!existingUser) {
-                    // Фиксируем неудачную попытку входа
-                    trackLoginAttempts(email, false);
-                    
-                    // Показываем ошибку - пользователь не найден
-                    const formGroup = document.getElementById('loginEmail').closest('.form-group');
-                    formGroup.classList.add('error');
-                    formGroup.querySelector('.error-message').textContent = 'Пользователь с таким email не найден';
-                    submitButton.classList.remove('loading');
-                    return;
-                }
-                
-                // Проверяем правильность пароля
-                let passwordIsCorrect = false;
-                
-                if (existingUser.hashedPassword) {
-                    // Если используется хешированный пароль
-                    passwordIsCorrect = await verifyPassword(password, existingUser.hashedPassword);
-                } else {
-                    // Для обратной совместимости со старыми аккаунтами
-                    passwordIsCorrect = existingUser.password === password;
-                }
-                
-                if (!passwordIsCorrect) {
-                    // Фиксируем неудачную попытку входа
-                    const attemptInfo = trackLoginAttempts(email, false);
-                    
-                    // Готовим сообщение об ошибке
-                    let errorMessage = 'Неверный пароль';
-                    
-                    // Если это 3 или больше неудачная попытка, предупреждаем пользователя
-                    if (attemptInfo && attemptInfo.count >= 3) {
-                        const attemptsLeft = 5 - attemptInfo.count;
-                        if (attemptsLeft > 0) {
-                            errorMessage += `. Осталось попыток: ${attemptsLeft}`;
-                        } else {
-                            errorMessage += '. Аккаунт будет временно заблокирован.';
-                        }
-                    }
-                    
-                    // Показываем ошибку - неверный пароль
-                    const formGroup = document.getElementById('loginPassword').closest('.form-group');
-                    formGroup.classList.add('error');
-                    formGroup.querySelector('.error-message').textContent = errorMessage;
-                    submitButton.classList.remove('loading');
-                    return;
-                }
-                
-                // Фиксируем успешный вход
-                trackLoginAttempts(email, true);
-                
-                // Успешный вход - берем данные из существующего пользователя
-                const userData = {
-                    email: existingUser.email,
-                    name: existingUser.name,
-                    loggedIn: true,
-                    registrationDate: existingUser.registrationDate,
-                    orders: existingUser.orders || []
-                };
-                localStorage.setItem('userData', JSON.stringify(userData));
-                
-                // Установка сообщения об успешном входе
-                document.querySelector('.auth-success h2').textContent = 'Вход выполнен!';
-                document.querySelector('.success-message').textContent = `Добро пожаловать, ${existingUser.name}!`;
-                
-                // Обновляем время последнего входа
-                existingUser.lastLogin = new Date().toISOString();
-                localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
-                
-            } else if (type === 'register') {
-                const email = document.getElementById('registerEmail').value;
-                const name = document.getElementById('registerName').value;
-                const password = document.getElementById('registerPassword').value;
-                
-                // Получаем массив зарегистрированных пользователей
-                let registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
-                
-                // Проверяем, существует ли уже пользователь с таким email
-                if (registeredUsers.some(user => user.email.toLowerCase() === email.toLowerCase())) {
-                    // Показываем сообщение об ошибке
-                    const formGroup = document.getElementById('registerEmail').closest('.form-group');
-                    formGroup.classList.add('error');
-                    formGroup.querySelector('.error-message').textContent = 'Пользователь с таким email уже существует';
-                    
-                    // Убираем загрузку с кнопки
-                    submitButton.classList.remove('loading');
-                    return;
-                }
-                
-                // Хешируем пароль
-                const hashedPassword = await hashPassword(password);
-                
-                // Создаем объект нового пользователя
-                const newUser = {
-                    name: name,
-                    email: email,
-                    hashedPassword: hashedPassword, // Сохраняем хешированный пароль
-                    ip: 'Локальная регистрация',
-                    registrationDate: new Date().toISOString(),
-                    lastLogin: new Date().toISOString(),
-                    orders: []
-                };
-                
-                // Добавляем нового пользователя в массив
-                registeredUsers.push(newUser);
-                
-                // Сохраняем обновленный массив
-                localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
-                
-                // Сохраняем данные текущего пользователя
-                const userData = {
-                    email: email,
-                    name: name,
-                    loggedIn: true,
-                    registrationDate: new Date().toISOString(),
-                    orders: []
-                };
-                localStorage.setItem('userData', JSON.stringify(userData));
-                
-                // Установка сообщения об успешной регистрации
-                document.querySelector('.auth-success h2').textContent = 'Регистрация завершена';
-                document.querySelector('.success-message').textContent = `Ваш аккаунт создан, ${name}!`;
-            } else if (type === 'forgot') {
-                const email = document.getElementById('forgotEmail').value;
-                
-                // Проверяем, существует ли пользователь с таким email
-                const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
-                const existingUser = registeredUsers.find(user => user.email.toLowerCase() === email.toLowerCase());
-                
-                if (!existingUser) {
-                    // Показываем ошибку - пользователь не найден
-                    const formGroup = document.getElementById('forgotEmail').closest('.form-group');
-                    formGroup.classList.add('error');
-                    formGroup.querySelector('.error-message').textContent = 'Пользователь с таким email не найден';
-                    submitButton.classList.remove('loading');
-                    return;
-                }
-                
-                // В реальном приложении здесь был бы код для отправки email
-                // Для демо просто имитируем успешную отправку
-                
-                // Установка сообщения об отправке инструкций
-                document.querySelector('.auth-success h2').textContent = 'Ссылка отправлена';
-                document.querySelector('.success-message').textContent = 'Проверьте вашу электронную почту для получения инструкций по восстановлению пароля.';
-            }
-            
-            // Показать сообщение об успехе
-            showSuccessScreen(type);
-            
-            // Очистить форму
-            form.reset();
-            
-            // Создать анимацию конфетти при успехе
-            createConfetti();
-            
-            // Закрыть модальное окно и обновить страницу после короткой задержки
-            if (type === 'login' || type === 'register') {
-                setTimeout(() => {
-                    closeModal();
-                    // Обновить состояние авторизации без перезагрузки страницы
-                    checkLoginStatus();
-                }, 2000);
-            }
-        } finally {
-            // В любом случае, убираем состояние загрузки через некоторое время
-            setTimeout(() => {
-                submitButton.classList.remove('loading');
-            }, 500);
+        const progressIndicator = document.querySelector('.progress-indicator');
+        const progressPercent = document.querySelector('.progress-percent');
+        const inputs = counterpartyForm.querySelectorAll('input[required]');
+        const backButton = counterpartyForm.querySelector('.back-button');
+        
+        console.log('Элементы формы:', {
+            progressIndicator: progressIndicator ? 'Найден' : 'Не найден',
+            progressPercent: progressPercent ? 'Найден' : 'Не найден',
+            inputs: inputs.length,
+            backButton: backButton ? 'Найден' : 'Не найден'
+        });
+        
+        // Обработчик для кнопки "Назад"
+        if (backButton) {
+            backButton.addEventListener('click', function() {
+                const returnTo = this.getAttribute('data-return-to') || 'login';
+                switchTab(returnTo);
+            });
+            console.log('Добавлен обработчик для кнопки "Назад"');
         }
+        
+        // Функция для обновления прогресса заполнения
+        function updateProgress() {
+            console.log('Вызвана функция updateProgress');
+            
+            let filledInputs = 0;
+            
+            inputs.forEach(input => {
+                if (input.value.trim() !== '') {
+                    filledInputs++;
+                    input.classList.add('filled');
+                } else {
+                    input.classList.remove('filled');
+                }
+            });
+            
+            const percent = Math.round((filledInputs / inputs.length) * 100);
+            console.log(`Заполнено полей: ${filledInputs}/${inputs.length} (${percent}%)`);
+            
+            // Анимируем прогресс-бар
+            if (progressIndicator && progressPercent) {
+                progressIndicator.style.width = `${percent}%`;
+                progressPercent.textContent = `${percent}%`;
+                console.log('Прогресс-бар обновлен');
+            } else {
+                console.warn('Элементы прогресс-бара не найдены');
+            }
+            
+            // Добавляем класс success для полей, которые заполнены
+            inputs.forEach(input => {
+                const container = input.closest('.input-container');
+                if (container) {
+                    if (input.value.trim() !== '') {
+                        container.classList.add('success');
+                    } else {
+                        container.classList.remove('success');
+                    }
+                }
+            });
+        }
+        
+        // Добавляем обработчики событий для всех полей ввода
+        console.log('Добавляем обработчики событий для полей ввода');
+        inputs.forEach(input => {
+            input.addEventListener('input', updateProgress);
+            input.addEventListener('blur', function() {
+                // Простая валидация при потере фокуса
+                const container = this.closest('.input-container');
+                const formGroup = this.closest('.form-group');
+                const errorMessage = formGroup.querySelector('.error-message');
+                
+                // Проверяем ИНН
+                if (this.id === 'inn' && this.value.trim() !== '') {
+                    if (!/^\d{10}$|^\d{12}$/.test(this.value.trim())) {
+                        errorMessage.textContent = 'ИНН должен содержать 10 или 12 цифр';
+                        formGroup.classList.add('error');
+                    } else {
+                        errorMessage.textContent = '';
+                        formGroup.classList.remove('error');
+                    }
+                }
+                
+                // Проверяем КПП
+                if (this.id === 'kpp' && this.value.trim() !== '') {
+                    if (!/^\d{9}$/.test(this.value.trim())) {
+                        errorMessage.textContent = 'КПП должен содержать 9 цифр';
+                        formGroup.classList.add('error');
+                    } else {
+                        errorMessage.textContent = '';
+                        formGroup.classList.remove('error');
+                    }
+                }
+                
+                // Проверяем ОГРН
+                if (this.id === 'ogrn' && this.value.trim() !== '') {
+                    if (!/^\d{13}$|^\d{15}$/.test(this.value.trim())) {
+                        errorMessage.textContent = 'ОГРН должен содержать 13 или 15 цифр';
+                        formGroup.classList.add('error');
+                    } else {
+                        errorMessage.textContent = '';
+                        formGroup.classList.remove('error');
+                    }
+                }
+                
+                // Проверяем телефон
+                if (this.id === 'workPhone' && this.value.trim() !== '') {
+                    if (!/^\+7\s?\(\d{3}\)\s?\d{3}-\d{2}-\d{2}$/.test(this.value.trim())) {
+                        errorMessage.textContent = 'Телефон должен быть в формате +7 (999) 123-45-67';
+                        formGroup.classList.add('error');
+                    } else {
+                        errorMessage.textContent = '';
+                        formGroup.classList.remove('error');
+                    }
+                }
+                
+                // Проверяем email
+                if (this.id === 'contactEmail' && this.value.trim() !== '') {
+                    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.value.trim())) {
+                        errorMessage.textContent = 'Введите корректный email';
+                        formGroup.classList.add('error');
+                    } else {
+                        errorMessage.textContent = '';
+                        formGroup.classList.remove('error');
+                    }
+                }
+            });
+        });
+        console.log('Обработчики для полей ввода добавлены');
+        
+        // Добавляем маску для телефона
+        const phoneInput = document.getElementById('workPhone');
+        if (phoneInput) {
+            phoneInput.addEventListener('input', function(e) {
+                let value = this.value.replace(/\D/g, '');
+                
+                if (value.length > 0 && value[0] !== '7') {
+                    value = '7' + value;
+                }
+                
+                if (value.length === 0) {
+                    this.value = '';
+                } else if (value.length <= 1) {
+                    this.value = '+7';
+                } else if (value.length <= 4) {
+                    this.value = '+7 (' + value.substring(1);
+                } else if (value.length <= 7) {
+                    this.value = '+7 (' + value.substring(1, 4) + ') ' + value.substring(4);
+                } else if (value.length <= 9) {
+                    this.value = '+7 (' + value.substring(1, 4) + ') ' + value.substring(4, 7) + '-' + value.substring(7);
+                } else {
+                    this.value = '+7 (' + value.substring(1, 4) + ') ' + value.substring(4, 7) + '-' + value.substring(7, 9) + '-' + value.substring(9, 11);
+                }
+            });
+            console.log('Маска для телефона добавлена');
+        } else {
+            console.warn('Поле для телефона не найдено');
+        }
+        
+        // Обработчик отправки формы
+        if (counterpartyForm) {
+            counterpartyForm.addEventListener('submit', function(e) {
+                console.log('Обработка отправки формы контрагента');
+                handleFormSubmit(this, 'counterparty');
+            });
+            console.log('Обработчик отправки формы добавлен');
+        }
+        
+        // Добавляем анимацию для полей ввода
+        document.querySelectorAll('.counterparty-card__content .form-group').forEach((group, index) => {
+            group.style.animationDelay = `${0.1 + index * 0.05}s`;
+        });
+        console.log('Анимация для полей ввода добавлена');
+        
+        // Добавляем эффекты для карточки
+        const counterpartyCard = document.querySelector('.counterparty-card');
+        if (counterpartyCard) {
+            // Добавляем эффект свечения при наведении
+            counterpartyCard.addEventListener('mousemove', function(e) {
+                const rect = this.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                this.style.background = `radial-gradient(circle at ${x}px ${y}px, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0) 60%), var(--surface-color)`;
+            });
+            
+            counterpartyCard.addEventListener('mouseleave', function() {
+                this.style.background = 'var(--surface-color)';
+            });
+            console.log('Эффекты для карточки добавлены');
+        } else {
+            console.warn('Карточка контрагента не найдена');
+        }
+        
+        console.log('Инициализация карточки контрагента завершена успешно');
     }
     
     // Валидация полей формы
@@ -576,7 +915,10 @@ document.addEventListener('DOMContentLoaded', function() {
         
         inputs.forEach(input => {
             const formGroup = input.closest('.form-group');
+            if (!formGroup) return; // Пропускаем, если не найден form-group
+            
             const errorMessage = formGroup.querySelector('.error-message');
+            if (!errorMessage) return; // Пропускаем, если не найден error-message
             
             // Сбросить состояние ошибки
             formGroup.classList.remove('error');
@@ -610,8 +952,8 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Валидация подтверждения пароля
             if (input.id === 'registerPasswordConfirm') {
-                const password = document.getElementById('registerPassword').value;
-                if (input.value !== password) {
+                const password = document.getElementById('registerPassword');
+                if (password && input.value !== password.value) {
                     formGroup.classList.add('error');
                     errorMessage.textContent = 'Пароли не совпадают';
                     isValid = false;
@@ -622,12 +964,25 @@ document.addEventListener('DOMContentLoaded', function() {
         // Проверка согласия с условиями при регистрации
         if (form.id === 'registerForm') {
             const termsCheckbox = form.querySelector('input[type="checkbox"]');
-            const formGroup = termsCheckbox.closest('.form-group');
-            
-            if (!termsCheckbox.checked) {
-                formGroup.classList.add('error');
-                formGroup.querySelector('.error-message').textContent = 'Вы должны принять условия';
-                isValid = false;
+            if (termsCheckbox) {
+                const formGroup = termsCheckbox.closest('.form-group');
+                if (formGroup) {
+                    const errorMessage = formGroup.querySelector('.error-message');
+                    
+                    if (!termsCheckbox.checked) {
+                        formGroup.classList.add('error');
+                        if (errorMessage) {
+                            errorMessage.textContent = 'Вы должны принять условия';
+                        }
+                        isValid = false;
+                    } else {
+                        // Убираем ошибку, если чекбокс отмечен
+                        formGroup.classList.remove('error');
+                        if (errorMessage) {
+                            errorMessage.textContent = '';
+                        }
+                    }
+                }
             }
         }
         
@@ -711,6 +1066,31 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Возвращаем текущий статус для удобства
         return loginAttempts[email];
+    }
+    
+    // Функция для очистки данных о попытках входа
+    function clearLoginAttempts(email) {
+        // Если email указан, очищаем только для этого пользователя
+        if (email) {
+            const loginAttempts = JSON.parse(localStorage.getItem('loginAttempts') || '{}');
+            if (loginAttempts[email]) {
+                loginAttempts[email] = {
+                    count: 0,
+                    lastAttempt: new Date().toISOString(),
+                    blocked: false
+                };
+                localStorage.setItem('loginAttempts', JSON.stringify(loginAttempts));
+                console.log(`Данные о попытках входа для ${email} очищены`);
+                return true;
+            }
+            return false;
+        } 
+        // Если email не указан, очищаем для всех пользователей
+        else {
+            localStorage.removeItem('loginAttempts');
+            console.log('Данные о попытках входа для всех пользователей очищены');
+            return true;
+        }
     }
     
     // Проверка силы пароля
@@ -799,34 +1179,56 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Открытие модального окна
     function openModal() {
+        console.log('Вызвана функция openModal');
+        
         const authModal = document.querySelector('.auth-modal');
+        console.log('Модальное окно в DOM:', authModal ? 'Найдено' : 'Не найдено');
+        
         if (authModal) {
             authModal.classList.add('active');
             document.body.style.overflow = 'hidden';
+            console.log('Модальное окно активировано (добавлен класс active)');
             
             // Удаляем атрибут aria-hidden и добавляем inert на все остальные элементы страницы
             // кроме модального окна для правильного управления фокусом
             if (authModal.hasAttribute('aria-hidden')) {
                 authModal.removeAttribute('aria-hidden');
+                console.log('Удален атрибут aria-hidden');
             }
             
             // Сбрасываем состояние форм при открытии
             forms.forEach(form => form.reset());
+            console.log('Формы сброшены');
             
             // По умолчанию показываем форму входа
+            console.log('Переключаемся на вкладку входа по умолчанию');
             switchTab('login');
             
             // Создаем интерактивный фон
+            console.log('Создаем интерактивный фон');
             createInteractiveBackground();
         } else {
+            console.log('Модальное окно не найдено, создаем новое');
             // Если модального окна нет, создаем его
             createModalWindow();
+            
+            console.log('Ожидаем создания модального окна и активируем его через setTimeout');
             setTimeout(() => {
                 const newModal = document.querySelector('.auth-modal');
+                console.log('Новое модальное окно:', newModal ? 'Найдено' : 'Не найдено');
+                
                 if (newModal) {
                     newModal.classList.add('active');
                     document.body.style.overflow = 'hidden';
+                    console.log('Новое модальное окно активировано');
+                    
+                    // Проверяем наличие формы контрагента после активации
+                    const counterpartyForm = document.getElementById('counterpartyForm');
+                    console.log('Форма контрагента после активации модального окна:', counterpartyForm ? 'Найдена' : 'Не найдена');
+                    
                     createInteractiveBackground();
+                } else {
+                    console.error('Не удалось найти модальное окно после его создания');
                 }
             }, 50);
         }
@@ -854,53 +1256,259 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Переключение между вкладками
     function switchTab(tabName) {
-        // Активация вкладки
-        tabs.forEach(tab => {
-            if (tab.getAttribute('data-tab') === tabName) {
-                tab.classList.add('active');
-            } else {
-                tab.classList.remove('active');
-            }
-        });
+        console.log(`Вызвана функция switchTab с параметром: ${tabName}`);
         
-        // Скрываем сообщение об успехе
+        // Скрываем все формы
+        forms.forEach(form => form.classList.remove('active'));
+        console.log('Все формы скрыты');
+        
+        // Убираем активный класс со всех вкладок
+        tabs.forEach(tab => {
+            tab.classList.remove('active');
+        });
+        console.log('Активный класс убран со всех вкладок');
+        
+        // Скрываем экран успеха
         if (successScreen) {
             successScreen.style.display = 'none';
+            console.log('Экран успеха скрыт');
         }
         
-        // Для формы восстановления пароля не переключаем tab-кнопки
-        if (tabName === 'forgotPassword') {
-            // Скрываем все вкладки, так как восстановление пароля - это отдельная форма
-            tabs.forEach(tab => tab.parentElement.style.display = 'none');
+        // Показываем соответствующую форму
+        if (tabName === 'login') {
+            const loginForm = document.getElementById('loginForm');
+            const loginTab = document.querySelector('[data-tab="login"]');
+            if (loginForm) loginForm.classList.add('active');
+            if (loginTab) loginTab.classList.add('active');
+            console.log('Активирована вкладка входа:', loginForm ? 'Форма найдена' : 'Форма не найдена');
+        } else if (tabName === 'register') {
+            const registerForm = document.getElementById('registerForm');
+            const registerTab = document.querySelector('[data-tab="register"]');
+            if (registerForm) registerForm.classList.add('active');
+            if (registerTab) registerTab.classList.add('active');
+            console.log('Активирована вкладка регистрации:', registerForm ? 'Форма найдена' : 'Форма не найдена');
+        } else if (tabName === 'forgot') {
+            const forgotPasswordForm = document.getElementById('forgotPasswordForm');
+            if (forgotPasswordForm) forgotPasswordForm.classList.add('active');
+            console.log('Активирована вкладка восстановления пароля:', forgotPasswordForm ? 'Форма найдена' : 'Форма не найдена');
+            // Не активируем вкладку, так как это дополнительный экран
+        } else if (tabName === 'counterparty') {
+            console.log('Попытка активировать вкладку контрагента');
+            const counterpartyForm = document.getElementById('counterpartyForm');
+            console.log('Форма контрагента в switchTab:', counterpartyForm ? 'Найдена' : 'Не найдена');
             
-            // Показываем кнопку "Назад"
-            if (backButton) {
-                backButton.style.display = 'block';
-            }
-        } else {
-            // Показываем вкладки для остальных форм
-            tabs.forEach(tab => tab.parentElement.style.display = '');
-            
-            // Скрываем кнопку "Назад" для основных форм
-            if (backButton) {
-                backButton.style.display = 'none';
-            }
-        }
-        
-        // Сбросить ошибки при переключении форм
-        forms.forEach(form => {
-            const formGroups = form.querySelectorAll('.form-group');
-            formGroups.forEach(group => group.classList.remove('error'));
-        });
-        
-        // Отображение соответствующей формы
-        forms.forEach(form => {
-            if (form.id === `${tabName}Form`) {
-                form.classList.add('active');
+            if (counterpartyForm) {
+                counterpartyForm.classList.add('active');
+                console.log('Класс active добавлен к форме контрагента');
             } else {
-                form.classList.remove('active');
+                console.error('Форма контрагента не найдена в DOM при переключении вкладки');
+                // Проверяем содержимое модального окна
+                const modalContent = document.querySelector('.auth-modal__content-wrapper');
+                console.log('Содержимое модального окна в switchTab:', modalContent ? modalContent.innerHTML.substring(0, 100) + '...' : 'Контент-враппер не найден');
+                
+                // Проверяем все формы в DOM
+                const allForms = document.querySelectorAll('form');
+                console.log('Все формы в DOM:', Array.from(allForms).map(form => form.id));
+                
+                // Если форма не найдена, но есть контент-враппер, добавляем форму
+                if (modalContent && !modalContent.innerHTML.includes('id="counterpartyForm"')) {
+                    console.log('Форма контрагента отсутствует, добавляем её динамически');
+                    
+                    // Добавляем форму контрагента в конец содержимого модального окна
+                    modalContent.innerHTML += `
+                    <!-- Форма карточки контрагента -->
+                    <form id="counterpartyForm" class="auth-form counterparty-form active">
+                        <button type="button" class="back-button" data-return-to="register">
+                            <i class="fas fa-arrow-left"></i>
+                        </button>
+                        
+                        <h2>Карточка контрагента</h2>
+                        <p class="form-subtitle">Заполните данные вашей организации</p>
+                        
+                        <div class="counterparty-card">
+                            <div class="counterparty-card__header">
+                                <div class="counterparty-card__icon">
+                                    <i class="fas fa-building"></i>
+                                </div>
+                                <div class="counterparty-progress">
+                                    <div class="progress-bar">
+                                        <div class="progress-indicator"></div>
+                                    </div>
+                                    <span class="progress-text">Заполнено: <span class="progress-percent">0%</span></span>
+                                </div>
+                            </div>
+                            
+                            <div class="counterparty-card__content">
+                                <div class="form-group">
+                                    <label for="orgName">Наименование организации</label>
+                                    <div class="input-container">
+                                        <i class="fas fa-building input-icon"></i>
+                                        <input type="text" id="orgName" placeholder="ООО 'Компания'" required>
+                                    </div>
+                                    <span class="error-message"></span>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="legalAddress">Юридический адрес</label>
+                                    <div class="input-container">
+                                        <i class="fas fa-map-marker-alt input-icon"></i>
+                                        <input type="text" id="legalAddress" placeholder="г. Москва, ул. Примерная, д. 1" required>
+                                    </div>
+                                    <span class="error-message"></span>
+                                </div>
+                                
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="inn">ИНН</label>
+                                        <div class="input-container">
+                                            <i class="fas fa-id-card input-icon"></i>
+                                            <input type="text" id="inn" placeholder="7700000000" required>
+                                        </div>
+                                        <span class="error-message"></span>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="kpp">КПП</label>
+                                        <div class="input-container">
+                                            <i class="fas fa-id-card input-icon"></i>
+                                            <input type="text" id="kpp" placeholder="770000000" required>
+                                        </div>
+                                        <span class="error-message"></span>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="ogrn">ОГРН</label>
+                                    <div class="input-container">
+                                        <i class="fas fa-file-alt input-icon"></i>
+                                        <input type="text" id="ogrn" placeholder="1000000000000" required>
+                                    </div>
+                                    <span class="error-message"></span>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="contactPerson">Контактное лицо</label>
+                                    <div class="input-container">
+                                        <i class="fas fa-user input-icon"></i>
+                                        <input type="text" id="contactPerson" placeholder="Иванов Иван Иванович" required>
+                                    </div>
+                                    <span class="error-message"></span>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="contactPosition">Должность</label>
+                                    <div class="input-container">
+                                        <i class="fas fa-briefcase input-icon"></i>
+                                        <input type="text" id="contactPosition" placeholder="Генеральный директор" required>
+                                    </div>
+                                    <span class="error-message"></span>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="workPhone">Рабочий телефон</label>
+                                    <div class="input-container">
+                                        <i class="fas fa-phone input-icon"></i>
+                                        <input type="tel" id="workPhone" placeholder="+7 (999) 123-45-67" required>
+                                    </div>
+                                    <span class="error-message"></span>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="contactEmail">Email для связи</label>
+                                    <div class="input-container">
+                                        <i class="fas fa-envelope input-icon"></i>
+                                        <input type="email" id="contactEmail" placeholder="contact@company.ru" required>
+                                    </div>
+                                    <span class="error-message"></span>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>Предпочтительный способ связи</label>
+                                    <div class="radio-group">
+                                        <div class="radio-option">
+                                            <input type="radio" id="contactMethodWhatsapp" name="contactMethod" value="whatsapp">
+                                            <label for="contactMethodWhatsapp"><i class="fab fa-whatsapp"></i> WhatsApp</label>
+                                        </div>
+                                        <div class="radio-option">
+                                            <input type="radio" id="contactMethodTelegram" name="contactMethod" value="telegram">
+                                            <label for="contactMethodTelegram"><i class="fab fa-telegram"></i> Telegram</label>
+                                        </div>
+                                        <div class="radio-option">
+                                            <input type="radio" id="contactMethodPhone" name="contactMethod" value="phone">
+                                            <label for="contactMethodPhone"><i class="fas fa-phone"></i> Телефон</label>
+                                        </div>
+                                        <div class="radio-option">
+                                            <input type="radio" id="contactMethodEmail" name="contactMethod" value="email" checked>
+                                            <label for="contactMethodEmail"><i class="fas fa-envelope"></i> Email</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-section">
+                                    <h3>Банковские реквизиты</h3>
+                                    
+                                    <div class="form-group">
+                                        <label for="bankName">Наименование банка</label>
+                                        <div class="input-container">
+                                            <i class="fas fa-university input-icon"></i>
+                                            <input type="text" id="bankName" placeholder="АО 'Банк'" required>
+                                        </div>
+                                        <span class="error-message"></span>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="bankAccount">Расчетный счет</label>
+                                        <div class="input-container">
+                                            <i class="fas fa-money-check input-icon"></i>
+                                            <input type="text" id="bankAccount" placeholder="40700000000000000000" required>
+                                        </div>
+                                        <span class="error-message"></span>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="corrAccount">Корреспондентский счет</label>
+                                        <div class="input-container">
+                                            <i class="fas fa-money-check-alt input-icon"></i>
+                                            <input type="text" id="corrAccount" placeholder="30100000000000000000" required>
+                                        </div>
+                                        <span class="error-message"></span>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="bik">БИК</label>
+                                        <div class="input-container">
+                                            <i class="fas fa-hashtag input-icon"></i>
+                                            <input type="text" id="bik" placeholder="044500000" required>
+                                        </div>
+                                        <span class="error-message"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="submit-button">
+                            <span class="button-text">Сохранить данные</span>
+                            <span class="loading-spinner"></span>
+                        </button>
+                    </form>
+                    `;
+                    
+                    console.log('Форма контрагента добавлена в DOM');
+                    
+                    // Обновляем глобальные переменные
+                    forms = document.querySelectorAll('.auth-form');
+                    console.log('Обновлены глобальные переменные, количество форм:', forms.length);
+                    
+                    // Инициализируем карточку контрагента
+                    initCounterpartyCard();
+                }
             }
-        });
+            // Не активируем вкладку, так как это дополнительный экран
+            
+            // Инициализируем карточку контрагента
+            console.log('Вызываем initCounterpartyCard');
+            initCounterpartyCard();
+        }
     }
     
     // Отображение экрана успеха
@@ -910,6 +1518,26 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Показать экран успеха
         if (successScreen) {
+            // Настраиваем текст в зависимости от типа операции
+            const successTitle = successScreen.querySelector('h2');
+            const successMessage = successScreen.querySelector('.success-message');
+            
+            if (successTitle && successMessage) {
+                if (type === 'login') {
+                    successTitle.textContent = 'Вход выполнен!';
+                    successMessage.textContent = 'Вы успешно вошли в систему. Добро пожаловать!';
+                } else if (type === 'register') {
+                    successTitle.textContent = 'Регистрация завершена!';
+                    successMessage.textContent = 'Ваш аккаунт успешно создан. Добро пожаловать!';
+                } else if (type === 'forgotPassword') {
+                    successTitle.textContent = 'Ссылка отправлена!';
+                    successMessage.textContent = 'Проверьте вашу электронную почту для получения инструкций по восстановлению пароля.';
+                } else if (type === 'counterparty') {
+                    successTitle.textContent = 'Данные сохранены!';
+                    successMessage.textContent = 'Карточка контрагента успешно заполнена и сохранена.';
+                }
+            }
+            
             successScreen.style.display = 'block';
             
             // Установить таймер для показа меню пользователя через 2 секунды
@@ -917,8 +1545,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Скрыть экран успеха
                 successScreen.style.display = 'none';
                 
-                // Показать меню пользователя в модальном окне
-                if (type === 'login' || type === 'register') {
+                // Показать меню пользователя в модальном окне или закрыть модальное окно
+                if (type === 'login' || type === 'register' || type === 'counterparty') {
+                    // Для входа и регистрации показываем меню пользователя
                     showUserMenu(siteLoginButton);
                 } else {
                     // Для других типов (например, forgot) просто закрываем модальное окно
@@ -1031,7 +1660,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         } else {
             console.log('User is not logged in, setting up login button');
-            newButton.innerHTML = `<i class="fas fa-sign-in-alt"></i><span>Войти</span>`;
+            newButton.innerHTML = `<i class="fas fa-sign-in-alt" style="color: white;"></i><span>Войти</span>`;
             newButton.classList.remove('logged-in');
             
             // Добавляем обработчик для показа модального окна входа
@@ -1085,7 +1714,7 @@ document.addEventListener('DOMContentLoaded', function() {
             loginButton.parentNode.replaceChild(newButton, loginButton);
             
             // Обновляем внешний вид кнопки
-            newButton.innerHTML = `<i class="fas fa-sign-in-alt"></i><span>Войти</span>`;
+            newButton.innerHTML = `<i class="fas fa-sign-in-alt" style="color: white;"></i><span>Войти</span>`;
             newButton.classList.remove('logged-in');
             
             // Добавляем новый обработчик для открытия модального окна
@@ -1240,13 +1869,12 @@ document.addEventListener('DOMContentLoaded', function() {
                             <div class="user-menu__name">
                                 <div class="name-wrapper">
                                     <span class="name-text">${userData.name}</span>
-                                    <div class="account-status">
-                                        <div class="status-indicator"></div>
-                                        <span>Премиум</span>
-                                    </div>
                                 </div>
                             </div>
                             <div class="user-menu__email">${userData.email}</div>
+                        </div>
+                        <div class="logout-button" data-action="logout" title="Выйти">
+                            <i class="fas fa-sign-out-alt"></i>
                         </div>
                     </div>
                     
@@ -1255,6 +1883,10 @@ document.addEventListener('DOMContentLoaded', function() {
                             <i class="fas fa-id-card"></i>
                             <span>Профиль</span>
                         </li>
+                        <li class="user-menu__item" data-action="counterparty">
+                            <i class="fas fa-building"></i>
+                            <span>Данные контрагента</span>
+                        </li>
                         <li class="user-menu__item" data-action="orders">
                             <i class="fas fa-shopping-bag"></i>
                             <span>Заказы</span>
@@ -1262,10 +1894,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         <li class="user-menu__item" data-action="settings">
                             <i class="fas fa-cog"></i>
                             <span>Настройки</span>
-                        </li>
-                        <li class="user-menu__item" data-action="logout">
-                            <i class="fas fa-sign-out-alt"></i>
-                            <span>Выйти</span>
                         </li>
                     </ul>
                 </div>
@@ -1371,35 +1999,84 @@ document.addEventListener('DOMContentLoaded', function() {
                         width: 100%;
                     }
                     
-                    .account-status {
-                        display: flex;
-                        align-items: center;
-                        gap: 6px;
-                        font-size: 11px;
-                        color: #BCB88A;
-                        background: linear-gradient(135deg, rgba(188, 184, 138, 0.15), rgba(201, 137, 123, 0.15));
-                        padding: 4px 8px;
-                        border-radius: 50px;
-                        box-shadow: 0 2px 10px rgba(201, 137, 123, 0.15);
-                        font-weight: 600;
-                        letter-spacing: 0.3px;
-                        text-transform: uppercase;
-                        margin-left: 8px;
-                    }
-                    
-                    .status-indicator {
-                        width: 8px;
-                        height: 8px;
-                        background: linear-gradient(135deg, #BCB88A, #C9897B);
-                        border-radius: 50%;
-                        margin-right: 0;
-                        box-shadow: 0 0 0 2px rgba(201, 137, 123, 0.2);
-                        position: relative;
-                    }
-                    
                     .user-menu__email {
                         font-size: 14px;
                         color: ${document.body.classList.contains('dark') ? '#aaa' : '#666'};
+                    }
+                    
+                    .logout-button {
+                        position: absolute;
+                        top: 15px;
+                        right: 15px;
+                        width: 32px;
+                        height: 32px;
+                        border-radius: 50%;
+                        background: ${document.body.classList.contains('dark') ? '#444' : '#f1f1f1'};
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                        z-index: 5;
+                        box-shadow: 0 2px 6px rgba(244, 67, 54, 0.2);
+                        overflow: hidden;
+                    }
+                    
+                    .logout-button:before {
+                        content: '';
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background: radial-gradient(circle at center, rgba(244, 67, 54, 0.2) 0%, transparent 70%);
+                        opacity: 0;
+                        transition: opacity 0.3s ease;
+                    }
+                    
+                    .logout-button:hover {
+                        background: ${document.body.classList.contains('dark') ? '#555' : '#e5e5e5'};
+                        transform: scale(1.15) rotate(5deg);
+                        box-shadow: 0 4px 12px rgba(244, 67, 54, 0.3);
+                    }
+                    
+                    .logout-button:hover:before {
+                        opacity: 1;
+                    }
+                    
+                    .logout-button i {
+                        color: #f44336;
+                        font-size: 16px;
+                        transition: all 0.3s ease;
+                    }
+                    
+                    .logout-button:hover i {
+                        transform: scale(1.2);
+                    }
+                    
+                    .logout-button:after {
+                        content: 'Выйти';
+                        position: absolute;
+                        top: -30px;
+                        left: 50%;
+                        transform: translateX(-50%) translateY(10px);
+                        background: ${document.body.classList.contains('dark') ? '#333' : '#fff'};
+                        color: ${document.body.classList.contains('dark') ? '#fff' : '#333'};
+                        padding: 4px 8px;
+                        border-radius: 4px;
+                        font-size: 12px;
+                        opacity: 0;
+                        visibility: hidden;
+                        transition: all 0.3s ease;
+                        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+                        white-space: nowrap;
+                        pointer-events: none;
+                    }
+                    
+                    .logout-button:hover:after {
+                        opacity: 1;
+                        visibility: visible;
+                        transform: translateX(-50%) translateY(0);
                     }
                     
                     .user-menu__items {
@@ -1437,13 +2114,19 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                     
                     .user-menu__item[data-action="logout"] {
-                        margin-top: 10px;
-                        border-top: 1px solid ${document.body.classList.contains('dark') ? '#444' : '#eee'};
-                        padding-top: 15px;
+                        margin-bottom: 10px;
+                        border-bottom: 1px solid ${document.body.classList.contains('dark') ? '#444' : '#eee'};
+                        padding-bottom: 15px;
+                        background-color: ${document.body.classList.contains('dark') ? '#3a3a3a' : '#f5f5f5'};
+                        border-radius: 8px;
                     }
                     
                     .user-menu__item[data-action="logout"] i {
                         color: #f44336;
+                    }
+                    
+                    .user-menu__item[data-action="logout"]:hover {
+                        background-color: ${document.body.classList.contains('dark') ? '#4a4a4a' : '#ebebeb'};
                     }
                 `;
                 document.head.appendChild(style);
@@ -1462,6 +2145,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Заменяем содержимое модального окна
                 contentWrapper.innerHTML = userMenuContent;
                 
+                // Добавляем обработчик для кнопки выхода
+                const logoutButton = contentWrapper.querySelector('.logout-button');
+                if (logoutButton) {
+                    logoutButton.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        logoutUser();
+                    });
+                }
+                
                 // Добавляем обработчики к пунктам меню
                 const menuItems = contentWrapper.querySelectorAll('.user-menu__item');
                 menuItems.forEach(item => {
@@ -1471,9 +2163,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         console.log(`Modal menu item clicked: ${action}`);
                         
                         // Выполняем соответствующее действие
-                        if (action === 'logout') {
-                            logoutUser();
-                        } else if (action === 'profile') {
+                        if (action === 'profile') {
                             // Закрываем модальное окно
                             closeModal();
                             // Вызываем функцию showProfileModal из desktop.js
@@ -1495,6 +2185,11 @@ document.addEventListener('DOMContentLoaded', function() {
                                     }
                                 }
                             }
+                        } else if (action === 'counterparty') {
+                            // Закрываем модальное окно
+                            closeModal();
+                            // Вызываем функцию редактирования данных контрагента
+                            editCounterpartyData();
                         } else if (action === 'orders') {
                             // Закрываем модальное окно
                             closeModal();
@@ -1586,6 +2281,29 @@ document.addEventListener('DOMContentLoaded', function() {
                     userMenu.style.transform = 'translateY(0)';
                 }, 50);
                 
+                // Добавляем обработчик для кнопки выхода
+                const logoutButton = userMenu.querySelector('.logout-button');
+                if (logoutButton) {
+                    logoutButton.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        
+                        // Скрываем меню
+                        userMenu.style.opacity = '0';
+                        userMenu.style.visibility = 'hidden';
+                        userMenu.style.transform = 'translateY(10px)';
+                        
+                        // Выполняем выход после анимации скрытия
+                        setTimeout(() => {
+                            logoutUser();
+                            
+                            // Удаляем меню из DOM
+                            if (userMenu.parentNode) {
+                                userMenu.parentNode.removeChild(userMenu);
+                            }
+                        }, 300);
+                    });
+                }
+                
                 // Добавляем обработчики к пунктам меню
                 const menuItems = userMenu.querySelectorAll('.user-menu__item');
                 menuItems.forEach(item => {
@@ -1621,6 +2339,9 @@ document.addEventListener('DOMContentLoaded', function() {
                                         if (passwordField) passwordField.focus();
                                     }
                                 }
+                            } else if (action === 'counterparty') {
+                                // Вызываем функцию редактирования данных контрагента
+                                editCounterpartyData();
                             } else if (action === 'orders') {
                                 // Вызываем функцию showOrdersModal из desktop.js
                                 if (typeof window.showOrdersModal === 'function') {
@@ -1732,7 +2453,14 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Создание модального окна, если его нет в DOM
     function createModalWindow() {
-        if (document.querySelector('.auth-modal')) return;
+        console.log('Вызвана функция createModalWindow');
+        
+        if (document.querySelector('.auth-modal')) {
+            console.log('Модальное окно уже существует, выходим из функции');
+            return;
+        }
+        
+        console.log('Создаем новое модальное окно');
         
         // Создаем структуру модального окна
         const modalHTML = `
@@ -1751,99 +2479,980 @@ document.addEventListener('DOMContentLoaded', function() {
         const modalContainer = document.createElement('div');
         modalContainer.innerHTML = modalHTML;
         document.body.appendChild(modalContainer.firstElementChild);
+        console.log('Базовая структура модального окна добавлена в DOM');
         
         // Добавляем обработчики событий
         const newModal = document.querySelector('.auth-modal');
         const newOverlay = document.querySelector('.auth-modal__overlay');
         const newCloseButton = document.querySelector('.auth-modal__close');
+        const contentWrapper = document.querySelector('.auth-modal__content-wrapper');
+        
+        console.log('Получены ссылки на элементы модального окна:', {
+            modal: newModal ? 'Найдено' : 'Не найдено',
+            overlay: newOverlay ? 'Найдено' : 'Не найдено',
+            closeButton: newCloseButton ? 'Найдено' : 'Не найдено',
+            contentWrapper: contentWrapper ? 'Найдено' : 'Не найдено'
+        });
+        
+        // Копируем содержимое модального окна из HTML-файла
+        const templateContent = document.querySelector('#auth-modal-template');
+        console.log('Шаблон модального окна:', templateContent ? 'Найден' : 'Не найден');
+        
+        if (templateContent) {
+            // Если есть шаблон, используем его
+            contentWrapper.innerHTML = templateContent.innerHTML;
+            console.log('Содержимое модального окна скопировано из шаблона');
+        } else {
+            console.log('Шаблон не найден, создаем содержимое программно');
+            // Если шаблона нет, создаем содержимое программно
+            contentWrapper.innerHTML = `
+                <div class="auth-modal__header">
+                    <div class="auth-tabs">
+                        <button class="auth-tab active" data-tab="login">Вход</button>
+                        <button class="auth-tab" data-tab="register">Регистрация</button>
+                    </div>
+                </div>
+                
+                <div class="auth-modal__content">
+                    <!-- Форма входа -->
+                    <form id="loginForm" class="auth-form active">
+                        <h2>Вход в аккаунт</h2>
+                        
+                        <div class="social-login">
+                            <button type="button" class="social-button google">
+                                <i class="fab fa-google"></i>
+                                <span>Google</span>
+                            </button>
+                            <button type="button" class="social-button vk">
+                                <i class="fab fa-vk"></i>
+                                <span>ВКонтакте</span>
+                            </button>
+                        </div>
+                        
+                        <div class="divider">
+                            <span>или через email</span>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="loginEmail">Email</label>
+                            <div class="input-container">
+                                <i class="fas fa-envelope input-icon"></i>
+                                <input type="email" id="loginEmail" placeholder="your@email.com" required>
+                            </div>
+                            <span class="error-message"></span>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="loginPassword">Пароль</label>
+                            <div class="input-container">
+                                <i class="fas fa-lock input-icon"></i>
+                                <input type="password" id="loginPassword" placeholder="••••••••" required>
+                                <button type="button" class="toggle-password">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <span class="error-message"></span>
+                        </div>
+                        
+                        <div class="form-group checkbox-group">
+                            <div class="checkbox-container">
+                                <input type="checkbox" id="rememberMe">
+                                <label for="rememberMe">Запомнить меня</label>
+                            </div>
+                            <a href="#" class="forgot-password-link">Забыли пар1оль?</a>
+                        </div>
+                        
+                        <button type="submit" class="submit-button">
+                            <span class="button-text">Войти</span>
+                            <span class="loading-spinner"></span>
+                        </button>
+                    </form>
+                    
+                    <!-- Форма регистрации -->
+                    <form id="registerForm" class="auth-form">
+                        <h2>Создать аккаунт</h2>
+                        
+                        <div class="form-group">
+                            <label for="registerName">Имя и фамилия</label>
+                            <div class="input-container">
+                                <i class="fas fa-user input-icon"></i>
+                                <input type="text" id="registerName" placeholder="Иван Иванов" required>
+                            </div>
+                            <span class="error-message"></span>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="registerEmail">Email</label>
+                            <div class="input-container">
+                                <i class="fas fa-envelope input-icon"></i>
+                                <input type="email" id="registerEmail" placeholder="your@email.com" required>
+                            </div>
+                            <span class="error-message"></span>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="registerPassword">Пароль</label>
+                            <div class="input-container">
+                                <i class="fas fa-lock input-icon"></i>
+                                <input type="password" id="registerPassword" placeholder="••••••••" required>
+                                <button type="button" class="toggle-password">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <span class="error-message"></span>
+                            
+                            <div class="password-strength">
+                                <div class="strength-meter">
+                                    <div class="strength-indicator"></div>
+                                </div>
+                                <span class="strength-text"></span>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="registerPasswordConfirm">Подтвердите пароль</label>
+                            <div class="input-container">
+                                <i class="fas fa-lock input-icon"></i>
+                                <input type="password" id="registerPasswordConfirm" placeholder="••••••••" required>
+                                <button type="button" class="toggle-password">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <span class="error-message"></span>
+                        </div>
+                        
+                        <div class="form-group">
+                            <div class="agreement-checkbox">
+                                <input type="checkbox" id="termsAgreement" required>
+                                <label for="termsAgreement">Я согласен с <a href="#">Условиями использования</a> и <a href="#">Политикой конфиденциальности</a></label>
+                            </div>
+                            <span class="error-message"></span>
+                        </div>
+                        
+                        <button type="submit" class="submit-button">
+                            <span class="button-text">Создать аккаунт</span>
+                            <span class="loading-spinner"></span>
+                        </button>
+                    </form>
+                    
+                    <!-- Форма карточки контрагента -->
+                    <form id="counterpartyForm" class="auth-form counterparty-form">
+                        <button type="button" class="back-button" data-return-to="register">
+                            <i class="fas fa-arrow-left"></i>
+                        </button>
+                        
+                        <h2>Карточка контрагента</h2>
+                        <p class="form-subtitle">Заполните данные вашей организации</p>
+                        
+                        <div class="counterparty-card">
+                            <div class="counterparty-card__header">
+                                <div class="counterparty-card__icon">
+                                    <i class="fas fa-building"></i>
+                                </div>
+                                <div class="counterparty-progress">
+                                    <div class="progress-bar">
+                                        <div class="progress-indicator"></div>
+                                    </div>
+                                    <span class="progress-text">Заполнено: <span class="progress-percent">0%</span></span>
+                                </div>
+                            </div>
+                            
+                            <div class="counterparty-card__content">
+                                <div class="form-group">
+                                    <label for="orgName">Наименование организации</label>
+                                    <div class="input-container">
+                                        <i class="fas fa-building input-icon"></i>
+                                        <input type="text" id="orgName" placeholder="ООО 'Компания'" required>
+                                    </div>
+                                    <span class="error-message"></span>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="legalAddress">Юридический адрес</label>
+                                    <div class="input-container">
+                                        <i class="fas fa-map-marker-alt input-icon"></i>
+                                        <input type="text" id="legalAddress" placeholder="г. Москва, ул. Примерная, д. 1" required>
+                                    </div>
+                                    <span class="error-message"></span>
+                                </div>
+                                
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="inn">ИНН</label>
+                                        <div class="input-container">
+                                            <i class="fas fa-id-card input-icon"></i>
+                                            <input type="text" id="inn" placeholder="7700000000" required>
+                                        </div>
+                                        <span class="error-message"></span>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="kpp">КПП</label>
+                                        <div class="input-container">
+                                            <i class="fas fa-id-card input-icon"></i>
+                                            <input type="text" id="kpp" placeholder="770000000" required>
+                                        </div>
+                                        <span class="error-message"></span>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="ogrn">ОГРН</label>
+                                    <div class="input-container">
+                                        <i class="fas fa-file-alt input-icon"></i>
+                                        <input type="text" id="ogrn" placeholder="1000000000000" required>
+                                    </div>
+                                    <span class="error-message"></span>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="contactPerson">Контактное лицо</label>
+                                    <div class="input-container">
+                                        <i class="fas fa-user input-icon"></i>
+                                        <input type="text" id="contactPerson" placeholder="Иванов Иван Иванович" required>
+                                    </div>
+                                    <span class="error-message"></span>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="contactPosition">Должность</label>
+                                    <div class="input-container">
+                                        <i class="fas fa-briefcase input-icon"></i>
+                                        <input type="text" id="contactPosition" placeholder="Генеральный директор" required>
+                                    </div>
+                                    <span class="error-message"></span>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="workPhone">Рабочий телефон</label>
+                                    <div class="input-container">
+                                        <i class="fas fa-phone input-icon"></i>
+                                        <input type="tel" id="workPhone" placeholder="+7 (999) 123-45-67" required>
+                                    </div>
+                                    <span class="error-message"></span>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="contactEmail">Email для связи</label>
+                                    <div class="input-container">
+                                        <i class="fas fa-envelope input-icon"></i>
+                                        <input type="email" id="contactEmail" placeholder="contact@company.ru" required>
+                                    </div>
+                                    <span class="error-message"></span>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>Предпочтительный способ связи</label>
+                                    <div class="radio-group">
+                                        <div class="radio-option">
+                                            <input type="radio" id="contactMethodWhatsapp" name="contactMethod" value="whatsapp">
+                                            <label for="contactMethodWhatsapp"><i class="fab fa-whatsapp"></i> WhatsApp</label>
+                                        </div>
+                                        <div class="radio-option">
+                                            <input type="radio" id="contactMethodTelegram" name="contactMethod" value="telegram">
+                                            <label for="contactMethodTelegram"><i class="fab fa-telegram"></i> Telegram</label>
+                                        </div>
+                                        <div class="radio-option">
+                                            <input type="radio" id="contactMethodPhone" name="contactMethod" value="phone">
+                                            <label for="contactMethodPhone"><i class="fas fa-phone"></i> Телефон</label>
+                                        </div>
+                                        <div class="radio-option">
+                                            <input type="radio" id="contactMethodEmail" name="contactMethod" value="email" checked>
+                                            <label for="contactMethodEmail"><i class="fas fa-envelope"></i> Email</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-section">
+                                    <h3>Банковские реквизиты</h3>
+                                    
+                                    <div class="form-group">
+                                        <label for="bankName">Наименование банка</label>
+                                        <div class="input-container">
+                                            <i class="fas fa-university input-icon"></i>
+                                            <input type="text" id="bankName" placeholder="АО 'Банк'" required>
+                                        </div>
+                                        <span class="error-message"></span>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="bankAccount">Расчетный счет</label>
+                                        <div class="input-container">
+                                            <i class="fas fa-money-check input-icon"></i>
+                                            <input type="text" id="bankAccount" placeholder="40700000000000000000" required>
+                                        </div>
+                                        <span class="error-message"></span>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="corrAccount">Корреспондентский счет</label>
+                                        <div class="input-container">
+                                            <i class="fas fa-money-check-alt input-icon"></i>
+                                            <input type="text" id="corrAccount" placeholder="30100000000000000000" required>
+                                        </div>
+                                        <span class="error-message"></span>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="bik">БИК</label>
+                                        <div class="input-container">
+                                            <i class="fas fa-hashtag input-icon"></i>
+                                            <input type="text" id="bik" placeholder="044500000" required>
+                                        </div>
+                                        <span class="error-message"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="submit-button">
+                            <span class="button-text">Сохранить данные</span>
+                            <span class="loading-spinner"></span>
+                        </button>
+                    </form>
+                    
+                    <!-- Экран успеха -->
+                    <div class="success-screen">
+                        <div class="success-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <h2>Успешно!</h2>
+                        <p class="success-message">Операция выполнена успешно.</p>
+                    </div>
+                    
+                    <!-- Форма восстановления пароля -->
+                    <form id="forgotPasswordForm" class="auth-form">
+                        <button type="button" class="back-button" data-return-to="login">
+                            <i class="fas fa-arrow-left"></i>
+                        </button>
+                        
+                        <h2>Восстановление пароля</h2>
+                        <p class="form-subtitle">Укажите email, на который будет отправлена ссылка для сброса пароля</p>
+                        
+                        <div class="form-group">
+                            <label for="forgotEmail">Email</label>
+                            <div class="input-container">
+                                <i class="fas fa-envelope input-icon"></i>
+                                <input type="email" id="forgotEmail" placeholder="your@email.com" required>
+                            </div>
+                            <span class="error-message"></span>
+                        </div>
+                        
+                        <button type="submit" class="submit-button">
+                            <span class="button-text">Отправить ссылку</span>
+                            <span class="loading-spinner"></span>
+                        </button>
+                    </form>
+                </div>
+            `;
+            console.log('Содержимое модального окна создано программно');
+        }
+        
+        // Проверяем наличие формы контрагента
+        const counterpartyForm = document.getElementById('counterpartyForm');
+        console.log('Форма контрагента после создания модального окна:', counterpartyForm ? 'Найдена' : 'Не найдена');
+        
+        // Добавляем обработчики событий для модального окна
+        if (newOverlay) {
+            newOverlay.addEventListener('click', closeModal);
+            console.log('Добавлен обработчик клика для overlay');
+        }
         
         if (newCloseButton) {
             newCloseButton.addEventListener('click', closeModal);
+            console.log('Добавлен обработчик клика для кнопки закрытия');
         }
         
-        if (newOverlay) {
-            newOverlay.addEventListener('click', closeModal);
+        // Обновляем ссылки на формы и вкладки
+        forms = document.querySelectorAll('.auth-form');
+        tabs = document.querySelectorAll('.auth-tab');
+        successScreen = document.querySelector('.success-screen');
+        
+        console.log('Обновлены глобальные переменные:', {
+            forms: forms.length,
+            tabs: tabs.length,
+            successScreen: successScreen ? 'Найден' : 'Не найден'
+        });
+        
+        // Добавляем обработчики для вкладок
+        tabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                const tabName = this.getAttribute('data-tab');
+                switchTab(tabName);
+            });
+        });
+        console.log('Добавлены обработчики для вкладок');
+        
+        // Добавляем обработчики для кнопок "назад"
+        const backButtons = document.querySelectorAll('.back-button');
+        backButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const returnTo = this.getAttribute('data-return-to');
+                switchTab(returnTo);
+            });
+        });
+        console.log('Добавлены обработчики для кнопок "назад"');
+        
+        // Добавляем обработчик для ссылки "Забыли пароль"
+        const forgotPasswordLink = document.querySelector('.forgot-password-link');
+        if (forgotPasswordLink) {
+            forgotPasswordLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                switchTab('forgot');
+            });
+            console.log('Добавлен обработчик для ссылки "Забыли пароль"');
         }
         
-        // Добавляем полифилл для inert, если он не поддерживается браузером
-        if (!('inert' in HTMLElement.prototype)) {
-            console.log('Adding inert polyfill');
-            // Здесь должен быть код полифилла для inert
-            // Или можно использовать CDN
-            const script = document.createElement('script');
-            script.src = 'https://cdn.jsdelivr.net/npm/wicg-inert@latest/dist/inert.min.js';
-            document.head.appendChild(script);
+        // Добавляем обработчики для кнопок показа/скрытия пароля
+        const togglePasswordButtons = document.querySelectorAll('.toggle-password');
+        togglePasswordButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const input = this.parentElement.querySelector('input');
+                const icon = this.querySelector('i');
+                
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                } else {
+                    input.type = 'password';
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                }
+            });
+        });
+        console.log('Добавлены обработчики для кнопок показа/скрытия пароля');
+        
+        // Добавляем обработчики для отправки форм
+        forms.forEach(form => {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                handleFormSubmit(this, this.id.replace('Form', ''));
+            });
+        });
+        console.log('Добавлены обработчики для отправки форм');
+        
+        // Добавляем обработчик для проверки силы пароля
+        const registerPasswordInput = document.getElementById('registerPassword');
+        if (registerPasswordInput) {
+            registerPasswordInput.addEventListener('input', checkPasswordStrength);
+            console.log('Добавлен обработчик для проверки силы пароля');
         }
         
-        // Добавляем стили для модального окна, если их еще нет
-        if (!document.getElementById('auth-modal-styles')) {
-            const style = document.createElement('style');
-            style.id = 'auth-modal-styles';
-            style.textContent = `
-                .auth-modal {
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 100%;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    z-index: 1000;
-                    opacity: 0;
-                    visibility: hidden;
-                    transition: opacity 0.3s ease, visibility 0.3s ease;
-                }
+        // Инициализируем карточку контрагента, если форма существует
+        if (counterpartyForm) {
+            initCounterpartyCard();
+            console.log('Инициализирована карточка контрагента');
+        }
+        
+        console.log('Модальное окно успешно создано и настроено');
+    }
+
+    // Экспортируем функцию showUserMenu в глобальное пространство имен
+    window.showUserMenu = showUserMenu;
+    
+    // Экспортируем функцию openModal в глобальное пространство имен
+    window.openModal = openModal;
+    
+    // Экспортируем функцию closeModal в глобальное пространство имен
+    window.closeModal = closeModal;
+    
+    // Экспортируем функцию switchTab в глобальное пространство имен
+    window.switchTab = switchTab;
+    
+    // Экспортируем функцию редактирования данных контрагента в глобальное пространство имен
+    window.editCounterpartyData = editCounterpartyData;
+
+    // Добавляем функцию для редактирования данных контрагента
+    function editCounterpartyData() {
+        console.log('Вызвана функция editCounterpartyData');
+        
+        // Получаем текущего пользователя и его данные
+        const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+        console.log('Данные пользователя:', userData);
+        
+        if (!userData.loggedIn || !userData.email) {
+            showNotification('Для редактирования данных контрагента необходимо войти в систему', 'error');
+            return;
+        }
+        
+        // Получаем список зарегистрированных пользователей
+        const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+        console.log('Количество зарегистрированных пользователей:', users.length);
+        
+        // Находим текущего пользователя
+        const currentUser = users.find(user => user.email.toLowerCase() === userData.email.toLowerCase());
+        console.log('Найден текущий пользователь:', currentUser ? 'Да' : 'Нет');
+        
+        if (!currentUser) {
+            showNotification('Не удалось найти данные пользователя', 'error');
+            return;
+        }
+        
+        // Открываем модальное окно
+        console.log('Открываем модальное окно');
+        openModal();
+        
+        // Проверяем наличие модального окна
+        const modalExists = document.querySelector('.auth-modal');
+        console.log('Модальное окно создано:', modalExists ? 'Да' : 'Нет');
+        
+        // Проверяем наличие формы контрагента перед переключением вкладки
+        const counterpartyFormBeforeSwitch = document.getElementById('counterpartyForm');
+        console.log('Форма контрагента перед переключением вкладки:', counterpartyFormBeforeSwitch ? 'Найдена' : 'Не найдена');
+        
+        // Если форма контрагента не найдена, проверяем содержимое модального окна
+        if (!counterpartyFormBeforeSwitch) {
+            console.log('Форма контрагента не найдена, пытаемся исправить ситуацию');
+            
+            const contentWrapper = document.querySelector('.auth-modal__content-wrapper');
+            if (contentWrapper) {
+                console.log('Проверяем, содержит ли контент-враппер форму контрагента');
                 
-                .auth-modal.active {
-                    opacity: 1;
-                    visibility: visible;
+                // Проверяем, есть ли в HTML-коде форма контрагента
+                if (!contentWrapper.innerHTML.includes('id="counterpartyForm"')) {
+                    console.log('Форма контрагента отсутствует в HTML, добавляем её');
+                    
+                    // Добавляем форму контрагента в конец содержимого модального окна
+                    contentWrapper.innerHTML += `
+                    <!-- Форма карточки контрагента -->
+                    <form id="counterpartyForm" class="auth-form counterparty-form">
+                        <button type="button" class="back-button" data-return-to="register">
+                            <i class="fas fa-arrow-left"></i>
+                        </button>
+                        
+                        <h2>Карточка контрагента</h2>
+                        <p class="form-subtitle">Заполните данные вашей организации</p>
+                        
+                        <div class="counterparty-card">
+                            <div class="counterparty-card__header">
+                                <div class="counterparty-card__icon">
+                                    <i class="fas fa-building"></i>
+                                </div>
+                                <div class="counterparty-progress">
+                                    <div class="progress-bar">
+                                        <div class="progress-indicator"></div>
+                                    </div>
+                                    <span class="progress-text">Заполнено: <span class="progress-percent">0%</span></span>
+                                </div>
+                            </div>
+                            
+                            <div class="counterparty-card__content">
+                                <div class="form-group">
+                                    <label for="orgName">Наименование организации</label>
+                                    <div class="input-container">
+                                        <i class="fas fa-building input-icon"></i>
+                                        <input type="text" id="orgName" placeholder="ООО 'Компания'" required>
+                                    </div>
+                                    <span class="error-message"></span>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="legalAddress">Юридический адрес</label>
+                                    <div class="input-container">
+                                        <i class="fas fa-map-marker-alt input-icon"></i>
+                                        <input type="text" id="legalAddress" placeholder="г. Москва, ул. Примерная, д. 1" required>
+                                    </div>
+                                    <span class="error-message"></span>
+                                </div>
+                                
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="inn">ИНН</label>
+                                        <div class="input-container">
+                                            <i class="fas fa-id-card input-icon"></i>
+                                            <input type="text" id="inn" placeholder="7700000000" required>
+                                        </div>
+                                        <span class="error-message"></span>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="kpp">КПП</label>
+                                        <div class="input-container">
+                                            <i class="fas fa-id-card input-icon"></i>
+                                            <input type="text" id="kpp" placeholder="770000000" required>
+                                        </div>
+                                        <span class="error-message"></span>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="ogrn">ОГРН</label>
+                                    <div class="input-container">
+                                        <i class="fas fa-file-alt input-icon"></i>
+                                        <input type="text" id="ogrn" placeholder="1000000000000" required>
+                                    </div>
+                                    <span class="error-message"></span>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="contactPerson">Контактное лицо</label>
+                                    <div class="input-container">
+                                        <i class="fas fa-user input-icon"></i>
+                                        <input type="text" id="contactPerson" placeholder="Иванов Иван Иванович" required>
+                                    </div>
+                                    <span class="error-message"></span>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="contactPosition">Должность</label>
+                                    <div class="input-container">
+                                        <i class="fas fa-briefcase input-icon"></i>
+                                        <input type="text" id="contactPosition" placeholder="Генеральный директор" required>
+                                    </div>
+                                    <span class="error-message"></span>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="workPhone">Рабочий телефон</label>
+                                    <div class="input-container">
+                                        <i class="fas fa-phone input-icon"></i>
+                                        <input type="tel" id="workPhone" placeholder="+7 (999) 123-45-67" required>
+                                    </div>
+                                    <span class="error-message"></span>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="contactEmail">Email для связи</label>
+                                    <div class="input-container">
+                                        <i class="fas fa-envelope input-icon"></i>
+                                        <input type="email" id="contactEmail" placeholder="contact@company.ru" required>
+                                    </div>
+                                    <span class="error-message"></span>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>Предпочтительный способ связи</label>
+                                    <div class="radio-group">
+                                        <div class="radio-option">
+                                            <input type="radio" id="contactMethodWhatsapp" name="contactMethod" value="whatsapp">
+                                            <label for="contactMethodWhatsapp"><i class="fab fa-whatsapp"></i> WhatsApp</label>
+                                        </div>
+                                        <div class="radio-option">
+                                            <input type="radio" id="contactMethodTelegram" name="contactMethod" value="telegram">
+                                            <label for="contactMethodTelegram"><i class="fab fa-telegram"></i> Telegram</label>
+                                        </div>
+                                        <div class="radio-option">
+                                            <input type="radio" id="contactMethodPhone" name="contactMethod" value="phone">
+                                            <label for="contactMethodPhone"><i class="fas fa-phone"></i> Телефон</label>
+                                        </div>
+                                        <div class="radio-option">
+                                            <input type="radio" id="contactMethodEmail" name="contactMethod" value="email" checked>
+                                            <label for="contactMethodEmail"><i class="fas fa-envelope"></i> Email</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-section">
+                                    <h3>Банковские реквизиты</h3>
+                                    
+                                    <div class="form-group">
+                                        <label for="bankName">Наименование банка</label>
+                                        <div class="input-container">
+                                            <i class="fas fa-university input-icon"></i>
+                                            <input type="text" id="bankName" placeholder="АО 'Банк'" required>
+                                        </div>
+                                        <span class="error-message"></span>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="bankAccount">Расчетный счет</label>
+                                        <div class="input-container">
+                                            <i class="fas fa-money-check input-icon"></i>
+                                            <input type="text" id="bankAccount" placeholder="40700000000000000000" required>
+                                        </div>
+                                        <span class="error-message"></span>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="corrAccount">Корреспондентский счет</label>
+                                        <div class="input-container">
+                                            <i class="fas fa-money-check-alt input-icon"></i>
+                                            <input type="text" id="corrAccount" placeholder="30100000000000000000" required>
+                                        </div>
+                                        <span class="error-message"></span>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="bik">БИК</label>
+                                        <div class="input-container">
+                                            <i class="fas fa-hashtag input-icon"></i>
+                                            <input type="text" id="bik" placeholder="044500000" required>
+                                        </div>
+                                        <span class="error-message"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="submit-button">
+                            <span class="button-text">Сохранить данные</span>
+                            <span class="loading-spinner"></span>
+                        </button>
+                    </form>`;
+                    
+                    console.log('Форма контрагента добавлена в DOM');
+                    
+                    // Обновляем глобальные переменные
+                    forms = document.querySelectorAll('.auth-form');
+                    console.log('Обновлены глобальные переменные, количество форм:', forms.length);
+                    
+                    // Инициализируем карточку контрагента
+                    initCounterpartyCard();
+                } else {
+                    console.log('Форма контрагента присутствует в HTML, но не найдена через getElementById');
                 }
+            } else {
+                console.error('Контент-враппер модального окна не найден');
+            }
+        }
+        
+        // Переключаемся на форму контрагента
+        console.log('Переключаемся на вкладку контрагента');
+        switchTab('counterparty');
+        
+        // Заполняем форму данными контрагента
+        console.log('Ищем форму контрагента в DOM');
+        const counterpartyForm = document.getElementById('counterpartyForm');
+        console.log('Форма контрагента после переключения вкладки:', counterpartyForm ? 'Найдена' : 'Не найдена');
+        
+        if (!counterpartyForm) {
+            console.error('Форма контрагента не найдена. Проверяем содержимое модального окна:');
+            const modalContent = document.querySelector('.auth-modal__content-wrapper');
+            console.log('Содержимое модального окна:', modalContent ? modalContent.innerHTML : 'Контент-враппер не найден');
+            
+            showNotification('Форма контрагента не найдена', 'error');
+            return;
+        }
+        
+        // Если есть данные контрагента, заполняем форму
+        if (currentUser.counterparty) {
+            const cp = currentUser.counterparty;
+            console.log('Данные контрагента для заполнения формы:', cp);
+            
+            // Заполняем основные поля
+            if (counterpartyForm.querySelector('#orgName')) 
+                counterpartyForm.querySelector('#orgName').value = cp.orgName || '';
+            
+            if (counterpartyForm.querySelector('#legalAddress')) 
+                counterpartyForm.querySelector('#legalAddress').value = cp.legalAddress || '';
+            
+            if (counterpartyForm.querySelector('#inn')) 
+                counterpartyForm.querySelector('#inn').value = cp.inn || '';
+            
+            if (counterpartyForm.querySelector('#kpp')) 
+                counterpartyForm.querySelector('#kpp').value = cp.kpp || '';
+            
+            if (counterpartyForm.querySelector('#ogrn')) 
+                counterpartyForm.querySelector('#ogrn').value = cp.ogrn || '';
+            
+            if (counterpartyForm.querySelector('#contactPerson')) 
+                counterpartyForm.querySelector('#contactPerson').value = cp.contactPerson || '';
+            
+            if (counterpartyForm.querySelector('#contactPosition')) 
+                counterpartyForm.querySelector('#contactPosition').value = cp.contactPosition || '';
+            
+            if (counterpartyForm.querySelector('#workPhone')) 
+                counterpartyForm.querySelector('#workPhone').value = cp.workPhone || '';
+            
+            if (counterpartyForm.querySelector('#contactEmail')) 
+                counterpartyForm.querySelector('#contactEmail').value = cp.contactEmail || '';
+            
+            // Заполняем банковские реквизиты
+            if (cp.bankDetails) {
+                if (counterpartyForm.querySelector('#bankName')) 
+                    counterpartyForm.querySelector('#bankName').value = cp.bankDetails.bankName || '';
                 
-                .auth-modal__overlay {
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 100%;
-                    background: rgba(0, 0, 0, 0.5);
-                    backdrop-filter: blur(5px);
-                }
+                if (counterpartyForm.querySelector('#bankAccount')) 
+                    counterpartyForm.querySelector('#bankAccount').value = cp.bankDetails.bankAccount || '';
                 
-                .auth-modal__content {
-                    position: relative;
-                    width: 90%;
-                    max-width: 450px;
-                    background: ${document.body.classList.contains('dark') ? '#333' : 'white'};
-                    border-radius: 15px;
-                    padding: 30px;
-                    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
-                    transform: translateY(20px);
-                    transition: transform 0.3s ease;
-                    overflow: hidden;
-                }
+                if (counterpartyForm.querySelector('#corrAccount')) 
+                    counterpartyForm.querySelector('#corrAccount').value = cp.bankDetails.corrAccount || '';
                 
-                .auth-modal.active .auth-modal__content {
-                    transform: translateY(0);
+                if (counterpartyForm.querySelector('#bik')) 
+                    counterpartyForm.querySelector('#bik').value = cp.bankDetails.bik || '';
+            }
+            
+            // Устанавливаем предпочтительный способ связи
+            if (cp.contactMethod) {
+                const contactMethodRadio = counterpartyForm.querySelector(`input[name="contactMethod"][value="${cp.contactMethod}"]`);
+                if (contactMethodRadio) contactMethodRadio.checked = true;
+            }
+            
+            // Обновляем прогресс-бар
+            const inputs = counterpartyForm.querySelectorAll('input[required]');
+            let filledInputs = 0;
+            
+            inputs.forEach(input => {
+                if (input.value.trim() !== '') {
+                    filledInputs++;
+                    input.classList.add('filled');
+                    const container = input.closest('.input-container');
+                    if (container) container.classList.add('success');
                 }
+            });
+            
+            const progressIndicator = document.querySelector('.progress-indicator');
+            const progressPercent = document.querySelector('.progress-percent');
+            
+            if (progressIndicator && progressPercent) {
+                const percent = Math.round((filledInputs / inputs.length) * 100);
+                progressIndicator.style.width = `${percent}%`;
+                progressPercent.textContent = `${percent}%`;
+            }
+        } else {
+            console.log('Данные контрагента отсутствуют');
+        }
+        
+        // Изменяем заголовок и текст кнопки
+        const formTitle = counterpartyForm.querySelector('h2');
+        if (formTitle) formTitle.textContent = 'Редактирование данных контрагента';
+        
+        const formSubtitle = counterpartyForm.querySelector('.form-subtitle');
+        if (formSubtitle) formSubtitle.textContent = 'Внесите изменения в данные вашей организации';
+        
+        const submitButton = counterpartyForm.querySelector('.submit-button .button-text');
+        if (submitButton) submitButton.textContent = 'Сохранить изменения';
+        
+        console.log('Форма контрагента успешно настроена');
+        
+        // Переопределяем обработчик отправки формы для сохранения изменений
+        counterpartyForm.onsubmit = function(e) {
+            e.preventDefault();
+            
+            // Проверяем валидность формы
+            if (!validateForm(this)) {
+                return false;
+            }
+            
+            // Показываем индикатор загрузки
+            const submitBtn = this.querySelector('.submit-button');
+            submitBtn.classList.add('loading');
+            submitBtn.disabled = true;
+            
+            try {
+                // Получаем данные из формы
+                const orgName = this.querySelector('#orgName').value;
+                const legalAddress = this.querySelector('#legalAddress').value;
+                const inn = this.querySelector('#inn').value;
+                const kpp = this.querySelector('#kpp').value;
+                const ogrn = this.querySelector('#ogrn').value;
+                const contactPerson = this.querySelector('#contactPerson').value;
+                const contactPosition = this.querySelector('#contactPosition').value;
+                const workPhone = this.querySelector('#workPhone').value;
+                const contactEmail = this.querySelector('#contactEmail').value;
+                const contactMethod = this.querySelector('input[name="contactMethod"]:checked')?.value || '';
+                const bankName = this.querySelector('#bankName').value;
+                const bankAccount = this.querySelector('#bankAccount').value;
+                const corrAccount = this.querySelector('#corrAccount').value;
+                const bik = this.querySelector('#bik').value;
                 
-                .auth-modal__close {
-                    position: absolute;
-                    top: 15px;
-                    right: 15px;
-                    background: none;
-                    border: none;
-                    font-size: 18px;
-                    color: ${document.body.classList.contains('dark') ? '#aaa' : '#999'};
-                    cursor: pointer;
-                    z-index: 10;
-                }
+                // Создаем объект с данными контрагента
+                const counterpartyData = {
+                    orgName,
+                    legalAddress,
+                    inn,
+                    kpp,
+                    ogrn,
+                    contactPerson,
+                    contactPosition,
+                    workPhone,
+                    contactEmail,
+                    contactMethod,
+                    bankDetails: {
+                        bankName,
+                        bankAccount,
+                        corrAccount,
+                        bik
+                    }
+                };
                 
-                .auth-modal__close:hover {
-                    color: ${document.body.classList.contains('dark') ? '#fff' : '#333'};
+                // Обновляем данные пользователя
+                currentUser.counterparty = counterpartyData;
+                
+                // Сохраняем обновленный список пользователей
+                localStorage.setItem('registeredUsers', JSON.stringify(users));
+                
+                // Показываем уведомление об успешном сохранении
+                showNotification('Данные контрагента успешно обновлены', 'success');
+                
+                // Закрываем модальное окно через 2 секунды
+                setTimeout(() => {
+                    closeModal();
+                }, 2000);
+                
+            } catch (error) {
+                console.error('Ошибка при сохранении данных контрагента:', error);
+                showNotification('Произошла ошибка при сохранении данных', 'error');
+            } finally {
+                // Убираем индикатор загрузки
+                submitBtn.classList.remove('loading');
+                submitBtn.disabled = false;
+            }
+        };
+    }
+
+    // Функция для проверки и очистки устаревших блокировок
+    function cleanupExpiredBlockedAccounts() {
+        const loginAttempts = JSON.parse(localStorage.getItem('loginAttempts') || '{}');
+        const now = new Date();
+        let updated = false;
+        
+        // Проверяем каждую запись
+        for (const email in loginAttempts) {
+            if (loginAttempts[email].blocked) {
+                const blockEndTime = new Date(loginAttempts[email].blockUntil);
+                
+                // Если время блокировки истекло, сбрасываем блокировку
+                if (now > blockEndTime) {
+                    loginAttempts[email].blocked = false;
+                    loginAttempts[email].count = 0;
+                    updated = true;
+                    console.log(`Блокировка для ${email} истекла и была снята`);
                 }
-            `;
-            document.head.appendChild(style);
+            }
+        }
+        
+        // Если были изменения, сохраняем обновленные данные
+        if (updated) {
+            localStorage.setItem('loginAttempts', JSON.stringify(loginAttempts));
         }
     }
+    
+    // Вызываем функцию очистки устаревших блокировок при загрузке страницы
+    cleanupExpiredBlockedAccounts();
+    
+    // Проверка статуса авторизации при загрузке
+    checkLoginStatus();
+    
+    // Дополнительная инициализация и проверка форм
+    console.log('Дополнительная инициализация форм...');
+    
+    // Обновляем список форм
+    forms = document.querySelectorAll('.auth-form');
+    console.log('Найдено форм:', forms.length);
+    forms.forEach((form, index) => {
+        console.log(`Форма ${index + 1}:`, form.id, form.className);
+    });
+    
+    // Проверяем и инициализируем форму контрагента, если она есть
+    const counterpartyFormCheck = document.getElementById('counterpartyForm');
+    if (counterpartyFormCheck) {
+        console.log('Форма контрагента найдена, инициализируем...');
+        initCounterpartyCard();
+    } else {
+        console.log('Форма контрагента не найдена в DOM');
+    }
+    
+    // Проверяем обработчики событий для форм
+    if (registerForm) {
+        console.log('Проверяем обработчики для формы регистрации...');
+        const existingHandlers = registerForm._eventListeners || [];
+        console.log('Существующие обработчики:', existingHandlers.length);
+    }
+    
+    // Проверка статуса авторизации при загрузке
+    checkLoginStatus();
+    
+    console.log('Инициализация login-system.js завершена');
 }); 

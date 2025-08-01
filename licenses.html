@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Лицензии - Damax</title>
+    <title>Лицензии - Damax </title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='80' font-size='80' font-family='Cinzel'>D</text></svg>" type="image/svg+xml">
     <link rel="stylesheet" href="desktop-styles.css">
     <link rel="stylesheet" href="desktop-styles-fixed.css">
@@ -161,6 +161,37 @@
             font-size: 0.9rem;
         }
     </style>
+    <!-- Скрипт для синхронизации данных компании -->
+    <script>
+    document.addEventListener('DOMContentLoaded', async function() {
+      try {
+        // Проверяем, была ли уже выполнена синхронизация в текущей сессии
+        const syncTimestamp = sessionStorage.getItem('company_data_sync_timestamp');
+        const currentTime = new Date().getTime();
+        
+        // Если синхронизация не выполнялась или прошло более 1 часа
+        if (!syncTimestamp || (currentTime - parseInt(syncTimestamp)) > 3600000) {
+          // Вызываем API для синхронизации данных компании
+          const response = await fetch('http://localhost:5000/api/sync-company-data', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          });
+          
+          if (response.ok) {
+            console.log('Данные компании успешно синхронизированы');
+            // Сохраняем метку времени синхронизации
+            sessionStorage.setItem('company_data_sync_timestamp', currentTime.toString());
+          }
+        } else {
+          console.log('Синхронизация данных компании пропущена (выполнялась недавно)');
+        }
+      } catch (error) {
+        console.error('Ошибка при синхронизации данных компании:', error);
+      }
+    });
+    </script>
 </head>
 <body>
     <div class="page-wrapper">
@@ -168,7 +199,7 @@
             <div class="licenses" data-aos="fade-up">
                 <div class="licenses__header">
                     <h1 class="licenses__title">Лицензии и сертификаты</h1>
-                    <p class="licenses__date">Последнее обновление: 1 марта 2025</p>
+                    <p class="terms__date">Последнее обновление: <span id="documents_last_update">24 июля 2025</span></p>
                 </div>
 
                 <div class="licenses__section">
@@ -177,7 +208,7 @@
                         Общие сведения
                     </h2>
                     <p class="licenses__text">
-                        ООО "Дамакс" (ИНН: 1650421897, ОГРН: 1231600009740) осуществляет деятельность на основании следующих лицензий и разрешений.
+                        ООО "Дамакс" (ИНН: <span id="company_inn">ИНН</span>, ОГРН: <span id="company_ogrn">ОГРН</span>) осуществляет деятельность на основании следующих лицензий и разрешений.
                     </p>
                 </div>
 
@@ -196,9 +227,9 @@
                                 Торговая лицензия
                             </h3>
                             <p class="licenses__card-text">
-                                Лицензия на осуществление розничной торговли №123456(Нуждается в уточнении) от 01.01.2025<br>
-                                Выдана: Департамент торговли г. Москвы(Нуждается в уточнении)<br>
-                                Срок действия: до 01.01.2029(Нуждается в уточнении)
+                                Лицензия на осуществление розничной торговли №<span id="trade_license_number">123456(Нуждается в уточнении)</span> от <span id="trade_license_date">01.01.2025</span><br>
+                                Выдана: <span id="trade_license_issuer">Департамент торговли г. Москвы(Нуждается в уточнении)</span><br>
+                                Срок действия: до <span id="trade_license_expiry">01.01.2029(Нуждается в уточнении)</span>
                             </p>
                         </div>
                         <div class="licenses__card">
@@ -207,9 +238,9 @@
                                 Транспортная лицензия
                             </h3>
                             <p class="licenses__card-text">
-                                Лицензия на перевозку грузов №789012 от 15.02.2024(Нуждается в уточнении)<br>
-                                Выдана: Ространснадзор(Нуждается в уточнении)<br>
-                                Срок действия: до 15.02.2029(Нуждается в уточнении)
+                                Лицензия на перевозку грузов №<span id="transport_license_number">789012</span> от <span id="transport_license_date">15.02.2024(Нуждается в уточнении)</span><br>
+                                Выдана: <span id="transport_license_issuer">Ространснадзор(Нуждается в уточнении)</span><br>
+                                Срок действия: до <span id="transport_license_expiry">15.02.2029(Нуждается в уточнении)</span>
                             </p>
                         </div>
                         <div class="licenses__card">
@@ -218,9 +249,9 @@
                                 Сертификат соответствия
                             </h3>
                             <p class="licenses__card-text">
-                                Сертификат соответствия требованиям безопасности №345678 от 01.03.2024(Нуждается в уточнении)<br>
-                                Выдан: Росстандарт(Нуждается в уточнении)<br>
-                                Срок действия: до 01.03.2027(Нуждается в уточнении)
+                                Сертификат соответствия требованиям безопасности №<span id="certificate_number">345678</span> от <span id="certificate_date">01.03.2024(Нуждается в уточнении)</span><br>
+                                Выдан: <span id="certificate_issuer">Росстандарт(Нуждается в уточнении)</span><br>
+                                Срок действия: до <span id="certificate_expiry">01.03.2027(Нуждается в уточнении)</span>
                             </p>
                         </div>
                     </div>
@@ -263,7 +294,7 @@
                         <i class="fas fa-award"></i>
                         Награды и достижения
                     </h2>
-
+                </div>
 
                 <div class="licenses__section">
                     <h2 class="licenses__section-title">
@@ -271,10 +302,10 @@
                         Партнерские программы
                     </h2>
                     <ul class="licenses__list">
-                        <li class="licenses__list-item">Официальный партнер ведущих производителей электроники</li>
-                        <li class="licenses__list-item">Участник программы лояльности "Премиум"</li>
-                        <li class="licenses__list-item">Член Российской ассоциации электронной торговли</li>
-                        <li class="licenses__list-item">Сертифицированный партнер программы "Эксперт"</li>
+                        <li class="licenses__list-item" id="partner_program_1">Официальный партнер ведущих производителей электроники</li>
+                        <li class="licenses__list-item" id="partner_program_2">Участник программы лояльности "Премиум"</li>
+                        <li class="licenses__list-item" id="partner_program_3">Член Российской ассоциации электронной торговли</li>
+                        <li class="licenses__list-item" id="partner_program_4">Сертифицированный партнер программы "Эксперт"</li>
                     </ul>
                 </div>
 
@@ -289,15 +320,15 @@
                     <ul class="licenses__list">
                         <li class="licenses__list-item">Обратитесь в соответствующий лицензирующий орган</li>
                         <li class="licenses__list-item">Используйте реестр лицензий на сайте Росаккредитации</li>
-                        <li class="licenses__list-item">Запросите подтверждение по email: info@damax.ru(Нуждается в уточнении)</li>
-                        <li class="licenses__list-item">Позвоните по телефону: +7 (999) 123-45-67(Нуждается в уточнении)</li>
+                        <li class="licenses__list-item">Запросите подтверждение по email: <span id="company_email">info@damax.ru</span></li>
+                        <li class="licenses__list-item">Позвоните по телефону: <span id="company_phone">+7 (999) 123-45-67</span></li>
                     </ul>
                 </div>
 
-                                <a href="index.html" class="licenses__back-link">
-                                    <i class="fas fa-arrow-left"></i>
-                                    Вернуться на главную
-                                </a>
+                <a href="index.html" class="licenses__back-link">
+                    <i class="fas fa-arrow-left"></i>
+                    Вернуться на главную
+                </a>
             </div>
         </div>
     </div>
@@ -308,6 +339,120 @@
             duration: 800,
             once: true
         });
+        
+        // Загружаем настройки компании
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                const response = await fetch('http://localhost:5000/api/settings');
+                if (response.ok) {
+                    const settings = await response.json();
+                    
+                    // Обновляем данные на странице
+                    if (settings.company_inn) {
+                        document.getElementById('company_inn').textContent = settings.company_inn;
+                    }
+                    
+                    if (settings.company_ogrn) {
+                        document.getElementById('company_ogrn').textContent = settings.company_ogrn;
+                    }
+                    
+                    if (settings.company_email) {
+                        document.getElementById('company_email').textContent = settings.company_email;
+                    }
+                    
+                    if (settings.company_phone) {
+                        document.getElementById('company_phone').textContent = settings.company_phone;
+                    }
+                    
+                    // Обновляем данные лицензий
+                    if (settings.trade_license_number) {
+                        document.getElementById('trade_license_number').textContent = settings.trade_license_number;
+                    }
+                    
+                    if (settings.trade_license_date) {
+                        document.getElementById('trade_license_date').textContent = settings.trade_license_date;
+                    }
+                    
+                    if (settings.trade_license_issuer) {
+                        document.getElementById('trade_license_issuer').textContent = settings.trade_license_issuer;
+                    }
+                    
+                    if (settings.trade_license_expiry) {
+                        document.getElementById('trade_license_expiry').textContent = settings.trade_license_expiry;
+                    }
+                    
+                    // Транспортная лицензия
+                    if (settings.transport_license_number) {
+                        document.getElementById('transport_license_number').textContent = settings.transport_license_number;
+                    }
+                    
+                    if (settings.transport_license_date) {
+                        document.getElementById('transport_license_date').textContent = settings.transport_license_date;
+                    }
+                    
+                    if (settings.transport_license_issuer) {
+                        document.getElementById('transport_license_issuer').textContent = settings.transport_license_issuer;
+                    }
+                    
+                    if (settings.transport_license_expiry) {
+                        document.getElementById('transport_license_expiry').textContent = settings.transport_license_expiry;
+                    }
+                    
+                    // Сертификат соответствия
+                    if (settings.certificate_number) {
+                        document.getElementById('certificate_number').textContent = settings.certificate_number;
+                    }
+                    
+                    if (settings.certificate_date) {
+                        document.getElementById('certificate_date').textContent = settings.certificate_date;
+                    }
+                    
+                    if (settings.certificate_issuer) {
+                        document.getElementById('certificate_issuer').textContent = settings.certificate_issuer;
+                    }
+                    
+                    if (settings.certificate_expiry) {
+                        document.getElementById('certificate_expiry').textContent = settings.certificate_expiry;
+                    }
+                    
+                    // Партнерские программы
+                    if (settings.partner_program_1) {
+                        document.getElementById('partner_program_1').textContent = settings.partner_program_1;
+                    }
+                    
+                    if (settings.partner_program_2) {
+                        document.getElementById('partner_program_2').textContent = settings.partner_program_2;
+                    }
+                    
+                    if (settings.partner_program_3) {
+                        document.getElementById('partner_program_3').textContent = settings.partner_program_3;
+                    }
+                    
+                    if (settings.partner_program_4) {
+                        document.getElementById('partner_program_4').textContent = settings.partner_program_4;
+                    }
+                    
+                    if (settings.documents_last_update) {
+                        document.getElementById('documents_last_update').textContent = settings.documents_last_update;
+                    }
+                }
+            } catch (error) {
+                console.error('Ошибка при загрузке настроек компании:', error);
+            }
+        });
+    </script>
+    <script>
+    (async function() {
+      try {
+        const res = await fetch('/api/site-status');
+        if (res.ok) {
+          const data = await res.json();
+          if (!data.enabled) {
+            window.location.href = '/site-offline.html';
+          }
+        }
+      } catch (e) {}
+    })();
     </script>
 </body>
 </html> 

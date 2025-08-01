@@ -51,6 +51,45 @@
             window.location.href = isMobile ? 'mobile.html' : 'desktop.html';
         })();
     </script>
+    <script>
+    (async function() {
+      async function checkStatus(apiUrl) {
+        try {
+          const res = await fetch(apiUrl);
+          if (res.ok) {
+            const data = await res.json();
+            if (!data.enabled) {
+              // Загружаем offline-страницу
+              try {
+                const offlineRes = await fetch('/site-offline.html');
+                if (offlineRes.ok) {
+                  const offlineHtml = await offlineRes.text();
+                  document.open();
+                  document.write(offlineHtml);
+                  document.close();
+                } else {
+                  document.body.innerHTML = '<div style="display:flex;justify-content:center;align-items:center;height:100vh;font-family:Arial;"><h1>Сайт временно недоступен</h1></div>';
+                }
+              } catch (err) {
+                console.error('Ошибка загрузки страницы обслуживания:', err);
+              }
+              return true;
+            }
+          }
+        } catch (e) {
+          // Ошибка сети или CORS
+        }
+        return false;
+      }
+
+      // 1. Пробуем локальный API (относительно домена)
+      let found = await checkStatus('/api/site-status');
+      if (!found) {
+        // 2. Пробуем абсолютный адрес Flask-сервера
+        found = await checkStatus('http://localhost:5000/api/site-status');
+      }
+    })();
+    </script>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -135,4 +174,4 @@
         });
     </script>
 </body>
-</html> 
+</html>

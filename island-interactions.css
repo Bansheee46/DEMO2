@@ -81,3 +81,12 @@
 }
 
 .island:hover .island__glow {
+  opacity: 1;
+}
+
+/* === Стили для неактивного состояния island === */
+.island.island--inactive {
+  transform: translateX(-50%) scale(0.9);
+  opacity: 0.8;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}

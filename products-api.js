@@ -3,7 +3,21 @@
  * Этот модуль обеспечивает взаимодействие с серверным API для получения и отображения товаров
  */
 
-// Базовый URL API сервера (измените на реальный адрес вашего сервера)
+// Импортируем функцию addToCart из desktop.js
+// Эта функция будет доступна после загрузки desktop.js
+let addToCart;
+let openProductModal;
+document.addEventListener('DOMContentLoaded', () => {
+  // После загрузки DOM проверяем наличие функций в глобальном объекте
+  if (typeof window.addToCart === 'function') {
+    addToCart = window.addToCart;
+  }
+  if (typeof window.openProductModal === 'function') {
+    openProductModal = window.openProductModal;
+  }
+});
+
+// Базовый URL API сервера
 const API_BASE_URL = 'http://localhost:5000';
 
 /**
@@ -27,8 +41,9 @@ async function getProducts(category = '') {
     
     return data.products;
   } catch (error) {
-    console.error('Ошибка при получении товаров:', error);
     showNotification('Не удалось загрузить товары. Попробуйте позже.', 'error');
+    
+    // В случае ошибки возвращаем пустой массив
     return [];
   }
 }
@@ -49,7 +64,6 @@ async function getProductById(productId) {
     
     return data.product;
   } catch (error) {
-    console.error(`Ошибка при получении товара #${productId}:`, error);
     showNotification('Не удалось загрузить информацию о товаре', 'error');
     return null;
   }
@@ -58,12 +72,12 @@ async function getProductById(productId) {
 /**
  * Отображение товаров на странице
  * @param {Array} products - Массив товаров для отображения
+ * @param {string} activeCategory - Активная категория (опционально)
  */
-function renderProducts(products) {
+function renderProducts(products, activeCategory = '') {
   const productsGrid = document.querySelector('.products__grid');
   
   if (!productsGrid) {
-    console.error('Не найден контейнер для отображения товаров');
     return;
   }
   
@@ -72,12 +86,13 @@ function renderProducts(products) {
   
   // Если товаров нет, показываем сообщение
   if (!products || products.length === 0) {
-    productsGrid.innerHTML = '<div class="no-products">Товары не найдены</div>';
+    let message = 'Товары не найдены';
+    if (activeCategory) {
+      message = `В категории "${getCategoryName(activeCategory)}" нет товаров`;
+    }
+    productsGrid.innerHTML = `<div class="no-products">${message}</div>`;
     return;
   }
-  
-  // Определяем, на какой версии сайта мы находимся (мобильной или десктопной)
-  const isMobile = window.location.href.includes('mobile.html');
   
   // Добавляем товары на страницу
   products.forEach((product, index) => {
@@ -85,80 +100,73 @@ function renderProducts(products) {
     productCard.className = 'product-card';
     productCard.dataset.id = product.id;
     productCard.dataset.category = product.category || 'other';
+    productCard.dataset.aos = 'fade-up';
     
-    if (!isMobile) {
-      // Для десктопной версии
-      productCard.dataset.aos = 'fade-up';
-      
-      // Формируем URL изображения
-      let imageUrl = product.image_url;
-      if (imageUrl && !imageUrl.startsWith('http') && !imageUrl.startsWith('/')) {
-        imageUrl = `${API_BASE_URL}/${imageUrl}`;
+    
+    // Скрываем товары, не соответствующие активной категории
+    if (activeCategory && product.category) {
+      const productCategoryLower = product.category.toLowerCase();
+      const activeCategoryLower = activeCategory.toLowerCase();
+      if (productCategoryLower !== activeCategoryLower) {
+        productCard.style.display = 'none';
       }
-      
-      productCard.innerHTML = `
-        <div class="product-card__image">
-          <img src="${imageUrl || 'https://via.placeholder.com/300x300?text=Нет+изображения'}" alt="${product.title}">
-        </div>
-        <div class="product-card__info">
-          <h3 class="product-card__title">${product.title}</h3>
-          <p class="product-card__price"><i class="fas fa-ruble-sign"></i> ${product.price}</p>
-          <button class="product-card__button">В корзину</button>
-        </div>
-      `;
-    } else {
-      // Для мобильной версии
-      productCard.setAttribute('role', 'listitem');
-      
-      // Формируем URL изображения
-      let imageUrl = product.image_url;
-      if (imageUrl && !imageUrl.startsWith('http') && !imageUrl.startsWith('/')) {
-        imageUrl = `${API_BASE_URL}/${imageUrl}`;
-      }
-      
-      productCard.innerHTML = `
-        <img src="${imageUrl || 'https://via.placeholder.com/300x300?text=Нет+изображения'}" alt="${product.title}" loading="lazy">
-        <div class="product-card__info">
-          <h3 class="product-card__title">${product.title}</h3>
-          <p class="product-card__price"><span class="price-icon"><i class="fas fa-ruble-sign"></i></span> ${product.price}</p>
-          <button class="product-card__button"><i class="fas fa-cart-plus"></i> В корзину</button>
-        </div>
-      `;
     }
+    
+    // Формируем URL изображения
+    let imageUrl = product.image_url;
+    if (imageUrl && !imageUrl.startsWith('http') && !imageUrl.startsWith('/')) {
+      imageUrl = `${API_BASE_URL}/${imageUrl}`;
+    }
+    
+    productCard.innerHTML = `
+      <div class="product-card__image">
+        <img src="${imageUrl || 'https://via.placeholder.com/300x300?text=Нет+изображения'}" alt="${product.title}">
+      </div>
+      <div class="product-card__info">
+        <h3 class="product-card__title">${product.title}</h3>
+        <p class="product-card__price"><i class="fas fa-ruble-sign"></i> ${product.price}</p>
+        ${product.sku ? `<p class="product-card__sku">Артикул: ${product.sku}</p>` : ''}
+        <button class="product-card__button">В корзину</button>
+      </div>
+    `;
     
     // Добавляем карточку товара в сетку
     productsGrid.appendChild(productCard);
     
-    // Добавляем анимацию появления с задержкой (для десктопной версии)
-    if (!isMobile) {
-      setTimeout(() => {
-        productCard.classList.add('visible');
-      }, index * 100);
-    }
+    // Добавляем анимацию появления с задержкой
+    setTimeout(() => {
+      productCard.classList.add('visible');
+    }, index * 100);
     
     // Добавляем обработчик клика на кнопку "В корзину"
     const addToCartButton = productCard.querySelector('.product-card__button');
     addToCartButton.addEventListener('click', (event) => {
       event.preventDefault();
       
-      // Используем существующую функцию добавления в корзину
+      // Проверяем наличие функции addToCart перед её вызовом
       if (typeof addToCart === 'function') {
-        const imageUrl = product.image_url 
-          ? (product.image_url.startsWith('http') || product.image_url.startsWith('/') 
-             ? product.image_url 
-             : `${API_BASE_URL}/${product.image_url}`)
-          : 'https://via.placeholder.com/300x300?text=Нет+изображения';
-        
+        // Используем существующую функцию добавления в корзину
         addToCart(
           product.id,
           product.title,
           product.price,
-          imageUrl
+          imageUrl || 'https://via.placeholder.com/300x300?text=Нет+изображения'
         );
+      } else if (window.addToCart) {
+        // Пробуем найти функцию в глобальном объекте window
+        window.addToCart(
+          product.id,
+          product.title,
+          product.price,
+          imageUrl || 'https://via.placeholder.com/300x300?text=Нет+изображения'
+        );
+      } else {
+        console.error('Функция addToCart не определена');
+        showNotification('Не удалось добавить товар в корзину', 'error');
       }
       
-      // Добавляем эффект при клике на кнопку (для десктопной версии)
-      if (!isMobile && typeof addCartButtonEffect === 'function') {
+      // Добавляем эффект при клике на кнопку
+      if (typeof addCartButtonEffect === 'function') {
         addCartButtonEffect(addToCartButton);
       }
     });
@@ -167,93 +175,33 @@ function renderProducts(products) {
     productCard.addEventListener('click', (event) => {
       // Если клик был не по кнопке "В корзину"
       if (!event.target.closest('.product-card__button')) {
-        if (!isMobile && typeof openProductModal === 'function') {
-          // Для десктопной версии
+        
+        // Обновляем данные о товаре в модуле поиска перед открытием модального окна
+        if (window.productSearch && typeof window.productSearch.updateProductsData === 'function') {
+          // Обновляем только один товар
+          window.productSearch.updateProductsData([product]);
+        }
+        
+        if (typeof openProductModal === 'function') {
           openProductModal(product.id);
-        } else if (isMobile) {
-          // Для мобильной версии
-          showProductPopup(product);
+        } else if (window.openProductModal) {
+          window.openProductModal(product.id);
+        } else {
+          console .error('Функция openProductModal не определена');
+          showNotification('Не удалось открыть информацию о товаре', 'error');
         }
       }
     });
   });
   
-  // Инициализируем AOS для новых элементов (для десктопной версии)
-  if (!isMobile && typeof AOS !== 'undefined') {
+  // Инициализируем AOS для новых элементов
+  if (typeof AOS !== 'undefined') {
     AOS.refresh();
   }
   
-  // Запускаем эффект пульсации для карточек товаров (для десктопной версии)
-  if (!isMobile && typeof addProductCardsPulseEffect === 'function') {
+  // Запускаем эффект пульсации для карточек товаров
+  if (typeof addProductCardsPulseEffect === 'function') {
     addProductCardsPulseEffect();
-  }
-}
-
-/**
- * Показывает всплывающее окно с информацией о товаре (для мобильной версии)
- * @param {Object} product - Информация о товаре
- */
-function showProductPopup(product) {
-  // Проверяем, что мы на мобильной версии и есть всплывающее окно
-  const popup = document.getElementById('productPopup');
-  if (!popup) return;
-  
-  // Формируем URL изображения
-  let imageUrl = product.image_url;
-  if (imageUrl && !imageUrl.startsWith('http') && !imageUrl.startsWith('/')) {
-    imageUrl = `${API_BASE_URL}/${imageUrl}`;
-  }
-  
-  // Заполняем данные во всплывающем окне
-  const popupTitle = document.getElementById('popupTitle');
-  const popupPrice = document.getElementById('popupPrice');
-  const popupDescription = document.getElementById('popupDescription');
-  const popupImage1 = document.getElementById('popupImage1');
-  const popupImage2 = document.getElementById('popupImage2');
-  const popupImage3 = document.getElementById('popupImage3');
-  const popupAddToCart = document.getElementById('popupAddToCart');
-  
-  if (popupTitle) popupTitle.textContent = product.title;
-  if (popupPrice) popupPrice.textContent = `${product.price} ₽`;
-  if (popupDescription) popupDescription.textContent = product.description || 'Описание отсутствует';
-  
-  // Устанавливаем изображения
-  if (popupImage1) popupImage1.src = imageUrl || 'https://via.placeholder.com/300x300?text=Нет+изображения';
-  if (popupImage2) popupImage2.src = imageUrl || 'https://via.placeholder.com/300x300?text=Нет+изображения';
-  if (popupImage3) popupImage3.src = imageUrl || 'https://via.placeholder.com/300x300?text=Нет+изображения';
-  
-  // Добавляем обработчик клика на кнопку "В корзину"
-  if (popupAddToCart) {
-    popupAddToCart.onclick = function() {
-      if (typeof addToCart === 'function') {
-        addToCart(
-          product.id,
-          product.title,
-          product.price,
-          imageUrl || 'https://via.placeholder.com/300x300?text=Нет+изображения'
-        );
-      }
-      popup.setAttribute('aria-hidden', 'true');
-    };
-  }
-  
-  // Показываем всплывающее окно
-  popup.setAttribute('aria-hidden', 'false');
-  
-  // Добавляем обработчик закрытия
-  const closeButton = popup.querySelector('.product-popup__close');
-  if (closeButton) {
-    closeButton.onclick = function() {
-      popup.setAttribute('aria-hidden', 'true');
-    };
-  }
-  
-  // Закрытие по клику на оверлей
-  const overlay = popup.querySelector('.product-popup__overlay');
-  if (overlay) {
-    overlay.onclick = function() {
-      popup.setAttribute('aria-hidden', 'true');
-    };
   }
 }
 
@@ -272,43 +220,12 @@ async function loadAndRenderProducts(category = '') {
     // Получаем товары с сервера
     const products = await getProducts(category);
     
-    // Отображаем товары на странице
-    renderProducts(products);
-    
-    // Обновляем заголовок раздела товаров для мобильной версии
-    const isMobile = window.location.href.includes('mobile.html');
-    if (isMobile) {
-      const productsHeading = document.querySelector('.products__heading');
-      if (productsHeading && category) {
-        const categoryName = getCategoryName(category);
-        productsHeading.textContent = `Товары - ${categoryName}`;
-      } else if (productsHeading) {
-        productsHeading.textContent = 'Все товары';
-      }
-    }
+    // Отображаем товары на странице с учетом выбранной категории
+    renderProducts(products, category);
     
   } catch (error) {
-    console.error('Ошибка при загрузке товаров:', error);
     showNotification('Не удалось загрузить товары', 'error');
   }
-}
-
-/**
- * Получает название категории по её идентификатору
- * @param {string} category - Идентификатор категории
- * @returns {string} - Название категории
- */
-function getCategoryName(category) {
-  const categories = {
-    'electronics': 'Электроника',
-    'toys': 'Игрушки',
-    'accessories': 'Аксессуары',
-    'clothes': 'Одежда',
-    'appliances': 'Бытовая техника',
-    'other': 'Другое'
-  };
-  
-  return categories[category] || 'Все товары';
 }
 
 // Функция для инициализации загрузки товаров при загрузке страницы
@@ -322,28 +239,11 @@ function initProductsApi() {
     loadAndRenderProducts();
   }
   
-  // Определяем, на какой версии сайта мы находимся (мобильной или десктопной)
-  const isMobile = window.location.href.includes('mobile.html');
+  // Добавляем обработчики событий для категорий только если они еще не были добавлены
+  const categoryButtons = document.querySelectorAll('.island__category');
   
-  if (isMobile) {
-    // Для мобильной версии добавляем обработчики для карусели категорий
-    const carouselItems = document.querySelectorAll('.carousel__item');
-    carouselItems.forEach(item => {
-      item.addEventListener('click', () => {
-        // Убираем активный класс со всех элементов
-        carouselItems.forEach(i => i.removeAttribute('data-active'));
-        
-        // Добавляем активный класс к текущему элементу
-        item.setAttribute('data-active', '');
-        
-        // Загружаем товары выбранной категории
-        const category = item.dataset.category || '';
-        loadAndRenderProducts(category);
-      });
-    });
-  } else {
-    // Для десктопной версии добавляем обработчики для кнопок категорий
-    const categoryButtons = document.querySelectorAll('.island__category');
+  // Проверяем, есть ли уже обработчики для категорий
+  if (!window.categoryHandlersInitialized) {
     categoryButtons.forEach(button => {
       button.addEventListener('click', () => {
         const category = button.dataset.category || '';
@@ -356,6 +256,9 @@ function initProductsApi() {
         loadAndRenderProducts(category);
       });
     });
+    
+    // Отмечаем, что обработчики уже инициализированы
+    window.categoryHandlersInitialized = true;
   }
 }
 

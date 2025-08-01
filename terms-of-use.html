@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Условия пользования - Damax</title>
+    <title>Условия пользования - Damax </title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='80' font-size='80' font-family='Cinzel'>D</text></svg>" type="image/svg+xml">
     <link rel="stylesheet" href="desktop-styles.css">
     <link rel="stylesheet" href="desktop-styles-fixed.css">
@@ -117,7 +117,60 @@
         .terms__important-text {
             color: var(--text-secondary);
         }
+
+        .terms__additional-info {
+            background: var(--bg-secondary);
+            padding: 1.5rem;
+            border-radius: var(--radius-medium);
+            margin: 2rem 0;
+            border-left: 4px solid var(--secondary-color);
+        }
     </style>
+    <script>
+    (async function() {
+      try {
+        const res = await fetch('/api/site-status');
+        if (res.ok) {
+          const data = await res.json();
+          if (!data.enabled) {
+            window.location.href = '/site-offline.html';
+          }
+        }
+      } catch (e) {}
+    })();
+    </script>
+    
+    <!-- Скрипт для синхронизации данных компании -->
+    <script>
+    document.addEventListener('DOMContentLoaded', async function() {
+      try {
+        // Проверяем, была ли уже выполнена синхронизация в текущей сессии
+        const syncTimestamp = sessionStorage.getItem('company_data_sync_timestamp');
+        const currentTime = new Date().getTime();
+        
+        // Если синхронизация не выполнялась или прошло более 1 часа
+        if (!syncTimestamp || (currentTime - parseInt(syncTimestamp)) > 3600000) {
+          // Вызываем API для синхронизации данных компании
+          const response = await fetch('http://localhost:5000/api/sync-company-data', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          });
+          
+          if (response.ok) {
+            console.log('Данные компании успешно синхронизированы');
+            // Сохраняем метку времени синхронизации
+            sessionStorage.setItem('company_data_sync_timestamp', currentTime.toString());
+          }
+        } else {
+          console.log('Синхронизация данных компании пропущена (выполнялась недавно)');
+        }
+      } catch (error) {
+        console.error('Ошибка при синхронизации данных компании:', error);
+      }
+    });
+    </script>
 </head>
 <body>
     <div class="page-wrapper">
@@ -125,7 +178,7 @@
             <div class="terms" data-aos="fade-up">
                 <div class="terms__header">
                     <h1 class="terms__title">Условия пользования</h1>
-                    <p class="terms__date">Последнее обновление: 1 марта 2025</p>
+                    <p class="terms__date">Последнее обновление: <span id="documents_last_update">24 июля 2025</span></p>
                 </div>
 
                 <div class="terms__section">
@@ -134,7 +187,7 @@
                         1. Общие положения
                     </h2>
                     <p class="terms__text">
-                        Настоящие Условия пользования (далее — «Условия») регулируют отношения между ООО «Дамакс» (ИНН: 1650421897, ОГРН: 1231600009740, юридический адрес: 423816, Республика Татарстан, Г.О. Город Набережные Челны, Пр-кт Им Вахитова, Д. 44/78,КВ.16) (далее — «Компания») и физическим лицом (далее — «Пользователь»), использующим сервисы и услуги Компании, доступные на сайте damax.ru (далее — «Сайт»).
+                        Настоящие Условия пользования (далее — «Условия») регулируют отношения между <span id="company_name">НАЗКОМП</span> (ИНН: <span id="company_inn">ИНН!!!ы</span>, ОГРН: <span id="company_ogrn">ОГРН</span>, юридический адрес: <span id="company_legal_address">ЮРАДР</span>) (далее — «Компания») и физическим лицом (далее — «Пользователь»), использующим сервисы и услуги Компании, доступные на сайте damax.ru (далее — «Сайт»).
                     </p>
                     <p class="terms__text">
                         Используя Сайт, Вы подтверждаете, что прочитали, поняли и согласны с настоящими Условиями. Если Вы не согласны с Условиями, пожалуйста, не используйте Сайт.
@@ -269,9 +322,9 @@
                         По всем вопросам, связанным с настоящими Условиями, Вы можете обратиться к Компании следующими способами:
                     </p>
                     <ul class="terms__list">
-                        <li class="terms__list-item">Почтовый адрес: 123456, г. Москва, ул. Примерная, д. 123</li>
-                        <li class="terms__list-item">Электронная почта: info@damax.ru</li>
-                        <li class="terms__list-item">Телефон: +7 (999) 123-45-67</li>
+                        <li class="terms__list-item">Почтовый адрес: <span id="company_postal_address">ПОЧТАДР</span></li>
+                        <li class="terms__list-item">Электронная почта: <span id="company_email">ЭМАЙЛКОМП</span></li>
+                        <li class="terms__list-item">Телефон: <span id="company_phone">!!!</span></li>
                     </ul>
                 </div>
 
@@ -295,6 +348,51 @@
         AOS.init({
             duration: 800,
             once: true
+        });
+        
+        // Загружаем настройки компании
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                const response = await fetch('http://localhost:5000/api/settings');
+                if (response.ok) {
+                    const settings = await response.json();
+                    
+                    // Обновляем данные на странице
+                    if (settings.company_name) {
+                        document.getElementById('company_name').textContent = settings.company_name;
+                    }
+                    
+                    if (settings.company_inn) {
+                        document.getElementById('company_inn').textContent = settings.company_inn;
+                    }
+                    
+                    if (settings.company_ogrn) {
+                        document.getElementById('company_ogrn').textContent = settings.company_ogrn;
+                    }
+                    
+                    if (settings.company_legal_address) {
+                        document.getElementById('company_legal_address').textContent = settings.company_legal_address;
+                    }
+                    
+                    if (settings.company_postal_address) {
+                        document.getElementById('company_postal_address').textContent = settings.company_postal_address;
+                    }
+                    
+                    if (settings.company_email) {
+                        document.getElementById('company_email').textContent = settings.company_email;
+                    }
+                    
+                    if (settings.company_phone) {
+                        document.getElementById('company_phone').textContent = settings.company_phone;
+                    }
+                    
+                    if (settings.documents_last_update) {
+                        document.getElementById('documents_last_update').textContent = settings.documents_last_update;
+                    }
+                }
+            } catch (error) {
+                console.error('Ошибка при загрузке настроек компании:', error);
+            }
         });
     </script>
 </body>

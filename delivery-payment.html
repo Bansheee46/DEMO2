@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Доставка и оплата - Damax</title>
+    <title>Доставка и оплата - Damax </title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='80' font-size='80' font-family='Cinzel'>D</text></svg>" type="image/svg+xml">
     <link rel="stylesheet" href="desktop-styles.css">
     <link rel="stylesheet" href="desktop-styles-fixed.css">
@@ -136,6 +136,37 @@
             margin-right: 0.5rem;
         }
     </style>
+    <!-- Скрипт для синхронизации данных компании -->
+    <script>
+    document.addEventListener('DOMContentLoaded', async function() {
+      try {
+        // Проверяем, была ли уже выполнена синхронизация в текущей сессии
+        const syncTimestamp = sessionStorage.getItem('company_data_sync_timestamp');
+        const currentTime = new Date().getTime();
+        
+        // Если синхронизация не выполнялась или прошло более 1 часа
+        if (!syncTimestamp || (currentTime - parseInt(syncTimestamp)) > 3600000) {
+          // Вызываем API для синхронизации данных компании
+          const response = await fetch('http://localhost:5000/api/sync-company-data', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          });
+          
+          if (response.ok) {
+            console.log('Данные компании успешно синхронизированы');
+            // Сохраняем метку времени синхронизации
+            sessionStorage.setItem('company_data_sync_timestamp', currentTime.toString());
+          }
+        } else {
+          console.log('Синхронизация данных компании пропущена (выполнялась недавно)');
+        }
+      } catch (error) {
+        console.error('Ошибка при синхронизации данных компании:', error);
+      }
+    });
+    </script>
 </head>
 <body>
     <div class="page-wrapper">
@@ -143,7 +174,7 @@
             <div class="delivery-payment" data-aos="fade-up">
                 <div class="delivery-payment__header">
                     <h1 class="delivery-payment__title">Доставка и оплата</h1>
-                        <p class="delivery-payment__date">Последнее обновление: 1 марта 2025</p>
+                        <p class="terms__date">Последнее обновление: <span id="documents_last_update">24 июля 2025</span></p>
                 </div>
 
                 <div class="delivery-payment__section">
@@ -152,7 +183,7 @@
                         Общие положения
                     </h2>
                     <p class="delivery-payment__text">
-                        ООО "Дамакс" (ИНН: 1650421897, ОГРН: 1231600009740) осуществляет доставку товаров в соответствии с настоящими условиями и законодательством РФ.
+                        ООО "Дамакс" (ИНН: <span id="company_inn">ИНН</span>, ОГРН: <span id="company_ogrn">ОГРН</span>) осуществляет доставку товаров в соответствии с настоящими условиями и законодательством РФ.
                     </p>
                 </div>
 
@@ -249,12 +280,12 @@
                     </p>
                     <ul class="delivery-payment__list">
                         <li class="delivery-payment__list-item">В течение 7 дней с момента получения товара</li>
-                        <li class="delivery-payment__list-item">В письменной форме по адресу: 123456, г. Москва, ул. Примерная, д. 123</li>
-                        <li class="delivery-payment__list-item">По электронной почте: claims@damax.ru</li>
+                        <li class="delivery-payment__list-item">В письменной форме по адресу: <span id="company_actual_address">123456, г. Москва, ул. Примерная, д. 123</span></li>
+                        <li class="delivery-payment__list-item">По электронной почте: <span id="company_email">claims@damax.ru</span></li>
                         <li class="delivery-payment__list-item">Через форму обратной связи на сайте</li>
                     </ul>
                     <p class="delivery-payment__text">
-                        Срок рассмотрения претензии - 10 рабочих дней с момента получения.
+                        Срок рассмотрения претензии - 10 рабочих дней с момента ее получения.
                     </p>
                 </div>
 
@@ -287,6 +318,52 @@
             duration: 800,
             once: true
         });
+        
+        // Загружаем настройки компании
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                const response = await fetch('http://localhost:5000/api/settings');
+                if (response.ok) {
+                    const settings = await response.json();
+                    
+                    // Обновляем данные на странице
+                    if (settings.company_inn) {
+                        document.getElementById('company_inn').textContent = settings.company_inn;
+                    }
+                    
+                    if (settings.company_ogrn) {
+                        document.getElementById('company_ogrn').textContent = settings.company_ogrn;
+                    }
+                    
+                    if (settings.company_actual_address) {
+                        document.getElementById('company_actual_address').textContent = settings.company_actual_address;
+                    }
+                    
+                    if (settings.company_email) {
+                        document.getElementById('company_email').textContent = settings.company_email;
+                    }
+                    
+                    if (settings.documents_last_update) {
+                        document.getElementById('documents_last_update').textContent = settings.documents_last_update;
+                    }
+                }
+            } catch (error) {
+                console.error('Ошибка при загрузке настроек компании:', error);
+            }
+        });
+    </script>
+    <script>
+    (async function() {
+      try {
+        const res = await fetch('/api/site-status');
+        if (res.ok) {
+          const data = await res.json();
+          if (!data.enabled) {
+            window.location.href = '/site-offline.html';
+          }
+        }
+      } catch (e) {}
+    })();
     </script>
 </body>
 </html> 

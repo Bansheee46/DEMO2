@@ -979,7 +979,7 @@ a:focus:not(:focus-visible) {
 
 .login-button i {
   font-size: 16px;
-  color: var(--primary-color);
+  color: white;
   transition: transform 0.3s ease;
 }
 
@@ -1333,6 +1333,7 @@ body.dark .notification {
   margin-bottom: 8px;
   color: var(--text-primary);
   background: linear-gradient(to right, #BCB88A, #C9897B);
+  background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   animation: textShimmer 4s infinite linear;
@@ -1669,6 +1670,7 @@ body.dark .user-menu-modal .user-menu__item:hover {
   line-height: 1;
   position: relative;
   background: linear-gradient(135deg, #BCB88A, #C9897B);
+  background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   animation: sparkle 2s infinite;
@@ -1736,6 +1738,7 @@ body.dark .user-menu-modal .account-status {
 
 body.dark .user-menu-modal .account-status span {
   background: linear-gradient(135deg, #d0cca0, #e6b1a3);
+  background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -1774,9 +1777,414 @@ body.dark .user-menu-modal .account-status span {
 
 .user-menu-modal .name-text {
   background: linear-gradient(to right, #BCB88A, #C9897B);
+  background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   animation: textShimmer 4s infinite linear;
   text-align: left;
   display: inline-block;
+}
+
+/* Стили для карточки контрагента */
+.counterparty-form {
+    max-width: 100%;
+}
+
+.counterparty-card {
+    background-color: var(--surface-color);
+    border-radius: var(--border-radius);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    margin-bottom: 24px;
+    overflow: hidden;
+    transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+    transform-origin: center top;
+    animation: cardAppear 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+@keyframes cardAppear {
+    0% {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.counterparty-card:hover {
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+    transform: translateY(-5px);
+}
+
+.counterparty-card__header {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    padding: 20px;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+}
+
+.counterparty-card__header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 60%);
+    transform: rotate(45deg);
+    animation: shimmerEffect 3s infinite linear;
+    z-index: 1;
+    pointer-events: none;
+}
+
+@keyframes shimmerEffect {
+    0% {
+        transform: rotate(45deg) translateX(-100%);
+    }
+    100% {
+        transform: rotate(45deg) translateX(100%);
+    }
+}
+
+.counterparty-card__icon {
+    width: 50px;
+    height: 50px;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 2;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.counterparty-card__icon i {
+    font-size: 24px;
+    animation: pulseIcon 2s infinite ease-in-out;
+}
+
+@keyframes pulseIcon {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.15);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.counterparty-progress {
+    flex: 1;
+    margin-left: 20px;
+    position: relative;
+    z-index: 2;
+}
+
+.progress-bar {
+    height: 6px;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.progress-indicator {
+    height: 100%;
+    background-color: white;
+    width: 0%;
+    border-radius: 3px;
+    transition: width 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+    position: relative;
+}
+
+.progress-indicator::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 20px;
+    background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.8) 100%);
+    animation: progressGlow 1.5s infinite;
+}
+
+@keyframes progressGlow {
+    0% {
+        opacity: 0;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+.progress-text {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.progress-percent {
+    font-weight: 700;
+}
+
+.counterparty-card__content {
+    padding: 24px;
+    position: relative;
+}
+
+.counterparty-card__content::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 4px;
+    background-color: var(--primary-light);
+    border-radius: 0 0 2px 2px;
+}
+
+.form-row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.form-row .form-group {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+.contact-method-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.contact-method-option {
+    position: relative;
+    flex: 1;
+    min-width: calc(50% - 6px);
+}
+
+.contact-method-option input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.contact-method-option label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px;
+    border: 1px solid var(--text-tertiary);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background-color: var(--surface-color);
+    color: var(--text-secondary);
+    font-weight: 500;
+    text-align: center;
+}
+
+.contact-method-option label i {
+    font-size: 16px;
+}
+
+.contact-method-option input[type="radio"]:checked + label {
+    border-color: var(--primary-color);
+    background-color: rgba(188, 184, 138, 0.1);
+    color: var(--primary-color);
+    box-shadow: 0 2px 8px rgba(188, 184, 138, 0.2);
+}
+
+.contact-method-option input[type="radio"]:checked + label i {
+    animation: bounceIcon 0.5s ease;
+}
+
+@keyframes bounceIcon {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.3);
+    }
+}
+
+.contact-method-option:hover label {
+    border-color: var(--primary-light);
+    transform: translateY(-2px);
+}
+
+.bank-details-group {
+    margin-top: 24px;
+}
+
+.bank-details-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-top: 10px;
+}
+
+.bank-details-container .input-container {
+    margin-bottom: 0;
+}
+
+.counterparty-form .back-button {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+}
+
+/* Анимация для полей ввода */
+.counterparty-card__content .form-group {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.5s forwards;
+}
+
+@keyframes fadeInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Анимация для каждого поля с задержкой */
+.counterparty-card__content .form-group:nth-child(1) { animation-delay: 0.1s; }
+.counterparty-card__content .form-group:nth-child(2) { animation-delay: 0.15s; }
+.counterparty-card__content .form-group:nth-child(3) { animation-delay: 0.2s; }
+.counterparty-card__content .form-group:nth-child(4) { animation-delay: 0.25s; }
+.counterparty-card__content .form-group:nth-child(5) { animation-delay: 0.3s; }
+.counterparty-card__content .form-group:nth-child(6) { animation-delay: 0.35s; }
+.counterparty-card__content .form-group:nth-child(7) { animation-delay: 0.4s; }
+.counterparty-card__content .form-group:nth-child(8) { animation-delay: 0.45s; }
+.counterparty-card__content .form-group:nth-child(9) { animation-delay: 0.5s; }
+.counterparty-card__content .form-group:nth-child(10) { animation-delay: 0.55s; }
+
+/* Стили для темной темы */
+body.dark .counterparty-card {
+    background-color: var(--surface-color);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+body.dark .contact-method-option label {
+    background-color: var(--surface-color);
+    border-color: #444;
+}
+
+body.dark .contact-method-option input[type="radio"]:checked + label {
+    background-color: rgba(188, 184, 138, 0.15);
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+    .form-row {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .bank-details-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .contact-method-option {
+        min-width: calc(50% - 6px);
+    }
+    
+    .counterparty-card__header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 16px;
+    }
+    
+    .counterparty-progress {
+        margin-left: 0;
+        margin-top: 16px;
+        width: 100%;
+    }
+}
+
+/* Эффекты при фокусе на полях ввода */
+.counterparty-card__content .input-container input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(188, 184, 138, 0.2);
+}
+
+/* Анимация для кнопки сохранения */
+.counterparty-form .submit-button {
+    position: relative;
+    overflow: hidden;
+}
+
+.counterparty-form .submit-button::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 70%);
+    transform: rotate(45deg);
+    transition: all 0.6s ease;
+    opacity: 0;
+}
+
+.counterparty-form .submit-button:hover::before {
+    opacity: 1;
+    animation: buttonShine 1.5s infinite;
+}
+
+@keyframes buttonShine {
+    0% {
+        transform: rotate(45deg) translateX(-100%);
+    }
+    100% {
+        transform: rotate(45deg) translateX(100%);
+    }
+}
+
+/* Эффект заполнения полей */
+.counterparty-card__content .input-container input.filled {
+    border-color: var(--primary-color);
+    background-color: rgba(188, 184, 138, 0.05);
+}
+
+/* Анимация успешного заполнения поля */
+@keyframes successPulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 6px rgba(76, 175, 80, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(76, 175, 80, 0);
+    }
+}
+
+.input-container.success input {
+    border-color: var(--success-color);
+    animation: successPulse 1s;
+}
+
+.input-container.success .input-icon {
+    color: var(--success-color);
 } 

@@ -1108,5 +1108,18 @@
       });
     });
   </script>
+  <script>
+(async function() {
+  try {
+    const res = await fetch('/api/site-status');
+    if (res.ok) {
+      const data = await res.json();
+      if (!data.enabled) {
+        window.location.href = '/site-offline.html';
+      }
+    }
+  } catch (e) {}
+})();
+</script>
 </body>
 </html>

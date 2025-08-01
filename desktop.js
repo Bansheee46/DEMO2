@@ -1,7 +1,22 @@
 // Подключаем модуль настроек, интегрированный в основной код
-// ... existing code ...
-
+// Импортируем функцию showNotification из файла notification.js
 document.addEventListener('DOMContentLoaded', function() {
+  // Импортируем функцию showNotification
+  if (!window.showNotification) {
+    const script = document.createElement('script');
+    script.src = 'notification.js';
+    document.head.appendChild(script);
+    
+    script.onload = function() {
+      console.log('Модуль уведомлений успешно загружен');
+    };
+    
+    script.onerror = function() {
+      console.error('Ошибка при загрузке модуля уведомлений');
+    };
+  }
+
+  renderIslandCategories();
   // Глобальная переменная для хранения данных пользователей
   let registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
   
@@ -10,19 +25,55 @@ document.addEventListener('DOMContentLoaded', function() {
     deleteUserMenu();
   }
 
-  // Обработчик клавиши ё для перехода на страницу пользователей
-  document.addEventListener('keydown', function(e) {
-    // Клавиша ё (код 192)
-    if (e.keyCode === 192) {
-      // Проверяем, авторизован ли пользователь
-      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-      if (userData.loggedIn) {
-        window.location.href = 'users.html';
-      } else {
-        showNotification('Доступ запрещен. Авторизуйтесь для просмотра списка пользователей.', 'error');
+  // Инициализация декоративного градиента с блестками
+  initDecorativeEffects();
+
+
+  // Функция для инициализации декоративных эффектов
+  function initDecorativeEffects() {
+    const decorativeGradients = document.querySelectorAll('.decorative-gradient');
+    
+    decorativeGradients.forEach(gradient => {
+      // Удаляем старые блестки, если они есть
+      const existingSparkles = gradient.querySelectorAll('.sparkle');
+      existingSparkles.forEach(sparkle => sparkle.remove());
+      
+      // Добавляем новые блестки
+      for (let i = 0; i < 10; i++) {
+        createSparkle(gradient);
       }
-    }
-  });
+    });
+  }
+  
+  // Функция для создания блестки
+  function createSparkle(container) {
+    const sparkle = document.createElement('div');
+    sparkle.classList.add('sparkle');
+    
+    // Случайное позиционирование
+    sparkle.style.left = `${Math.random() * 100}%`;
+    sparkle.style.top = `${Math.random() * 100}%`;
+    
+    // Случайная задержка для анимации
+    sparkle.style.animationDelay = `${Math.random() * 3}s`;
+    
+    // Случайный размер
+    const size = 2 + Math.random() * 3;
+    sparkle.style.width = `${size}px`;
+    sparkle.style.height = `${size}px`;
+    
+    // Случайная яркость
+    const opacity = 0.3 + Math.random() * 0.7;
+    sparkle.style.opacity = opacity;
+    
+    container.appendChild(sparkle);
+    
+    // Удаляем и пересоздаем блестку через случайное время
+    setTimeout(() => {
+      sparkle.remove();
+      createSparkle(container);
+    }, 3000 + Math.random() * 5000);
+  }
 
   // Функция для очистки localStorage
   function clearLocalStorage() {
@@ -69,8 +120,6 @@ document.addEventListener('DOMContentLoaded', function() {
     once: true
   });
 
-  let cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
-  
   // Основные элементы интерфейса
   const island = document.querySelector('.island');
   const productCards = document.querySelectorAll('.product-card');
@@ -128,14 +177,23 @@ document.addEventListener('DOMContentLoaded', function() {
   if (localStorage.getItem('sound') === 'muted') {
     document.body.classList.add('muted');
     
+    // Добавляем стиль для скрытия псевдоэлемента ::after
+    if (!document.getElementById('fix-muted-icon-style')) {
+      const fixStyle = document.createElement('style');
+      fixStyle.id = 'fix-muted-icon-style';
+      fixStyle.textContent = 'body.muted .accent-menu__item[data-action="toggle-sound"]::after { content: none !important; }';
+      document.head.appendChild(fixStyle);
+    }
+    
     // Обновляем иконки звука
     const soundToggleButtons = document.querySelectorAll('[data-action="toggle-sound"]');
     soundToggleButtons.forEach(button => {
       const volumeIcon = button.querySelector('.fa-volume-up');
       const muteIcon = button.querySelector('.fa-volume-mute');
       if (volumeIcon && muteIcon) {
-        volumeIcon.style.display = 'none';
-        muteIcon.style.display = 'inline-block';
+        // Используем !important для стилей, чтобы предотвратить конфликты стилей
+        volumeIcon.style.cssText = 'display: none !important';
+        muteIcon.style.cssText = 'display: inline-block !important';
       }
     });
     
@@ -158,6 +216,26 @@ document.addEventListener('DOMContentLoaded', function() {
   if (categoryButtons.length > 0) {
     categoryButtons[0].classList.add('active');
   }
+
+  // Обработчик клика на категории
+  categoryButtons.forEach(button => {
+    button.addEventListener('click', function() {
+      const category = this.getAttribute('data-category');
+      console.log(`Выбрана категория: ${category}`);
+      
+      // Обновляем активную категорию
+      categoryButtons.forEach(btn => btn.classList.remove('active'));
+      this.classList.add('active');
+      
+      // Вызываем функцию загрузки товаров по категории из products-api.js
+      if (window.productsApi && typeof window.productsApi.loadAndRenderProducts === 'function') {
+        window.productsApi.loadAndRenderProducts(category);
+      }
+    });
+  });
+  
+  // Отмечаем, что обработчики категорий уже инициализированы
+  window.categoryHandlersInitialized = true;
 
   setTimeout(() => {
     categoryButtons.forEach((btn, index) => {
@@ -222,8 +300,17 @@ document.addEventListener('DOMContentLoaded', function() {
         const volumeIcon = item.querySelector('.fa-volume-up');
         const muteIcon = item.querySelector('.fa-volume-mute');
         if (volumeIcon && muteIcon) {
-          volumeIcon.style.display = isMuted ? 'none' : 'inline-block';
-          muteIcon.style.display = isMuted ? 'inline-block' : 'none';
+          // Используем !important для стилей, чтобы предотвратить конфликты стилей
+          volumeIcon.style.cssText = isMuted ? 'display: none !important' : 'display: inline-block !important';
+          muteIcon.style.cssText = isMuted ? 'display: inline-block !important' : 'display: none !important';
+        }
+        
+        // Добавляем стиль для скрытия псевдоэлемента ::after
+        if (!document.getElementById('fix-muted-icon-style')) {
+          const fixStyle = document.createElement('style');
+          fixStyle.id = 'fix-muted-icon-style';
+          fixStyle.textContent = 'body.muted .accent-menu__item[data-action="toggle-sound"]::after { content: none !important; }';
+          document.head.appendChild(fixStyle);
         }
         
         // Обновляем настройки в модуле настроек
@@ -239,6 +326,8 @@ document.addEventListener('DOMContentLoaded', function() {
       } else if (action === 'settings') {
         // Открываем модальное окно настроек
         showSettingsModal();
+      } else if (action === 'orders') {
+        showOrdersModal();
       }
     });
   });
@@ -627,7 +716,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     localStorage.setItem('cartItems', JSON.stringify(items));
-    cartItems = items;
     updateCartCount();
     renderCartItems();
   }
@@ -638,7 +726,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const newItems = items.filter(item => item.id !== itemId);
     
     localStorage.setItem('cartItems', JSON.stringify(newItems));
-    cartItems = newItems;
     updateCartCount();
     renderCartItems();
     
@@ -685,14 +772,14 @@ document.addEventListener('DOMContentLoaded', function() {
         if (settings.isSoundEnabled) {
           menuSoundToggle.setAttribute('data-current', 'unmuted');
           if (volumeIcon && muteIcon) {
-            volumeIcon.style.display = 'inline-block';
-            muteIcon.style.display = 'none';
+            volumeIcon.style.cssText = 'display: inline-block !important';
+            muteIcon.style.cssText = 'display: none !important';
           }
         } else {
           menuSoundToggle.setAttribute('data-current', 'muted');
           if (volumeIcon && muteIcon) {
-            volumeIcon.style.display = 'none';
-            muteIcon.style.display = 'inline-block';
+            volumeIcon.style.cssText = 'display: none !important';
+            muteIcon.style.cssText = 'display: inline-block !important';
           }
         }
       }
@@ -700,18 +787,18 @@ document.addEventListener('DOMContentLoaded', function() {
       return;
     }
     
-    // Резервная логика (старый код), если модуль настроек недоступен
-    // ... existing code ...
+    
   }
 
   // Функция showNotification заменена на импортированную из notification.js
   function showNotification(message, type = 'info', duration = 3000) {
-    // Используем новую функцию из notification.js с улучшенным дизайном
-    if (typeof window.showNotification === 'function' && window.showNotification !== showNotification) {
+    // Проверяем, доступна ли глобальная функция showNotification из notification.js
+    if (window.showNotification && typeof window.showNotification === 'function' && window !== this) {
+      // Вызываем глобальную функцию
       return window.showNotification(message, type, duration, true);
     } else {
-      console.warn('Функция showNotification не найдена в глобальном объекте');
-      
+      console.warn('Функция showNotification из notification.js не найдена, используем локальную версию');
+
       // Резервная реализация (упрощенная версия)
       const notification = document.createElement('div');
       notification.className = `notification notification--${type}`;
@@ -910,42 +997,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 
-  // Search functionality
-  const searchInput = document.querySelector('.search-bar__input');
-  if (searchInput) {
-    searchInput.addEventListener('input', debounce(function() {
-      const searchTerm = this.value.toLowerCase().trim();
-      
-      productCards.forEach(card => {
-        const title = card.querySelector('.product-card__title').textContent.toLowerCase();
-        
-        if (title.includes(searchTerm) || searchTerm === '') {
-          card.style.display = 'block';
-          setTimeout(() => {
-            card.classList.add('visible');
-          }, 100);
-        } else {
-          card.classList.remove('visible');
-          setTimeout(() => {
-            card.style.display = 'none';
-          }, 300);
-        }
-      });
-      
-      // If search bar is not empty, make sure to show all categories as active
-      if (searchTerm !== '') {
-        document.querySelector('.island__categories').classList.add('all-active');
-        categoryButtons.forEach(btn => btn.classList.remove('active'));
-      } else {
-        document.querySelector('.island__categories').classList.remove('all-active');
-        // Reactivate the currently selected category
-        const activeCategory = document.querySelector('.island__category.active') || categoryButtons[0];
-        if (activeCategory) {
-          activeCategory.click();
-        }
-      }
-    }, 300));
-  }
+  // Search functionality - УДАЛЕНО, теперь используется модуль product-search.js
 
   // Helper functions
   function debounce(func, wait) {
@@ -977,6 +1029,8 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Открытие модального окна входа
   if (loginButton && loginModal) {
+    // Отключаем обработчик в desktop.js, так как используем login-system.js
+    /*
     loginButton.addEventListener('click', function() {
       // Используем классы вместо aria-hidden для лучшей доступности
       loginModal.classList.add('active');
@@ -995,10 +1049,13 @@ document.addEventListener('DOMContentLoaded', function() {
       // Показать форму входа по умолчанию
       showForm('login');
     });
+    */
   }
   
   // Закрытие модального окна
   if (closeLoginButton && loginModal) {
+    // Отключаем обработчик в desktop.js, так как используем login-system.js
+    /*
     closeLoginButton.addEventListener('click', function() {
       // Используем классы вместо aria-hidden для лучшей доступности
       loginModal.classList.remove('active');
@@ -1009,9 +1066,11 @@ document.addEventListener('DOMContentLoaded', function() {
         loginModal.removeAttribute('aria-hidden');
       }
     });
+    */
   }
   
   // Закрытие модального окна по клику вне его содержимого
+  /*
   window.addEventListener('click', function(e) {
     if (e.target === loginModal) {
       // Используем классы вместо aria-hidden для лучшей доступности
@@ -1024,38 +1083,66 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
   });
+  */
   
   // Переключение между формами
   if (showRegisterFormButton) {
+    // Отключаем обработчик в desktop.js, так как используем login-system.js
+    /*
     showRegisterFormButton.addEventListener('click', function(e) {
       e.preventDefault();
       showForm('register');
     });
+    */
   }
   
   if (showLoginFormButton) {
+    // Отключаем обработчик в desktop.js, так как используем login-system.js
+    /*
     showLoginFormButton.addEventListener('click', function(e) {
       e.preventDefault();
       showForm('login');
     });
+    */
   }
   
   if (forgotPasswordButton) {
+    // Отключаем обработчик в desktop.js, так как используем login-system.js
+    /*
     forgotPasswordButton.addEventListener('click', function(e) {
       e.preventDefault();
       showForm('forgot');
     });
+    */
   }
   
   if (backToLoginButton) {
+    // Отключаем обработчик в desktop.js, так как используем login-system.js
+    /*
     backToLoginButton.addEventListener('click', function(e) {
       e.preventDefault();
       showForm('login');
     });
+    */
   }
   
   // Функция для отображения нужной формы
   function showForm(formType) {
+    // Используем функцию switchTab из login-system.js вместо локальной реализации
+    if (typeof window.switchTab === 'function') {
+      window.switchTab(formType);
+      return;
+    }
+    
+    // Используем функцию из login-system.js вместо локальной реализации
+    if (typeof window.showForm === 'function' && window.showForm !== showForm) {
+      window.showForm(formType);
+      return;
+    }
+    
+    console.log('Используется резервная функция showForm из desktop.js');
+    
+    /*
     if (loginForm) loginForm.style.display = formType === 'login' ? 'block' : 'none';
     if (registerForm) registerForm.style.display = formType === 'register' ? 'block' : 'none';
     if (forgotPasswordForm) forgotPasswordForm.style.display = formType === 'forgot' ? 'block' : 'none';
@@ -1068,6 +1155,7 @@ document.addEventListener('DOMContentLoaded', function() {
     } else if (formType === 'forgot' && forgotPasswordForm) {
       refreshFormAnimation(forgotPasswordForm);
     }
+    */
   }
   
   // Функция для повторного запуска анимации формы
@@ -1098,14 +1186,13 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Обработка отправки формы входа
   if (loginForm) {
-    loginForm.addEventListener('submit', function(e) {
+    loginForm.addEventListener('submit', async function(e) {
       e.preventDefault();
       const email = document.getElementById('loginEmail').value;
       const password = document.getElementById('loginPassword').value;
       
       // Показываем анимацию загрузки на кнопке
       const submitBtn = this.querySelector('.btn-login');
-      // Проверяем, что submitBtn не null перед обращением к textContent
       if (!submitBtn) {
         console.error('Кнопка входа не найдена в форме');
         return;
@@ -1114,16 +1201,56 @@ document.addEventListener('DOMContentLoaded', function() {
       submitBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Вход...';
       submitBtn.disabled = true;
       
-      // Имитация сетевого запроса
-      setTimeout(() => {
-        // Проверяем существует ли пользователь с таким email и паролем
-        const user = registeredUsers.find(u => 
-          u.email.toLowerCase() === email.toLowerCase() && 
-          u.password === password
-        );
+      try {
+        // Логиним пользователя через сервер
+        const result = await loginUser(email, password);
         
-        if (!user) {
-          // Неверные учетные данные
+        if (result.success) {
+          // Обновляем данные текущего пользователя
+          const userData = { 
+            name: result.user.name, 
+            email: result.user.email,
+            loggedIn: true,
+            loginTime: new Date().toISOString()
+          };
+          localStorage.setItem('userData', JSON.stringify(userData));
+          
+          // Сбрасываем состояние кнопки
+          submitBtn.innerHTML = originalText;
+          submitBtn.disabled = false;
+          
+          // Воспроизводим звук успеха
+          if (window.settingsModule && typeof window.settingsModule.playSound === 'function') {
+            window.settingsModule.playSound('success');
+          }
+          
+          // Анимация успешного входа
+          loginModal.classList.add('success-login');
+          
+          // Добавляем эффект пульсации на форме
+          const formElement = loginForm.parentElement;
+          formElement.classList.add('form-success-animation');
+          
+          // Создаем эффект частиц успеха
+          createSuccessParticles();
+          
+          // Закрываем модальное окно с задержкой и обновляем UI
+          setTimeout(() => {
+            if (loginModal.hasAttribute('aria-hidden')) {
+              loginModal.removeAttribute('aria-hidden');
+            }
+            loginModal.classList.remove('active');
+            loginModal.classList.remove('success-login');
+            formElement.classList.remove('form-success-animation');
+            
+            // Обновить UI после входа
+            updateUIAfterLogin(result.user.name);
+            
+            // Показываем красивое уведомление
+            showNotification('Вы успешно вошли в систему', 'success');
+          }, 1200);
+        } else {
+          // Ошибка входа
           submitBtn.innerHTML = originalText;
           submitBtn.disabled = false;
           
@@ -1132,57 +1259,14 @@ document.addEventListener('DOMContentLoaded', function() {
             window.settingsModule.playSound('error');
           }
           
-          showNotification('Неверный email или пароль', 'error');
-          return;
+          showNotification(result.message || 'Неверный email или пароль', 'error');
         }
-        
-        // Обновляем данные текущего пользователя
-        const userData = { 
-          name: user.name, 
-          email: user.email,
-          loggedIn: true,
-          registrationDate: user.registrationDate || new Date().toISOString(),
-          orders: user.orders || []
-        };
-        localStorage.setItem('userData', JSON.stringify(userData));
-        
-        // Сбрасываем состояние кнопки
+      } catch (error) {
+        console.error('Ошибка при входе:', error);
         submitBtn.innerHTML = originalText;
         submitBtn.disabled = false;
-        
-        // Воспроизводим звук успеха
-        if (window.settingsModule && typeof window.settingsModule.playSound === 'function') {
-          window.settingsModule.playSound('success');
-        }
-        
-        // Анимация успешного входа
-        loginModal.classList.add('success-login');
-        
-        // Добавляем эффект пульсации на форме
-        const formElement = loginForm.parentElement;
-        formElement.classList.add('form-success-animation');
-        
-        // Создаем эффект частиц успеха
-        createSuccessParticles();
-        
-        // Закрываем модальное окно с задержкой и обновляем UI
-        setTimeout(() => {
-          // Используем inert вместо aria-hidden
-          if (loginModal.hasAttribute('aria-hidden')) {
-            loginModal.removeAttribute('aria-hidden');
-          }
-          // Скрываем модальное окно стандартным способом
-          loginModal.classList.remove('active');
-          loginModal.classList.remove('success-login');
-          formElement.classList.remove('form-success-animation');
-          
-          // Обновить UI после входа
-          updateUIAfterLogin(user.name);
-          
-          // Показываем красивое уведомление
-          showNotification('Вы успешно вошли в систему', 'success');
-        }, 1200);
-      }, 1000);
+        showNotification('Ошибка соединения с сервером', 'error');
+      }
     });
   }
   
@@ -1195,115 +1279,95 @@ document.addEventListener('DOMContentLoaded', function() {
       const password = document.getElementById('registerPassword').value;
       const passwordConfirm = document.getElementById('registerPasswordConfirm').value;
       
-      // Показываем анимацию загрузки на кнопке
-      const submitBtn = this.querySelector('button[type="submit"]');
-      if (!submitBtn) {
-        showNotification('Ошибка формы: кнопка отправки не найдена', 'error');
-        return;
-      }
-      const originalText = submitBtn.textContent;
-      submitBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Регистрация...';
-      submitBtn.disabled = true;
-      
-      // Валидация паролей
+      // Проверяем совпадение паролей
       if (password !== passwordConfirm) {
-        // Сбрасываем состояние кнопки
-        submitBtn.innerHTML = originalText;
-        submitBtn.disabled = false;
-        
         showNotification('Пароли не совпадают', 'error');
         return;
       }
       
-      // Проверяем, существует ли уже пользователь с таким email
-      const existingUser = registeredUsers.find(user => user.email.toLowerCase() === email.toLowerCase());
-      if (existingUser) {
-        submitBtn.innerHTML = originalText;
-        submitBtn.disabled = false;
-        
-        // Показываем уведомление и предлагаем войти
-        showNotification('Пользователь с таким email уже существует. Используйте форму входа.', 'warning');
-        
-        // Переключаемся на форму входа
-        const loginTab = document.querySelector('.auth-tab[data-tab="login"]');
-        if (loginTab) {
-          loginTab.click();
-        }
-        
-        // Заполняем email в форме входа
-        const loginEmail = document.getElementById('loginEmail');
-        if (loginEmail) {
-          loginEmail.value = email;
-        }
-        
+      // Показываем анимацию загрузки на кнопке
+      const submitBtn = this.querySelector('.btn-register');
+      if (!submitBtn) {
+        console.error('Кнопка регистрации не найдена в форме');
         return;
       }
+      const originalText = submitBtn.textContent || 'Регистрация';
+      submitBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Регистрация...';
+      submitBtn.disabled = true;
       
-      // Получаем IP пользователя
-      const userIP = await getUserIP();
-      
-      // Имитация сетевого запроса
-      setTimeout(() => {
-        // Сохраняем нового пользователя
-        const newUser = { 
-          name, 
-          email, 
-          password, // В реальной системе пароль должен быть захеширован!
-          ip: userIP,
-          registrationDate: new Date().toISOString()
-        };
+      try {
+        // Регистрируем пользователя через сервер
+        const result = await registerUser(name, email, password);
         
-        // Добавляем в массив и сохраняем в localStorage
-        registeredUsers.push(newUser);
-        localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
-        
-        // Сохраняем данные текущего пользователя
-        const userData = { 
-          name, 
-          email,
-          loggedIn: true,
-          registrationDate: newUser.registrationDate,
-          orders: []
-        };
-        localStorage.setItem('userData', JSON.stringify(userData));
-        
-        // Сбрасываем состояние кнопки
+        if (result.success) {
+          // Обновляем данные текущего пользователя
+          const userData = { 
+            name: name, 
+            email: email,
+            loggedIn: true,
+            registrationDate: new Date().toISOString()
+          };
+          localStorage.setItem('userData', JSON.stringify(userData));
+          
+          // Сбрасываем состояние кнопки
+          submitBtn.innerHTML = originalText;
+          submitBtn.disabled = false;
+          
+          // Воспроизводим звук успеха
+          if (window.settingsModule && typeof window.settingsModule.playSound === 'function') {
+            window.settingsModule.playSound('success');
+          }
+          
+          // Анимация успешной регистрации
+          registerModal.classList.add('success-register');
+          
+          // Добавляем эффект пульсации на форме
+          const formElement = registerForm.parentElement;
+          formElement.classList.add('form-success-animation');
+          
+          // Создаем эффект частиц успеха
+          createSuccessParticles();
+          
+          // Закрываем модальное окно с задержкой и обновляем UI
+          setTimeout(() => {
+            if (registerModal.hasAttribute('aria-hidden')) {
+              registerModal.removeAttribute('aria-hidden');
+            }
+            registerModal.classList.remove('active');
+            registerModal.classList.remove('success-register');
+            formElement.classList.remove('form-success-animation');
+            
+            // Обновить UI после регистрации
+            updateUIAfterLogin(name);
+            
+            // Показываем красивое уведомление
+            showNotification('Регистрация прошла успешно', 'success');
+          }, 1200);
+        } else {
+          // Ошибка регистрации
+          submitBtn.innerHTML = originalText;
+          submitBtn.disabled = false;
+          
+          // Воспроизводим звук ошибки
+          if (window.settingsModule && typeof window.settingsModule.playSound === 'function') {
+            window.settingsModule.playSound('error');
+          }
+          
+          showNotification(result.message || 'Ошибка при регистрации', 'error');
+        }
+      } catch (error) {
+        console.error('Ошибка при регистрации:', error);
         submitBtn.innerHTML = originalText;
         submitBtn.disabled = false;
-        
-        // Анимация успешной регистрации
-        loginModal.classList.add('success-login');
-        
-        // Добавляем эффект пульсации на форме
-        const formElement = registerForm.parentElement;
-        formElement.classList.add('form-success-animation');
-        
-        // Создаем эффект частиц успеха с другими цветами
-        createSuccessParticles(['#4ade80', '#3b82f6', '#8b5cf6', '#f472b6', '#60a5fa']);
-        
-        // Закрываем модальное окно с задержкой и обновляем UI
-        setTimeout(() => {
-          // Используем inert вместо aria-hidden
-          if (loginModal.hasAttribute('aria-hidden')) {
-            loginModal.removeAttribute('aria-hidden');
-          }
-          // Скрываем модальное окно стандартным способом
-          loginModal.classList.remove('active');
-          loginModal.classList.remove('success-login');
-          formElement.classList.remove('form-success-animation');
-          
-          // Обновить UI после регистрации
-          updateUIAfterLogin(name);
-          
-          // Показываем красивое уведомление
-          showNotification('Вы успешно зарегистрировались!', 'success');
-        }, 1200);
-      }, 1000);
+        showNotification('Ошибка соединения с сервером', 'error');
+      }
     });
   }
   
   // Обработка формы восстановления пароля
   if (forgotPasswordForm) {
+    // Отключаем обработчик в desktop.js, так как используем login-system.js
+    /*
     forgotPasswordForm.addEventListener('submit', function(e) {
       e.preventDefault();
       const email = document.getElementById('forgotEmail').value;
@@ -1323,6 +1387,7 @@ document.addEventListener('DOMContentLoaded', function() {
         loginModal.removeAttribute('aria-hidden');
       }
     });
+    */
   }
   
   // Функция обновления UI после авторизации
@@ -1342,6 +1407,13 @@ document.addEventListener('DOMContentLoaded', function() {
       
       // Добавляем обработчик для кнопки, который будет показывать меню пользователя
       loginButton.addEventListener('click', function() {
+        // Используем функцию showUserMenu из login-system.js, если она доступна
+        if (typeof window.showUserMenu === 'function') {
+          window.showUserMenu(this);
+          return;
+        }
+        
+        // Резервная логика, если функция из login-system.js недоступна
         // Проверяем существование элемента .island и его видимость
         const islandElement = document.querySelector('.island');
         const isIslandVisible = islandElement && 
@@ -1395,6 +1467,22 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Функция для показа модального окна входа
   function showLoginModal() {
+    // Используем функцию openModal из login-system.js, если она доступна
+    if (typeof window.openModal === 'function') {
+      window.openModal();
+      return;
+    }
+    
+    // Используем функцию из login-system.js вместо локальной реализации
+    if (typeof window.showLoginModal === 'function' && window.showLoginModal !== showLoginModal) {
+      window.showLoginModal();
+      return;
+    }
+    
+    // Резервная реализация, если функция из login-system.js недоступна
+    console.log('Используется резервная функция showLoginModal из desktop.js');
+    
+    /*
     // Проверяем, нет ли уже открытого модального окна
     const isModalAlreadyOpen = document.querySelector('.auth-modal.active') || 
                               document.querySelector('.modal-checkout[aria-hidden="false"]');
@@ -1406,7 +1494,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     const authModal = document.querySelector('.auth-modal');
-    if (!authModal) return;
+    if (!authModal) {
+      console.log('Модальное окно авторизации не найдено');
+      return;
+    }
     
     // Предотвращаем множественные вызовы
     if (window._loginModalOpening) return;
@@ -1420,18 +1511,24 @@ document.addEventListener('DOMContentLoaded', function() {
       // Reset forms
       const forms = document.querySelectorAll('.auth-form');
       forms.forEach(form => {
+        if (form) {
         form.reset();
         const formGroups = form.querySelectorAll('.form-group');
-        formGroups.forEach(group => group.classList.remove('error'));
+          formGroups.forEach(group => {
+            if (group) group.classList.remove('error');
+          });
+        }
       });
       
       // Show login form by default
       const tabs = document.querySelectorAll('.auth-tab');
       tabs.forEach(tab => {
+        if (tab) {
         if (tab.getAttribute('data-tab') === 'login') {
           tab.classList.add('active');
         } else {
           tab.classList.remove('active');
+          }
         }
       });
       
@@ -1453,6 +1550,7 @@ document.addEventListener('DOMContentLoaded', function() {
         window._loginModalOpening = false;
       }, 300);
     }, 100);
+    */
   }
 
   // Функция для создания интерактивного фона
@@ -1466,6 +1564,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const diagonalLines = document.querySelector('.diagonal-lines');
     
     if (!background || !diagonalLines) {
+      console.log('Не найдены необходимые элементы для создания интерактивного фона');
       window._creatingInteractiveBackground = false;
       return;
     }
@@ -1484,6 +1583,12 @@ document.addEventListener('DOMContentLoaded', function() {
       
       // Создаем элегантные подчеркивания (снижено количество)
       setTimeout(() => {
+        // Проверяем, что background все еще существует
+        if (!background) {
+          window._creatingInteractiveBackground = false;
+          return;
+        }
+        
         // Создаем только 2 подчеркивания вместо 6
         for (let i = 0; i < 2; i++) {
           createElegantUnderline(background);
@@ -1491,6 +1596,12 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Создаем минималистичные круги с задержкой
         setTimeout(() => {
+          // Проверяем, что background все еще существует
+          if (!background) {
+            window._creatingInteractiveBackground = false;
+            return;
+          }
+          
           // Создаем только 2 круга вместо 4
           for (let i = 0; i < 2; i++) {
             createMinimalCircle(background);
@@ -1498,6 +1609,12 @@ document.addEventListener('DOMContentLoaded', function() {
           
           // Создаем акцентные точки с задержкой (снижено количество)
           setTimeout(() => {
+            // Проверяем, что background все еще существует
+            if (!background) {
+              window._creatingInteractiveBackground = false;
+              return;
+            }
+            
             // Создаем только 8 точек вместо 25
             for (let i = 0; i < 8; i++) {
               createAccentDot(background);
@@ -1664,6 +1781,7 @@ document.addEventListener('DOMContentLoaded', function() {
           // Новый цвет
           circle.style.borderColor = getRandomColor();
           
+          
           // Перезапускаем анимацию
           animateMinimalCircle(circle);
         }, duration * 0.3);
@@ -1713,8 +1831,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const userMenu = document.getElementById('userMenu');
     
     // Проверяем, не является ли это меню из login-system.js, которое не нужно удалять
-    if (userMenu && userMenu.hasAttribute('data-login-system-menu')) {
-        console.log('desktop.js: попытка удалить защищенное меню из login-system.js, пропускаем');
+    if (userMenu && (userMenu.hasAttribute('data-login-system-menu') || userMenu.hasAttribute('data-protected'))) {
+        console.log('desktop.js: попытка удалить защищенное меню, пропускаем');
         return;
     }
     
@@ -1744,13 +1862,14 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Проверяем, не является ли это элементом userMenu
             if ((node.id === 'userMenu' || node.classList.contains('user-menu')) && 
-                !node.hasAttribute('data-login-system-menu')) {
+                !node.hasAttribute('data-login-system-menu') && 
+                !node.hasAttribute('data-protected')) {
               console.log('Обнаружено автоматическое добавление меню пользователя, удаляем');
               node.remove();
             }
             
             // Проверяем внутренние элементы на наличие userMenu
-            const innerMenus = node.querySelectorAll('#userMenu, .user-menu:not([data-login-system-menu])');
+            const innerMenus = node.querySelectorAll('#userMenu, .user-menu:not([data-login-system-menu]):not([data-protected])');
             if (innerMenus.length > 0) {
               console.log('Обнаружены вложенные элементы меню пользователя, удаляем');
               innerMenus.forEach(menu => menu.remove());
@@ -1920,12 +2039,12 @@ document.addEventListener('DOMContentLoaded', function() {
               </div>
             </div>
             <div class="profile-status">
-              <div class="status-badge status-vip">VIP-пользователь</div>
+              <div class="status-badge status-vip">Пользователь</div>
               <div class="loyalty-progress">
                 <div class="loyalty-bar">
-                  <div class="loyalty-fill" style="width: 65%;"></div>
+                  <div class="decorative-gradient"></div>
+                  <div class="decorative-glow"></div>
                 </div>
-                <div class="loyalty-text">Программа лояльности: 65/100</div>
               </div>
             </div>
           </div>
@@ -1933,7 +2052,6 @@ document.addEventListener('DOMContentLoaded', function() {
           <div class="profile-tabs">
             <button class="profile-tab active" data-tab="info">Информация</button>
             <button class="profile-tab" data-tab="orders">Заказы</button>
-            <button class="profile-tab" data-tab="wishlist">Избранное</button>
           </div>
           
           <div class="profile-tab-content active" data-tab-content="info">
@@ -1972,15 +2090,6 @@ document.addEventListener('DOMContentLoaded', function() {
           
           <div class="profile-tab-content" data-tab-content="orders">
             ${ordersTabContent}
-          </div>
-          
-          <div class="profile-tab-content" data-tab-content="wishlist">
-            <div class="wishlist-empty">
-              <i class="fas fa-heart"></i>
-              <h3>Ваш список избранного пуст</h3>
-              <p>Добавляйте понравившиеся товары в избранное</p>
-              <button class="btn-browse-catalog">Смотреть каталог</button>
-            </div>
           </div>
           
           <div class="profile-actions">
@@ -2251,6 +2360,8 @@ document.addEventListener('DOMContentLoaded', function() {
     userMenu = document.createElement('div');
     userMenu.id = 'userMenu';
     userMenu.className = 'user-menu';
+    userMenu.setAttribute('data-login-system-menu', 'true');
+    userMenu.setAttribute('data-protected', 'true');
     // Не используем aria-hidden для лучшей доступности
     
     const userName = localStorage.getItem('userName') || 'Пользователь';
@@ -2266,21 +2377,9 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
       </div>
       <ul class="user-menu__items">
-        <li class="user-menu__item" data-action="profile">
-          <i class="fas fa-id-card"></i>
-          <span>Мой профиль</span>
-        </li>
         <li class="user-menu__item" data-action="orders">
           <i class="fas fa-shopping-bag"></i>
           <span>Мои заказы</span>
-        </li>
-        <li class="user-menu__item" data-action="settings">
-          <i class="fas fa-cog"></i>
-          <span>Настройки</span>
-        </li>
-        <li class="user-menu__item user-menu__item--logout" data-action="logout">
-          <i class="fas fa-sign-out-alt"></i>
-          <span>Выйти</span>
         </li>
       </ul>
     `;
@@ -2475,35 +2574,59 @@ document.addEventListener('DOMContentLoaded', function() {
       
       // Устанавливаем обработчик для показа меню пользователя
       newButton.addEventListener('click', function() {
-        const existingMenu = document.getElementById('userMenu');
-        if (existingMenu) {
-          // Используем классы вместо aria-hidden для лучшей доступности
-          if (!existingMenu.classList.contains('visible')) {
-            existingMenu.classList.add('visible');
-            
-            // Удаляем атрибут aria-hidden, если он был установлен
-            if (existingMenu.hasAttribute('aria-hidden')) {
-              existingMenu.removeAttribute('aria-hidden');
-            }
-            
-            document.addEventListener('click', closeUserMenuOutside);
-          } else {
-            existingMenu.classList.remove('visible');
-            document.removeEventListener('click', closeUserMenuOutside);
+        // Используем функцию showUserMenu из login-system.js, если она доступна
+        if (typeof window.showUserMenu === 'function') {
+          window.showUserMenu(this);
+          return;
+        }
+        
+        // Резервная логика, если функция из login-system.js недоступна
+        // Проверяем существование элемента .island и его видимость
+        const islandElement = document.querySelector('.island');
+        const isIslandVisible = islandElement && 
+                               (islandElement.style.visibility !== 'hidden' && 
+                                islandElement.style.opacity !== '0');
+        
+        // Проверяем, открыто ли модальное окно профиля
+        const profileModal = document.querySelector('.modal-profile');
+        const isProfileModalOpen = profileModal && !profileModal.hasAttribute('inert');
+        
+        // Если модальное окно профиля открыто, закрываем его
+        if (isProfileModalOpen) {
+          profileModal.className = 'modal-profile'; // Сбрасываем класс, чтобы закрыть
+          
+          // Восстанавливаем видимость island при закрытии модального окна
+          if (islandElement) {
+            islandElement.style.visibility = '';
+            islandElement.style.opacity = '';
+            islandElement.style.transform = '';
           }
+          return;
+        }
+        
+        // Если модальное окно профиля не открыто, показываем меню пользователя
+        const userMenu = createUserMenu();
+        
+        // Используем классы вместо aria-hidden для лучшей доступности
+        const isMenuHidden = !userMenu.classList.contains('visible');
+        if (isMenuHidden) {
+            userMenu.classList.add('visible');
         } else {
-          const menu = createUserMenu();
-          document.body.appendChild(menu);
-          menu.classList.add('visible');
-          
-          // Обработчики для кнопок меню
-          const menuItems = menu.querySelectorAll('.user-menu__item');
-          menuItems.forEach(item => {
-            item.addEventListener('click', handleUserMenuAction);
-          });
-          
-          // Закрытие при клике вне меню
-          document.addEventListener('click', closeUserMenuOutside);
+            userMenu.classList.remove('visible');
+        }
+        
+        // Удаляем атрибут aria-hidden, если он был установлен
+        if (userMenu.hasAttribute('aria-hidden')) {
+            userMenu.removeAttribute('aria-hidden');
+        }
+        
+        // Добавляем обработчик для закрытия меню при клике вне его
+        if (userMenu.classList.contains('visible')) {
+          setTimeout(() => {
+            document.addEventListener('click', closeUserMenuOutside);
+          }, 0);
+        } else {
+          document.removeEventListener('click', closeUserMenuOutside);
         }
       });
     } else {
@@ -3141,11 +3264,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Добавляем в существующую функцию инициализации
   document.addEventListener('DOMContentLoaded', function() {
-    // ... existing code ...
+
     
     handleIslandPosition(); // Добавляем вызов нашей новой функции
+    renderIslandCategories();
   });
-  // ... existing code ...
 
   // Запрет вставки пароля в поле подтверждения
   const confirmPasswordField = document.querySelector('#registerPasswordConfirm');
@@ -3157,7 +3280,7 @@ document.addEventListener('DOMContentLoaded', function() {
       const formGroup = this.closest('.form-group');
       const errorMessage = formGroup.querySelector('.error-message');
       formGroup.classList.add('error');
-      errorMessage.textContent = 'Не-а, вводи пароль сам. Да, вот такие вот мы дотошные';
+      errorMessage.textContent = 'Политика безопасности не позволяет вставлять пароль, рекомендуется вводить его вручную';
       
       // Удаляем сообщение через 3 секунды
       setTimeout(() => {
@@ -4136,648 +4259,279 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // Функция для оформления заказа
-  function showCheckoutModal() {
+  async function showCheckoutModal() {
     if (cartItems.length === 0) {
       showNotification('Ваша корзина пуста', 'info');
       return;
     }
-    
+
     // Плавно закрываем панель корзины
     const cartPanel = document.querySelector('.cart-panel');
     if (cartPanel) {
       cartPanel.setAttribute('aria-hidden', 'true');
     }
-    
+
     // Проверяем, залогинен ли пользователь
     const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-    console.log("CHECKOUT: userData", userData); // Отладка
-    
     if (!userData.email) {
-      // Показываем сообщение о необходимости авторизации
       showNotification('Для оформления заказа необходимо войти в аккаунт', 'info');
-      
-      // Отложенный вызов showLoginModal, чтобы избежать одновременного открытия нескольких модальных окон
       setTimeout(() => {
         showLoginModal();
       }, 300);
       return;
     }
+
+    // Загрузка доступных методов оплаты
+    let paymentMethods = window.STATIC_PAYMENT_METHODS;
+    try {
+      if (window.settingsModule && typeof window.settingsModule.getAvailablePaymentMethods === 'function') {
+        paymentMethods = await window.settingsModule.getAvailablePaymentMethods();
+        console.log('Загружены методы оплаты:', paymentMethods);
+      }
+    } catch (error) {
+      console.error('Ошибка при загрузке методов оплаты:', error);
+    }
     
-    // Отладка: проверяем текущие заказы пользователя
-    const orderHistory = JSON.parse(localStorage.getItem('orderHistory') || '[]');
-    console.log("CHECKOUT: Текущая история заказов", orderHistory);
-    
+    // Проверка, есть ли хотя бы один метод оплаты
+    if (!paymentMethods.card && !paymentMethods.cash && !paymentMethods.online) {
+      paymentMethods.cash = true; // По умолчанию, если ничего не включено
+    }
+
     // Создаем модальное окно оформления заказа
     let checkoutModal = document.querySelector('.modal-checkout');
     if (checkoutModal) {
       checkoutModal.remove();
     }
-    
+
     checkoutModal = document.createElement('div');
     checkoutModal.className = 'modal-checkout';
     checkoutModal.setAttribute('aria-hidden', 'false');
-    
-    // Скрываем island при открытии модального окна
-    const islandElement = document.querySelector('.island');
-    if (islandElement) {
-      islandElement.style.visibility = 'hidden';
-      islandElement.style.opacity = '0';
-      islandElement.style.transform = 'translateY(100px) translateX(-50%)';
+
+    // Реальные пункты самовывоза
+    const pickupPoints = [
+      { id: 1, name: 'Пункт №1', address: 'ул. Ленина, 25', schedule: '09:00-21:00, без выходных' },
+      { id: 2, name: 'Пункт №2', address: 'ул. Гагарина, 54', schedule: '10:00-22:00, ежедневно' },
+      { id: 3, name: 'Пункт №3', address: 'пр. Победы, 112', schedule: '08:00-20:00, ежедневно' },
+    ];
+
+    // Подготовка опций для методов оплаты
+    let paymentMethodOptions = '';
+    if (paymentMethods.card) {
+      paymentMethodOptions += '<option value="card">Банковская карта</option>';
+    }
+    if (paymentMethods.cash) {
+      paymentMethodOptions += '<option value="cash">Наличными при получении</option>';
+    }
+    if (paymentMethods.online) {
+      paymentMethodOptions += '<option value="online">Онлайн-оплата</option>';
     }
     
-    // Считаем общую сумму заказа
-    const totalPrice = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    
-    // Создаем содержимое модального окна
-    checkoutModal.innerHTML = `
-      <div class="modal-checkout__content">
-        <button class="modal-checkout__close-top" title="Закрыть"><i class="fas fa-times"></i></button>
-        <div class="checkout-grid">
-          <div class="checkout-order-summary">
-            <h2 class="modal-checkout__section-title">Ваш заказ</h2>
-            <div class="checkout-items-container">
-              ${cartItems.length > 0 ? `
-                <ul class="checkout-items-list">
-                  ${cartItems.map(item => `
-                    <li class="checkout-item">
-                      <img src="${item.image}" alt="${item.title}" class="checkout-item-image">
-                      <div class="checkout-item-details">
-                        <div class="checkout-item-title">${item.title}</div>
-                        <div class="checkout-item-meta">
-                          <span class="checkout-item-quantity">Кол-во: ${item.quantity}</span>
-                          <span class="checkout-item-price">${item.price} ₽</span>
-                        </div>
-                      </div>
-                      <div class="checkout-item-subtotal">${item.price * item.quantity} ₽</div>
-                    </li>
-                  `).join('')}
-                </ul>
-              ` : '<p class="checkout-empty-cart">Ваша корзина пуста.</p>'}
-            </div>
-            <div class="checkout-summary-details">
-              <div class="checkout-summary-row">
-                <span>Подытог:</span>
-                <strong class="checkout-subtotal-value">${totalPrice} ₽</strong>
-              </div>
-              <div class="checkout-summary-row">
-                <span>Доставка:</span>
-                <strong>Бесплатно</strong>
-              </div>
-              <div class="checkout-summary-row checkout-total-row">
-                <span>Итого:</span>
-                <strong class="checkout-grand-total">${totalPrice} ₽</strong>
-              </div>
-            </div>
-          </div>
+    // Если опций нет, добавляем опцию по умолчанию
+    if (!paymentMethodOptions) {
+      paymentMethodOptions = '<option value="cash">Наличными при получении</option>';
+    }
 
-          <div class="checkout-delivery-info">
-            <h2 class="modal-checkout__section-title">Информация для доставки</h2>
-            <form class="checkout-form">
-              <div class="checkout-form-group">
-                <label for="checkout-name">Имя получателя</label>
-                <input type="text" id="checkout-name" value="${userData.name || ''}" placeholder="Введите ваше имя" required>
-              </div>
-              <div class="checkout-form-group">
-                <label for="checkout-email">Email</label>
-                <input type="email" id="checkout-email" value="${userData.email || ''}" placeholder="example@domain.com" required>
-              </div>
-              <div class="checkout-form-group">
-                <label for="checkout-phone">Телефон</label>
-                <input type="tel" id="checkout-phone" value="${userData.phone || ''}" placeholder="+7 (XXX) XXX-XX-XX" required>
-              </div>
-              <div class="checkout-form-group">
-                <label for="checkout-address">Адрес доставки</label>
-                <textarea id="checkout-address" placeholder="Город, улица, дом, квартира" rows="3" required></textarea>
-              </div>
-              <div class="checkout-form-group">
-                <label for="checkout-comment">Комментарий к заказу</label>
-                <textarea id="checkout-comment" placeholder="Ваши пожелания (необязательно)" rows="2"></textarea>
-              </div>
-              <div class="checkout-actions">
-                <button type="submit" class="checkout-submit">
-                  <i class="fas fa-credit-card"></i>
-                  Оплатить ${totalPrice} ₽
-                </button>
-                <button type="button" class="checkout-cancel">
-                  <i class="fas fa-times"></i>
-                  Отмена
-                </button>
-              </div>
-            </form>
+    // Загрузка доступных методов получения
+    let deliveryMethods = window.STATIC_DELIVERY_METHODS;
+    try {
+      if (window.settingsModule && typeof window.settingsModule.getAvailableDeliveryMethods === 'function') {
+        deliveryMethods = await window.settingsModule.getAvailableDeliveryMethods();
+        console.log('Загружены методы получения:', deliveryMethods);
+      }
+    } catch (error) {
+      console.error('Ошибка при загрузке методов получения:', error);
+    }
+    // Формируем опции для select#delivery-type
+    let deliveryTypeOptions = '';
+    if (deliveryMethods.courier) deliveryTypeOptions += '<option value="courier">Курьер</option>';
+    if (deliveryMethods.pickup) deliveryTypeOptions += '<option value="pickup">Самовывоз</option>';
+    if (deliveryMethods.post) deliveryTypeOptions += '<option value="post">Почта</option>';
+    // Формируем пункты самовывоза
+    let pickupPointsHtml = '';
+    if (deliveryMethods.pickup && Array.isArray(deliveryMethods.pickupParams.points) && deliveryMethods.pickupParams.points.length > 0) {
+      pickupPointsHtml = deliveryMethods.pickupParams.points.map((p, i) => `<option value="${p.address || ''}">${p.address || 'Пункт №' + (i+1)}${p.working_hours ? ' (' + p.working_hours + ')' : ''}</option>`).join('');
+    } else {
+      pickupPointsHtml = '<option value="">Нет доступных пунктов</option>';
+    }
+
+    // HTML формы заказа
+    checkoutModal.innerHTML = `
+      <div class="modal-checkout__container">
+        <h2 class="modal-checkout__title">Оформление заказа</h2>
+        <form class="checkout-form">
+          <div class="checkout-form-group">
+            <label for="checkout-name">Имя</label>
+            <input type="text" id="checkout-name" value="${userData.name || ''}" placeholder="Введите ваше имя" required>
           </div>
+          <div class="checkout-form-group">
+            <label for="checkout-surname">Фамилия</label>
+            <input type="text" id="checkout-surname" value="${userData.surname || ''}" placeholder="Введите вашу фамилию" required>
+          </div>
+          <div class="checkout-form-group">
+            <label for="checkout-email">Email</label>
+            <input type="email" id="checkout-email" value="${userData.email || ''}" placeholder="example@domain.com" required>
+          </div>
+          <div class="checkout-form-group">
+            <label for="checkout-phone">Телефон</label>
+            <input type="tel" id="checkout-phone" value="${userData.phone || ''}" placeholder="+7 (XXX) XXX-XX-XX" required>
+          </div>
+          <div class="checkout-form-group">
+            <label>Способ доставки</label>
+            <select id="delivery-type" required>
+              ${deliveryTypeOptions}
+            </select>
+          </div>
+          <div class="checkout-form-group" id="delivery-address-group">
+            <label for="checkout-address">Адрес доставки</label>
+            <textarea id="checkout-address" placeholder="Город, улица, дом, квартира" rows="3" required></textarea>
+          </div>
+          <div class="checkout-form-group" id="pickup-points-group" style="display:none;">
+            <label>Выберите пункт самовывоза</label>
+            <select id="pickup-point">
+              ${pickupPointsHtml}
+            </select>
+          </div>
+          <div class="checkout-form-group">
+            <label>Способ оплаты</label>
+            <select id="payment-method" required>
+              ${paymentMethodOptions}
+            </select>
+          </div>
+          <div class="checkout-form-group">
+            <label for="checkout-comment">Комментарий к заказу</label>
+            <textarea id="checkout-comment" placeholder="Ваши пожелания (необязательно)" rows="2"></textarea>
+          </div>
+          <div class="checkout-actions">
+            <button type="submit" class="checkout-submit">
+              <i class="fas fa-credit-card"></i>
+              Оформить заказ
+            </button>
+            <button type="button" class="checkout-cancel">
+              <i class="fas fa-times"></i>
+              Отмена
+            </button>
+          </div>
+        </form>
+      </div>
+    `;
+
+    document.body.appendChild(checkoutModal);
+
+    // Переключение между адресом и пунктом самовывоза
+    const deliveryType = checkoutModal.querySelector('#delivery-type');
+    const addressGroup = checkoutModal.querySelector('#delivery-address-group');
+    const pickupGroup = checkoutModal.querySelector('#pickup-points-group');
+    deliveryType.addEventListener('change', () => {
+      if (deliveryType.value === 'pickup') {
+        addressGroup.style.display = 'none';
+        pickupGroup.style.display = '';
+      } else {
+        addressGroup.style.display = '';
+        pickupGroup.style.display = 'none';
+      }
+    });
+
+    // Кнопка отмены
+    const cancelButton = checkoutModal.querySelector('.checkout-cancel');
+    cancelButton.addEventListener('click', () => {
+      checkoutModal.remove();
+    });
+
+    // Форматирование телефона
+    const phoneInput = checkoutModal.querySelector('#checkout-phone');
+    phoneInput.addEventListener('blur', (e) => {
+      if (e.target.value) {
+        e.target.value = formatPhoneNumber(e.target.value);
+      }
+    });
+
+    // Обработка отправки формы
+    const checkoutForm = checkoutModal.querySelector('.checkout-form');
+    checkoutForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const name = checkoutForm.querySelector('#checkout-name').value.trim();
+      const surname = checkoutForm.querySelector('#checkout-surname').value.trim();
+      const email = checkoutForm.querySelector('#checkout-email').value.trim();
+      const phone = checkoutForm.querySelector('#checkout-phone').value.trim();
+      const delivery = checkoutForm.querySelector('#delivery-type').value;
+      const address = delivery === 'pickup'
+        ? checkoutForm.querySelector('#pickup-point').value
+        : checkoutForm.querySelector('#checkout-address').value.trim();
+      const paymentMethod = checkoutForm.querySelector('#payment-method').value;
+      const comment = checkoutForm.querySelector('#checkout-comment').value.trim();
+
+      if (!name || !surname || !email || !phone || !address) {
+        showNotification('Пожалуйста, заполните все обязательные поля', 'error');
+        return;
+      }
+
+      // Отправляем заказ на сервер
+      fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customer_name: name + ' ' + surname,
+          customer_email: email,
+          customer_phone: phone,
+          shipping_address: address,
+          delivery_type: delivery,
+          payment_method: paymentMethod,
+          comment: comment,
+          items: cartItems.map(item => ({ product_id: item.id, quantity: item.quantity || 1 }))
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          // Очищаем корзину
+          localStorage.setItem('cartItems', JSON.stringify([]));
+          cartItems = [];
+          updateCartCount();
+          renderCartItems();
+          checkoutModal.remove();
+          showNotification('Заказ успешно оформлен!', 'success');
+          setTimeout(() => {
+            showOrderConfirmation(data.order_id || '');
+          }, 1000);
+        } else {
+          showNotification(data.message || 'Ошибка оформления заказа', 'error');
+        }
+      })
+      .catch(() => {
+        showNotification('Ошибка соединения с сервером', 'error');
+      });
+    });
+  }
+
+  // Показ подтверждения заказа
+  function showOrderConfirmation(orderId) {
+    const confirmationHtml = `
+      <div class="checkout-success">
+        <div class="checkout-success-icon">
+          <i class="fas fa-check-circle"></i>
+        </div>
+        <h2 class="checkout-success-title">Заказ успешно оформлен!</h2>
+        <p class="checkout-success-text">
+          Спасибо за ваш заказ. Мы свяжемся с вами в ближайшее время для подтверждения деталей.
+        </p>
+        <div class="checkout-success-number">
+          Номер заказа: <strong>${orderId}</strong>
+        </div>
+        <div class="checkout-success-buttons">
+          <button class="checkout-empty-button">
+            <i class="fas fa-home"></i> На главную
+          </button>
         </div>
       </div>
     `;
-    
-    // Добавляем модальное окно в документ
-    document.body.appendChild(checkoutModal);
-    
-    // Добавляем стили для модального окна
-    if (!document.getElementById('checkout-modal-styles')) {
-      const style = document.createElement('style');
-      style.id = 'checkout-modal-styles';
-      style.textContent = `
-        .modal-checkout {
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: rgba(0,0,0,0.6); /* Slightly darker overlay */
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          z-index: 1050; /* Ensure it's above other elements like cart panel */
-          opacity: 0;
-          visibility: hidden;
-          transition: opacity 0.4s ease, visibility 0s linear 0.4s;
-          font-family: 'Lato', sans-serif;
-        }
-
-        .modal-checkout[aria-hidden="false"] {
-          opacity: 1;
-          visibility: visible;
-          transition: opacity 0.4s ease;
-        }
-
-        .modal-checkout__content {
-          background: #fff; /* Light background for content */
-          border-radius: 16px; /* Softer corners */
-          width: 90%;
-          max-width: 960px; /* Wider modal for two columns */
-          max-height: 90vh;
-          overflow: auto; /* Changed to auto for full modal scrolling */
-          box-shadow: 0 20px 50px rgba(0,0,0,0.25);
-          padding: 0; /* Padding will be handled by inner elements */
-          position: relative;
-          transform: translateY(30px) scale(0.95);
-          opacity: 0;
-          transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-        }
-
-        .modal-checkout[aria-hidden="false"] .modal-checkout__content {
-          transform: translateY(0) scale(1);
-          opacity: 1;
-        }
-
-        .modal-checkout__close-top {
-          position: absolute;
-          top: 20px;
-          right: 20px;
-          background: rgba(0,0,0,0.08);
-          border: none;
-          font-size: 18px;
-          cursor: pointer;
-          color: #555;
-          width: 40px;
-          height: 40px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          border-radius: 50%;
-          transition: background 0.2s, color 0.2s, transform 0.2s;
-          z-index: 10; /* Above content grid */
-        }
-
-        .modal-checkout__close-top:hover {
-          background: rgba(0,0,0,0.12);
-          color: #000;
-          transform: rotate(90deg);
-        }
-        
-        .modal-checkout__section-title {
-          font-family: 'Cinzel', serif;
-          font-size: 24px;
-          font-weight: 600;
-          color: #333;
-          margin-bottom: 25px;
-          text-align: left;
-          padding-bottom: 10px;
-          border-bottom: 1px solid #eee;
-        }
-        
-        .checkout-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr; /* Two equal columns */
-          gap: 0; /* No gap, borders will separate */
-          width: 100%;
-          min-height: 500px; /* Minimum height to ensure visibility */
-        }
-
-        .checkout-order-summary,
-        .checkout-delivery-info {
-          padding: 30px 35px;
-          display: flex;
-          flex-direction: column;
-          min-height: 500px; /* Ensure content is visible */
-          position: relative; /* For proper element positioning */
-          background-color: #fbf9f2; /* Легкий кремовый оттенок для фона */
-          border-left: 1px solid #e0e0e0;
-          box-shadow: inset 5px 0 15px -5px rgba(0,0,0,0.05); /* Внутренняя тень слева */
-        }
-
-        .checkout-order-summary {
-          background-color: #fcfcfc; /* Slightly off-white for summary */
-          border-right: 1px solid #e0e0e0;
-        }
-        
-        .checkout-items-container {
-          flex-grow: 1; /* Allows list to take available space and scroll */
-          overflow-y: auto;
-          margin-bottom: 20px;
-          padding-right: 10px; /* For scrollbar */
-        }
-
-        /* Custom Scrollbar for items list */
-        .checkout-items-container::-webkit-scrollbar {
-          width: 6px;
-        }
-        .checkout-items-container::-webkit-scrollbar-track {
-          background: #f1f1f1;
-          border-radius: 10px;
-        }
-        .checkout-items-container::-webkit-scrollbar-thumb {
-          background: #BCB88A;
-          border-radius: 10px;
-        }
-        .checkout-items-container::-webkit-scrollbar-thumb:hover {
-          background: #a8a47e;
-        }
-        
-        .checkout-items-list {
-          list-style: none;
-          padding: 0;
-          margin: 0;
-        }
-
-        .checkout-item {
-          display: flex;
-          align-items: center;
-          padding: 15px 0;
-          border-bottom: 1px solid #eee;
-        }
-        .checkout-item:last-child {
-          border-bottom: none;
-        }
-
-        .checkout-item-image {
-          width: 70px;
-          height: 70px;
-          object-fit: cover;
-          border-radius: 8px;
-          margin-right: 15px;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        }
-
-        .checkout-item-details {
-          flex: 1;
-        }
-
-        .checkout-item-title {
-          font-weight: 600;
-          color: #444;
-          margin-bottom: 5px;
-          font-size: 15px;
-        }
-
-        .checkout-item-meta {
-          font-size: 13px;
-          color: #777;
-        }
-        .checkout-item-quantity { margin-right: 10px; }
-        .checkout-item-price { color: #C9897B; font-weight: 500;}
-
-        .checkout-item-subtotal {
-          font-weight: 600;
-          font-size: 15px;
-          color: #333;
-          min-width: 70px;
-          text-align: right;
-        }
-        
-        .checkout-empty-cart {
-            text-align: center;
-            padding: 40px 0;
-            color: #777;
-            font-size: 16px;
-        }
-
-        .checkout-summary-details {
-          margin-top: auto; /* Pushes to the bottom */
-          padding-top: 20px;
-          border-top: 1px solid #eee;
-        }
-        
-        .checkout-summary-row {
-          display: flex;
-          justify-content: space-between;
-          margin-bottom: 10px;
-          font-size: 15px;
-        }
-        .checkout-summary-row span { color: #555; }
-        .checkout-summary-row strong { color: #333; font-weight: 600; }
-        
-        .checkout-total-row {
-          font-size: 18px;
-          font-weight: bold;
-          margin-top: 15px;
-          padding-top: 15px;
-          border-top: 1px dashed #ddd;
-        }
-        .checkout-total-row span { color: #333; }
-        .checkout-grand-total { color: #C9897B; font-size: 22px; }
-
-        .checkout-form {
-          display: block; /* Changed to block for better rendering */
-          width: 100%;
-          position: relative; /* Needed for absolute elements */
-        }
-        
-        .checkout-form-group {
-          margin-bottom: 18px;
-        }
-
-        .checkout-form-group label {
-          display: block;
-          margin-bottom: 8px;
-          font-weight: 600; /* Более жирный шрифт */
-          color: #333; /* Более темный цвет */
-          font-size: 15px; /* Чуть увеличенный размер */
-          text-shadow: 0 1px 0 rgba(255,255,255,0.8); /* Добавим тень */
-          position: relative; /* Для добавления декоративных элементов */
-        }
-        
-        /* Декоративный маркер перед каждой меткой */
-        .checkout-form-group label::before {
-          content: '•';
-          color: #C9897B;
-          margin-right: 5px;
-          font-size: 18px;
-          position: relative;
-          top: 1px;
-        }
-
-        .checkout-form-group input,
-        .checkout-form-group textarea {
-          width: 100%;
-          padding: 12px 15px;
-          border: 2px solid #BCB88A; /* Более заметная граница */
-          border-radius: 8px;
-          font-size: 15px;
-          transition: border-color 0.2s, box-shadow 0.2s;
-          font-family: 'Lato', sans-serif;
-          background-color: #fff;
-          color: #333; /* Темный цвет текста */
-          box-shadow: 0 2px 8px rgba(0,0,0,0.05); /* Добавляем тень */
-          display: block; /* Принудительное отображение блоком */
-          margin-bottom: 5px; /* Отступ снизу */
-        }
-        .checkout-form-group input:focus,
-        .checkout-form-group textarea:focus {
-          border-color: #BCB88A;
-          box-shadow: 0 0 0 3px rgba(188, 184, 138, 0.2);
-          outline: none;
-        }
-        
-        .checkout-form-group textarea {
-          resize: vertical;
-          min-height: 60px;
-        }
-
-        .checkout-actions {
-          display: flex;
-          gap: 15px;
-          margin-top: 30px; /* Fixed distance from above elements */
-          padding-top: 20px;
-          border-top: 1px solid #eee;
-        }
-
-        .checkout-submit, .checkout-cancel {
-          padding: 14px 20px;
-          border: none;
-          border-radius: 8px;
-          font-weight: 600;
-          font-size: 15px;
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          transition: all 0.25s ease;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-        }
-        .checkout-submit i, .checkout-cancel i {
-          margin-right: 10px;
-          font-size: 1.1em;
-        }
-
-        .checkout-submit {
-          background: linear-gradient(135deg, #BCB88A, #C9897B);
-          color: white;
-          flex: 2; /* Takes more space */
-          box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-        .checkout-submit:hover {
-          transform: translateY(-3px);
-          box-shadow: 0 6px 18px rgba(201, 137, 123, 0.4);
-        }
-
-        .checkout-cancel {
-          background: #f0f0f0;
-          color: #555;
-          flex: 1;
-        }
-        .checkout-cancel:hover {
-          background: #e0e0e0;
-          color: #333;
-        }
-        
-        /* Dark theme adaptations */
-        body.dark .modal-checkout__content {
-          background: #303030; /* Darker background */
-        }
-        body.dark .modal-checkout__section-title {
-          color: #e0e0e0;
-          border-bottom-color: #444;
-        }
-        body.dark .checkout-order-summary {
-          background-color: #2a2a2a; /* Slightly lighter dark for summary */
-          border-right-color: #444;
-        }
-        
-        body.dark .checkout-delivery-info {
-          background-color: #2d2d2d; /* Slightly different color for contrast */
-          border-left-color: #444;
-          box-shadow: inset 5px 0 15px -5px rgba(0,0,0,0.2);
-        }
-        body.dark .checkout-item {
-          border-bottom-color: #444;
-        }
-        body.dark .checkout-item-title { color: #dadada; }
-        body.dark .checkout-item-meta { color: #999; }
-        body.dark .checkout-item-price { color: #dda094; } /* Adjusted for dark theme */
-        body.dark .checkout-item-subtotal { color: #f0f0f0; }
-        body.dark .checkout-empty-cart { color: #888; }
-
-        body.dark .checkout-summary-details,
-        body.dark .checkout-actions {
-            border-top-color: #444;
-        }
-        body.dark .checkout-summary-row span { color: #aaa; }
-        body.dark .checkout-summary-row strong { color: #e0e0e0; }
-        body.dark .checkout-total-row { border-top-color: #555; }
-        body.dark .checkout-total-row span { color: #e0e0e0; }
-        body.dark .checkout-grand-total { color: #dda094; }
-
-
-        body.dark .checkout-form-group label { 
-          color: #ddd; 
-          text-shadow: 0 1px 0 rgba(0,0,0,0.3);
-        }
-        body.dark .checkout-form-group label::before {
-          color: #dda094; /* Светлее для темной темы */
-        }
-        body.dark .checkout-form-group input,
-        body.dark .checkout-form-group textarea {
-          background-color: #3f3f3f;
-          border-color: #8c886a; /* Светлее, для большей видимости в темной теме */
-          color: #e0e0e0;
-          box-shadow: 0 3px 10px rgba(0,0,0,0.2); /* Более заметная тень для темной темы */
-        }
-        body.dark .checkout-form-group input:focus,
-        body.dark .checkout-form-group textarea:focus {
-          border-color: #BCB88A;
-          box-shadow: 0 0 0 3px rgba(188, 184, 138, 0.3);
-        }
-        body.dark .checkout-cancel {
-          background: #4a4a4a;
-          color: #ccc;
-        }
-        body.dark .checkout-cancel:hover {
-          background: #555;
-          color: #e0e0e0;
-        }
-        body.dark .modal-checkout__close-top {
-          background: rgba(255,255,255,0.1);
-          color: #aaa;
-        }
-        body.dark .modal-checkout__close-top:hover {
-          background: rgba(255,255,255,0.15);
-          color: #fff;
-        }
-        body.dark .checkout-items-container::-webkit-scrollbar-track { background: #3f3f3f; }
-        body.dark .checkout-items-container::-webkit-scrollbar-thumb { background: #8c886a; }
-        body.dark .checkout-items-container::-webkit-scrollbar-thumb:hover { background: #79755a; }
-
-      `;
-      document.head.appendChild(style);
-    }
-    
-    // Обработчики для формы оформления заказа
-    const checkoutForm = checkoutModal.querySelector('.checkout-form');
-    const phoneInput = checkoutModal.querySelector('#checkout-phone');
-    
-    // Форматирование телефона
-    if (phoneInput) {
-      phoneInput.addEventListener('blur', (e) => {
-        if (e.target.value) {
-          e.target.value = formatPhoneNumber(e.target.value);
-        }
-      });
-    }
-    
-    // Обработка отправки формы
-    checkoutForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      
-      const name = checkoutForm.querySelector('#checkout-name').value;
-      const phone = checkoutForm.querySelector('#checkout-phone').value;
-      const address = checkoutForm.querySelector('#checkout-address').value;
-      const comment = checkoutForm.querySelector('#checkout-comment').value;
-      
-      if (name && phone && address) {
-        // Создаем объект заказа
-        const order = {
-          id: Date.now(),
-          date: new Date().toLocaleString('ru-RU'),
-          items: [...cartItems],
-          total: totalPrice,
-          name,
-          phone,
-          address,
-          comment,
-          userEmail: userData.email,
-          status: 'Выполнен'
-        };
-        
-        // Сохраняем заказ в историю
-        const orderHistory = JSON.parse(localStorage.getItem('orderHistory') || '[]');
-        orderHistory.push(order);
-        localStorage.setItem('orderHistory', JSON.stringify(orderHistory));
-        
-        // Очищаем корзину
-        localStorage.setItem('cartItems', JSON.stringify([]));
-        cartItems = [];
-        updateCartCount();
-        renderCartItems();
-        
-        // Создаем эффект успешной покупки
-        createSuccessParticles();
-        
-        // Закрываем модальное окно
-        closeCheckoutModal();
-        
-        // Показываем уведомление
-        showNotification('Заказ успешно оформлен!', 'success');
-        
-        // Показываем информацию о заказе
-        setTimeout(() => {
-          showOrdersModal();
-        }, 1000);
-      } else {
-        showNotification('Пожалуйста, заполните все обязательные поля', 'error');
-      }
-    });
-    
-    // Форматирование номера телефона
-    function formatPhoneNumber(value) {
-      const digits = value.replace(/\D/g, '');
-      let phoneNumber = digits.startsWith('8') ? '7' + digits.slice(1) : digits.length > 0 ? '7' + digits : digits;
-      const match = phoneNumber.match(/^(\d{0,1})(\d{0,3})(\d{0,3})(\d{0,2})(\d{0,2})$/);
-      if (match) {
-        const parts = [];
-        if (match[1]) parts.push('+7');
-        if (match[2]) parts.push(` (${match[2]}`);
-        if (match[3]) parts.push(`) ${match[3]}`);
-        if (match[4]) parts.push(`-${match[4]}`);
-        if (match[5]) parts.push(`-${match[5]}`);
-        return parts.join('');
-      }
-      return value;
-    }
-    
-    // Функция закрытия модального окна
-    function closeCheckoutModal() {
-      checkoutModal.setAttribute('inert', '');
-      
-      // Show island again
-      const islandElement = document.querySelector('.island');
-      if (islandElement) {
-        islandElement.style.visibility = 'visible';
-        islandElement.style.opacity = '1';
-        islandElement.style.transform = 'translateY(0) translateX(-50%)';
-      }
-      
-      setTimeout(() => {
-        checkoutModal.remove();
-      }, 300);
-    }
-    
-    // Обработчики закрытия
-    const closeButtons = checkoutModal.querySelectorAll('.modal-checkout__close-top, .checkout-cancel');
-    closeButtons.forEach(button => {
-      button.addEventListener('click', closeCheckoutModal);
-    });
+    let modal = document.createElement('div');
+    modal.className = 'modal-checkout';
+    modal.innerHTML = confirmationHtml;
+    document.body.appendChild(modal);
+    modal.querySelector('.checkout-empty-button').onclick = () => {
+      modal.remove();
+      window.location.href = '/';
+    };
   }
 
   // Функция для создания тестового заказа (только для отладки)
@@ -4848,104 +4602,12 @@ document.addEventListener('DOMContentLoaded', function() {
   window.showSettingsModal = showSettingsModal;
   window.showNotification = showNotification;
 
-  // Данные товаров с описаниями
-  const productsData = {
-    "1": {
-      title: "Наушники Wireless",
-      price: "4 990",
-      category: "electronics",
-      description: "Беспроводные наушники с активным шумоподавлением и высоким качеством звука. Позволяют наслаждаться любимой музыкой без отвлекающих факторов. Встроенный микрофон обеспечивает качественную передачу голоса при звонках. Батарея обеспечивает до 20 часов непрерывной работы.",
-      sku: "EL-WH-001",
-      specs: {
-        "Тип": "Беспроводные, накладные",
-        "Bluetooth": "5.0",
-        "Время работы": "До 20 часов",
-        "Шумоподавление": "Активное"
-      }
-    },
-    "2": {
-      title: "Конструктор LEGO City",
-      price: "3 200",
-      category: "toys",
-      description: "Набор LEGO City позволяет детям создавать собственный город с различными зданиями, транспортными средствами и мини-фигурками. Развивает мелкую моторику, воображение и креативное мышление. Совместим с другими наборами LEGO для расширения игровых возможностей.",
-      sku: "TY-LG-025",
-      specs: {
-        "Возраст": "6+",
-        "Детали": "853 шт.",
-        "Минифигурки": "6 шт.",
-        "Размеры": "38 × 26 × 7 см"
-      }
-    },
-    "3": {
-      title: "Смарт-часы XFit",
-      price: "7 890",
-      category: "accessories",
-      description: "Смарт-часы XFit с большим AMOLED дисплеем, датчиком пульса, GPS и множеством спортивных режимов. Отслеживают физическую активность, сон, уровень стресса и многое другое. Водонепроницаемость позволяет использовать часы при плавании. Время автономной работы до 14 дней.",
-      sku: "AC-SW-112",
-      specs: {
-        "Дисплей": "1.39\" AMOLED",
-        "Батарея": "420 мАч",
-        "Защита": "IP68",
-        "Совместимость": "Android 5.0+, iOS 10.0+"
-      }
-    },
-    "5": {
-      title: "Блендер PowerMix",
-      price: "5 600",
-      category: "appliances",
-      description: "Мощный блендер с несколькими режимами работы для приготовления смузи, коктейлей, супов-пюре и многого другого. Острые лезвия из нержавеющей стали легко справляются даже с твердыми ингредиентами. Стеклянная чаша объемом 1.5 литра позволяет готовить порции для всей семьи.",
-      sku: "AP-BL-078",
-      specs: {
-        "Мощность": "1000 Вт",
-        "Объем": "1.5 л",
-        "Материал чаши": "Термостойкое стекло",
-        "Скорости": "6 + импульсный режим"
-      }
-    },
-    "6": {
-      title: "Ноутбук ProBook 15",
-      price: "89 900",
-      category: "electronics",
-      description: "Современный ноутбук для работы и развлечений. Оснащен процессором последнего поколения, большим объемом оперативной памяти и быстрым SSD-накопителем. Яркий дисплей с разрешением Full HD обеспечивает комфортную работу и просмотр мультимедиа. Тонкий корпус и легкий вес делают ноутбук комфортным для использования в поездках.",
-      sku: "EL-LT-238",
-      specs: {
-        "Процессор": "Intel Core i7-11800H",
-        "ОЗУ": "16 ГБ DDR4",
-        "Накопитель": "512 ГБ SSD",
-        "Экран": "15.6\" Full HD IPS"
-      }
-    },
-    "7": {
-      title: "Плюшевый мишка Teddy",
-      price: "2 100",
-      category: "toys",
-      description: "Мягкий плюшевый мишка Teddy станет любимым другом вашего ребенка. Изготовлен из безопасных гипоаллергенных материалов, приятен на ощупь. Тщательно прошитые швы и качественный наполнитель гарантируют долгий срок службы игрушки. Подарит множество радостных моментов и детских улыбок.",
-      sku: "TY-TB-057",
-      specs: {
-        "Материал": "Плюш премиум-класса",
-        "Наполнитель": "Синтепух",
-        "Высота": "40 см",
-        "Вес": "350 г"
-      }
-    },
-    "8": {
-      title: "Кроссовки AirMax",
-      price: "6 300",
-      category: "accessories",
-      description: "Стильные и комфортные кроссовки для повседневной носки и занятий спортом. Дышащий верх из сетчатого материала обеспечивает вентиляцию, а амортизирующая подошва снижает нагрузку на ноги при ходьбе и беге. Современный дизайн делает кроссовки универсальным дополнением к любому образу.",
-      sku: "AC-SH-186",
-      specs: {
-        "Верх": "Текстиль, синтетика",
-        "Подошва": "Резина, EVA",
-        "Система": "Air Cushion",
-        "Сезон": "Весна-Лето-Осень"
-      }
-    }
-  };
-
   // Функция для открытия модального окна с товаром
   function openProductModal(productId) {
-    const product = productsData[productId];
+    // Получаем данные о товаре из модуля поиска
+    const product = window.productSearch ? 
+      window.productSearch.getProductData(productId) : null;
+      
     if (!product) {
       console.error(`Продукт с ID ${productId} не найден!`);
       return;
@@ -4972,9 +4634,9 @@ document.addEventListener('DOMContentLoaded', function() {
     productImage.alt = sourceImage.alt;
     productTitle.textContent = product.title;
     productPrice.textContent = product.price;
-    productDescription.textContent = product.description;
+    productDescription.textContent = product.description || '';
     productCategory.textContent = getCategoryName(product.category);
-    productSku.textContent = product.sku;
+    productSku.textContent = product.sku || '';
 
     // Создаем и заполняем спецификации
     if (product.specs) {
@@ -5019,6 +4681,9 @@ document.addEventListener('DOMContentLoaded', function() {
       window.settingsModule.playSound('open');
     }
   }
+
+  // Делаем функцию openProductModal доступной глобально
+  window.openProductModal = openProductModal;
 
   // Функция для создания эффекта "взлета" карточки товара
   function createCardFlyEffect(card) {
@@ -5231,9 +4896,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Функция для добавления товара в корзину
   function addToCart(productId, title, price, image) {
-    // Создаем объект товара
+    // Проверяем, что productId существует и является числом
+    if (!productId || isNaN(parseInt(productId))) {
+      console.error('Ошибка: Невозможно добавить товар в корзину без корректного ID');
+      showNotification('Ошибка при добавлении товара в корзину', 'error');
+      return;
+    }
+    
+    // Создаем объект товара с корректным ID
     const item = {
-      id: productId || Date.now(),
+      id: parseInt(productId),
       title: title,
       price: parseInt(price.toString().replace(/[^\d]/g, '')),
       image: image,
@@ -5278,6 +4950,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
   
+  // Делаем функцию addToCart доступной глобально
+  window.addToCart = addToCart;
+  
   // Проверяем, нужно ли открыть модальное окно с заказами после перезагрузки
   if (localStorage.getItem('openOrdersAfterReload') === 'true') {
     // Удаляем флаг, чтобы не открывать окно при следующей загрузке
@@ -5289,5 +4964,438 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 1000);
   }
 
+  // Функция для загрузки товаров с сервера
+  async function loadProducts() {
+    try {
+      console.log('Вызвана функция loadProducts в desktop.js');
+      
+      // Проверяем, доступен ли API товаров
+      if (!window.productsApi || typeof window.productsApi.getProducts !== 'function') {
+        console.error('API товаров не доступен');
+        showNotification('Не удалось загрузить товары. API не доступен.', 'error');
+        return false;
+      }
+      
+      // Получаем товары с сервера
+      const products = await window.productsApi.getProducts();
+      
+      if (products && products.length > 0) {
+        console.log(`Получено ${products.length} товаров из API`);
+        
+        // Проверяем наличие модуля поиска
+        console.log('Проверка доступности модуля поиска:', !!window.productSearch);
+        
+        // Обновляем данные о товарах в модуле поиска
+        if (window.productSearch && typeof window.productSearch.updateProductsData === 'function') {
+          console.log('Вызываем window.productSearch.updateProductsData с', products.length, 'товарами');
+          window.productSearch.updateProductsData(products);
+          
+          // Проверяем, инициализирован ли поиск
+          const searchInput = document.querySelector('.search-bar__input');
+          if (searchInput && !searchInput._productCardSelector) {
+            // Если поиск еще не инициализирован, инициализируем его
+            console.log('Поиск не был инициализирован, инициализируем его сейчас');
+            initSearch();
+          }
+        } else {
+          console.error('Модуль поиска товаров не доступен');
+          console.log('window.productSearch:', window.productSearch);
+          
+          // Пробуем переинициализировать модуль поиска
+          if (typeof initProductSearch === 'function') {
+            console.log('Найдена глобальная функция initProductSearch, пробуем использовать её');
+            window.productSearch = {
+              initProductSearch,
+              updateProductsData: function(prods) {
+                console.log('Используем временную функцию updateProductsData');
+                // Реализация updateProductsData, если она недоступна
+                if (typeof updateProductsData === 'function') {
+                  updateProductsData(prods);
+                }
+              }
+            };
+            initSearch();
+          }
+        }
+        
+        return true; // Возвращаем успешный результат для Promise
+      } else {
+        console.warn('Не получены товары с сервера');
+        return false;
+      }
+    } catch (error) {
+      console.error('Ошибка при загрузке товаров:', error);
+      showNotification('Не удалось загрузить товары. Попробуйте позже.', 'error');
+      return false; // Возвращаем неуспешный результат для Promise
+    }
+  }
+
+  // Вызываем загрузку товаров при загрузке страницы
+  document.addEventListener('DOMContentLoaded', function() {
+    // Инициализируем API товаров
+    if (window.productsApi && typeof window.productsApi.initProductsApi === 'function') {
+      window.productsApi.initProductsApi();
+    }
+    
+    // Сначала загружаем товары
+    loadProducts().then((success) => {
+      // После загрузки товаров инициализируем поиск
+      if (success) {
+        initSearch();
+      } else {
+        // Даже если не удалось загрузить товары, всё равно инициализируем поиск
+        initSearch();
+      }
+    }).catch(error => {
+      // В случае ошибки всё равно инициализируем поиск
+      initSearch();
+    });
+    
+
+  });
+
+  // Инициализация поиска товаров
+  function initSearch() {
+    // Используем модуль поиска товаров, если он доступен
+    if (window.productSearch && typeof window.productSearch.initProductSearch === 'function') {
+      window.productSearch.initProductSearch({
+        searchInputSelector: '.search-bar__input',
+        productCardSelector: '.product-card'
+      });
+    } else {
+      // Пробуем повторную инициализацию через небольшую задержку
+      setTimeout(function() {
+        if (window.productSearch && typeof window.productSearch.initProductSearch === 'function') {
+          window.productSearch.initProductSearch({
+            searchInputSelector: '.search-bar__input',
+            productCardSelector: '.product-card'
+          });
+        }
+      }, 1000);
+    }
+  }
+
+  async function renderIslandCategories() {
+    const container = document.getElementById('islandCategories');
+    if (!container) return;
+    // Получаем категории с сервера
+    let cats = [];
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/categories`);
+      const data = await res.json();
+      if (data.success) cats = data.categories;
+    } catch (e) { cats = [] }
+    // Если нет категорий — ничего не рендерим
+    if (!cats.length) {
+      container.innerHTML = '<span style="color:#fff;opacity:0.7;">Нет категорий</span>';
+      return;
+    }
+    container.innerHTML = cats.map(cat =>
+      `<button class="island__category" data-category="${cat.code}">${cat.name}</button>`
+    ).join('');
+    // Навешиваем обработчики для категорий и подкатегорий
+    const categoryButtons = container.querySelectorAll('.island__category');
+    categoryButtons.forEach(button => {
+      // Обработчик клика
+      button.addEventListener('click', function() {
+        // Добавляем класс для анимации клика
+        this.classList.add('clicked');
+        setTimeout(() => { this.classList.remove('clicked'); }, 400);
+        // Обновляем активную категорию
+        categoryButtons.forEach(btn => btn.classList.remove('active'));
+        button.classList.add('active');
+        
+        // Показываем подкатегории только по клику
+        showSubcategoriesBar(button.dataset.category);
+        
+        // Загружаем товары выбранной категории (если есть функция)
+        if (typeof loadAndRenderProducts === 'function') {
+          loadAndRenderProducts(button.dataset.category);
+        } else if (window.productsApi && typeof window.productsApi.loadAndRenderProducts === 'function') {
+          window.productsApi.loadAndRenderProducts(button.dataset.category);
+        }
+      });
+    });
+    
+    // Добавляем кнопку закрытия для ленты подкатегорий
+    const subcategoriesBar = document.getElementById('subcategoriesBar');
+    if (subcategoriesBar) {
+      // Добавляем кнопку закрытия в ленту подкатегорий
+      const closeButton = document.createElement('button');
+      closeButton.classList.add('subcategory-close-btn');
+      closeButton.innerHTML = '&times;';
+      closeButton.style.position = 'absolute';
+      closeButton.style.right = '10px';
+      closeButton.style.top = '50%';
+      closeButton.style.transform = 'translateY(-50%)';
+      closeButton.style.background = 'none';
+      closeButton.style.border = 'none';
+      closeButton.style.color = '#fff';
+      closeButton.style.fontSize = '20px';
+      closeButton.style.cursor = 'pointer';
+      closeButton.style.padding = '5px';
+      closeButton.style.opacity = '0.7';
+      closeButton.style.transition = 'opacity 0.2s';
+      
+      closeButton.addEventListener('mouseenter', function() {
+        this.style.opacity = '1';
+      });
+      
+      closeButton.addEventListener('mouseleave', function() {
+        this.style.opacity = '0.7';
+      });
+      
+      closeButton.addEventListener('click', function() {
+        hideSubcategoriesBar();
+      });
+      
+      subcategoriesBar.appendChild(closeButton);
+    }
+    
+    // При загрузке страницы НЕ показываем подкатегории, они появятся только по клику
+  }
+
+  // === Демо-структура подкатегорий ===
+  const DEMO_SUBCATEGORIES = {
+    electronics: ['Подкатегория 1', 'Подкатегория 2', 'Подкатегория 3'],
+    toys: ['Подкатегория 1', 'Подкатегория 2'],
+    clothing: ['Подкатегория 1', 'Подкатегория 2', 'Подкатегория 3', 'Подкатегория 4'],
+    accessories: ['Подкатегория 1'],
+    other: ['Подкатегория 1', 'Подкатегория 2']
+  };
+
+  // === Логика отображения подкатегорий ===
+  function showSubcategoriesBar(categoryCode) {
+    const bar = document.getElementById('subcategoriesBar');
+    if (!bar) return;
+    
+    // Показываем индикатор загрузки
+    bar.innerHTML = '<div style="color:#fff;font-size:14px;">Загрузка подкатегорий...</div>';
+    bar.style.display = 'flex';
+    
+    // Загружаем подкатегории из API
+    fetch(`${API_BASE_URL}/api/subcategories?category=${encodeURIComponent(categoryCode)}`)
+      .then(response => response.json())
+      .then(data => {
+        if (!data.success || !data.subcategories || data.subcategories.length === 0) {
+          bar.style.display = 'none';
+          bar.innerHTML = '';
+          return;
+        }
+        
+        const subcats = data.subcategories;
+        bar.innerHTML = subcats.map((subcat) =>
+          `<button class="subcategory-btn" data-subcat="${subcat.code}">${subcat.name}</button>`
+        ).join('');
+        
+        // Добавляем класс visible для анимации появления
+        setTimeout(() => {
+          bar.classList.add('visible');
+        }, 10);
+        
+        // Выделяем первую подкатегорию по умолчанию
+        const btns = bar.querySelectorAll('.subcategory-btn');
+        if (btns.length) btns[0].classList.add('active');
+        
+        // Добавляем обработчики клика
+        btns.forEach(btn => {
+          btn.addEventListener('click', function() {
+            btns.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Добавляем эффект пульсации при клике
+            this.classList.add('pulse');
+            setTimeout(() => {
+              this.classList.remove('pulse');
+            }, 300);
+            
+            filterProductsBySubcategory(categoryCode, this.dataset.subcat);
+          });
+        });
+        
+        // При показе ленты сразу фильтруем по первой подкатегории
+        if (btns.length) {
+          filterProductsBySubcategory(categoryCode, btns[0].dataset.subcat);
+        }
+      })
+      .catch(error => {
+        console.error('Ошибка при загрузке подкатегорий:', error);
+        bar.style.display = 'none';
+      });
+  }
+
+  // === Демо-структура соответствия товаров подкатегориям ===
+  // Для реального проекта здесь должен быть реальный фильтр по данным товара
+  const DEMO_PRODUCTS_SUBCATS = {
+    electronics: [
+      [0, 1], // id товаров для Подкатегория 1
+      [2],    // id товаров для Подкатегория 2
+      [3, 4]  // id товаров для Подкатегория 3
+    ],
+    toys: [
+      [5],
+      [6, 7]
+    ],
+    clothing: [
+      [8], [9], [10], [11]
+    ],
+    accessories: [
+      [12]
+    ],
+    other: [
+      [13], [14]
+    ]
+  };
+
+  // Фильтрация товаров по подкатегории 
+  function filterProductsBySubcategory(categoryCode, subcatCode) {
+    // Получаем все карточки товаров
+    const cards = document.querySelectorAll('.product-card');
+    
+    // Загружаем товары по выбранной подкатегории
+    fetch(`${API_BASE_URL}/api/products?category=${encodeURIComponent(categoryCode)}&subcategory=${encodeURIComponent(subcatCode)}`)
+      .then(response => response.json())
+      .then(data => {
+        if (!data.success || !data.products) {
+          console.error('Ошибка при загрузке товаров по подкатегории');
+          return;
+        }
+        
+        // Получаем ID товаров из текущей подкатегории
+        const productIds = data.products.map(p => p.id);
+        
+        // Скрываем/показываем карточки товаров в зависимости от подкатегории
+        cards.forEach(card => {
+          const cardId = parseInt(card.dataset.id);
+          if (productIds.includes(cardId)) {
+            card.style.display = '';
+          } else {
+            card.style.display = 'none';
+          }
+        });
+      })
+      .catch(error => {
+        console.error('Ошибка при фильтрации товаров:', error);
+      });
+  }
+
+  // После выбора основной категории показываем подкатегории
+  function patchCategoryButtonsForSubcats() {
+    const container = document.getElementById('islandCategories');
+    if (!container) return;
+    const categoryButtons = container.querySelectorAll('.island__category');
+    categoryButtons.forEach(button => {
+      button.addEventListener('click', function() {
+        const code = this.dataset.category;
+        showSubcategoriesBar(code);
+      });
+    });
+    // НЕ показываем подкатегории при загрузке страницы, только по клику
+  }
+
+  document.addEventListener('DOMContentLoaded', patchCategoryButtonsForSubcats);
+
+  // Функция скрытия подкатегорий
+function hideSubcategoriesBar() {
+  const bar = document.getElementById('subcategoriesBar');
+  if (!bar) return;
+  bar.classList.remove('visible');
+  setTimeout(() => {
+    if (!bar.classList.contains('visible')) {
+      bar.style.display = 'none';
+    }
+  }, 400); // Увеличиваем задержку для соответствия новой анимации в CSS
+}
+
+// --- СЕРВЕРНАЯ СИНХРОНИЗАЦИЯ КОРЗИНЫ ---
+async function fetchCartFromServer(email) {
+  try {
+    const res = await fetch(`http://localhost:5000/api/cart?email=${encodeURIComponent(email)}`);
+    const data = await res.json();
+    if (data.success) {
+      return data.cart || [];
+    }
+  } catch (e) { console.error('Ошибка загрузки корзины с сервера', e); }
+  return [];
+}
+
+async function saveCartToServer(email, cart) {
+  try {
+    await fetch('http://localhost:5000/api/cart', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, cart })
+    });
+  } catch (e) { console.error('Ошибка сохранения корзины на сервер', e); }
+}
+
+// --- ПЕРЕОПРЕДЕЛЯЕМ ВСЮ ЛОГИКУ КОРЗИНЫ ---
+let cartItems = [];
+
+async function loadCartAfterLogin(userEmail) {
+  cartItems = await fetchCartFromServer(userEmail);
+  localStorage.setItem('cartItems', JSON.stringify(cartItems));
+  renderCartItems();
+}
+
+function updateCartAndSync(userEmail) {
+  localStorage.setItem('cartItems', JSON.stringify(cartItems));
+  saveCartToServer(userEmail, cartItems);
+  renderCartItems();
+}
+
+// После успешного входа:
+// loadCartAfterLogin(userEmail);
+// ... existing code ...
+// Везде, где меняется cartItems (добавление/удаление/изменение), вызывайте updateCartAndSync(userEmail)
+// ... existing code ...
+
 });  // Закрывающая скобка для DOMContentLoaded
+
+// --- Регистрация ---
+async function registerUser(name, email, password) {
+  console.log('>>> [DESKTOP REGISTER] Начинаем регистрацию:', { name, email, passwordLength: password.length });
+  const url = `/api/register`;
+  console.log('>>> [DESKTOP REGISTER] URL:', url);
+  
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, password })
+    });
+    console.log('>>> [DESKTOP REGISTER] Response status:', res.status);
+    console.log('>>> [DESKTOP REGISTER] Response headers:', Object.fromEntries([...res.headers.entries()]));
+    
+    const data = await res.json();
+    console.log('>>> [DESKTOP REGISTER] Response data:', data);
+    return data;
+  } catch (error) {
+    console.error('>>> [DESKTOP REGISTER] Ошибка запроса:', error);
+    return { success: false, message: 'Ошибка соединения с сервером' };
+  }
+}
+// --- Логин ---
+async function loginUser(email, password) {
+  console.log('>>> [DESKTOP LOGIN] Начинаем вход:', { email, passwordLength: password.length });
+  const url = `/api/login`;
+  console.log('>>> [DESKTOP LOGIN] URL:', url);
+  
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    console.log('>>> [DESKTOP LOGIN] Response status:', res.status);
+    console.log('>>> [DESKTOP LOGIN] Response headers:', Object.fromEntries([...res.headers.entries()]));
+    
+    const data = await res.json();
+    console.log('>>> [DESKTOP LOGIN] Response data:', data);
+    return data;
+  } catch (error) {
+    console.error('>>> [DESKTOP LOGIN] Ошибка запроса:', error);
+    return { success: false, message: 'Ошибка соединения с сервером' };
+  }
+}
 

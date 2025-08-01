@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Сайт временно недоступен</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    :root {
+      --primary-color: #3a86ff;
+      --accent-color: #ff006e;
+      --text-color: #2b2d42;
+      --bg-color: #f8f9fa;
+      --light-gray: #e9ecef;
+    }
+    
+    body {
+      background-color: var(--bg-color);
+      min-height: 100vh;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: var(--text-color);
+      overflow-x: hidden;
+    }
+    
+    .offline-container {
+      width: 100%;
+      max-width: 1000px;
+      padding: 2rem;
+      position: relative;
+    }
+    
+    .offline-content {
+      background: white;
+      border-radius: 24px;
+      padding: 4rem;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+      position: relative;
+      z-index: 10;
+      overflow: hidden;
+    }
+    
+    .offline-title {
+      font-size: 3.5rem;
+      font-weight: 800;
+      margin-bottom: 1.5rem;
+      background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1.1;
+    }
+    
+    .offline-desc {
+      font-size: 1.2rem;
+      line-height: 1.6;
+      color: #555;
+      margin-bottom: 2.5rem;
+      max-width: 600px;
+    }
+    
+    .shape {
+      position: absolute;
+      border-radius: 50%;
+      z-index: 1;
+    }
+    
+    .shape-1 {
+      width: 300px;
+      height: 300px;
+      background: linear-gradient(135deg, rgba(58, 134, 255, 0.2), rgba(58, 134, 255, 0.1));
+      top: -150px;
+      right: -100px;
+    }
+    
+    .shape-2 {
+      width: 200px;
+      height: 200px;
+      background: linear-gradient(135deg, rgba(255, 0, 110, 0.2), rgba(255, 0, 110, 0.1));
+      bottom: -100px;
+      left: -50px;
+    }
+    
+    .shape-3 {
+      width: 100px;
+      height: 100px;
+      background: linear-gradient(135deg, rgba(58, 134, 255, 0.15), rgba(255, 0, 110, 0.15));
+      top: 20%;
+      left: -30px;
+    }
+    
+    .icon-container {
+      display: flex;
+      align-items: center;
+      margin-bottom: 2.5rem;
+    }
+    
+    .icon {
+      width: 64px;
+      height: 64px;
+      background: var(--light-gray);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      color: var(--primary-color);
+      margin-right: 1.5rem;
+    }
+    
+    .status-badge {
+      display: inline-block;
+      padding: 0.5rem 1rem;
+      background: rgba(58, 134, 255, 0.1);
+      color: var(--primary-color);
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+    
+    .dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background-color: var(--primary-color);
+      border-radius: 50%;
+      margin-right: 8px;
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0% {
+        transform: scale(0.95);
+        opacity: 0.8;
+      }
+      50% {
+        transform: scale(1);
+        opacity: 1;
+      }
+      100% {
+        transform: scale(0.95);
+        opacity: 0.8;
+      }
+    }
+    
+    .decoration {
+      position: absolute;
+      z-index: 0;
+    }
+    
+    .decoration-line {
+      position: absolute;
+      height: 3px;
+      background: linear-gradient(90deg, rgba(58, 134, 255, 0.2), rgba(255, 0, 110, 0.2));
+      border-radius: 3px;
+    }
+    
+    .line-1 {
+      width: 150px;
+      top: 30%;
+      right: -50px;
+      transform: rotate(45deg);
+    }
+    
+    .line-2 {
+      width: 100px;
+      bottom: 25%;
+      left: -30px;
+      transform: rotate(-30deg);
+    }
+    
+    .decoration-dot {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+    
+    .dot-1 {
+      background-color: rgba(58, 134, 255, 0.5);
+      top: 20%;
+      right: 15%;
+    }
+    
+    .dot-2 {
+      background-color: rgba(255, 0, 110, 0.5);
+      bottom: 15%;
+      right: 25%;
+    }
+    
+    .dot-3 {
+      background-color: rgba(58, 134, 255, 0.3);
+      top: 40%;
+      left: 10%;
+    }
+    
+    .offline-footer {
+      text-align: center;
+      margin-top: 3rem;
+      color: #999;
+      font-size: 0.9rem;
+    }
+    
+    @media (max-width: 768px) {
+      .offline-content {
+        padding: 2.5rem;
+      }
+      
+      .offline-title {
+        font-size: 2.5rem;
+      }
+      
+      .offline-desc {
+        font-size: 1.1rem;
+      }
+      
+      .shape-1 {
+        width: 200px;
+        height: 200px;
+        top: -100px;
+        right: -70px;
+      }
+    }
+    
+    @media (max-width: 576px) {
+      .offline-content {
+        padding: 2rem;
+      }
+      
+      .offline-title {
+        font-size: 2rem;
+      }
+      
+      .offline-desc {
+        font-size: 1rem;
+      }
+      
+      .icon {
+        width: 50px;
+        height: 50px;
+        font-size: 22px;
+      }
+    }
+  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+  <div class="shape shape-1"></div>
+  <div class="shape shape-2"></div>
+  <div class="shape shape-3"></div>
+  
+  <div class="decoration-line line-1"></div>
+  <div class="decoration-line line-2"></div>
+  <div class="decoration-dot dot-1"></div>
+  <div class="decoration-dot dot-2"></div>
+  <div class="decoration-dot dot-3"></div>
+  
+  <div class="offline-container">
+    <div class="offline-content">
+      <div class="icon-container">
+        <div class="icon">
+          <i class="fas fa-tools"></i>
+        </div>
+        <div class="status-badge">
+          <span class="dot"></span>Техническое обслуживание
+        </div>
+      </div>
+      
+      <h1 class="offline-title">Сайт временно недоступен</h1>
+      <p class="offline-desc">Мы работаем над улучшением нашего сервиса, чтобы сделать ваш опыт использования ещё лучше. Приносим извинения за временные неудобства.</p>
+    </div>
+    
+    <div class="offline-footer">
+      &copy; 2025 Damax
+    </div>
+  </div>
+  
+  <script>
+    // Создаем анимацию для точек
+    const dots = document.querySelectorAll('.decoration-dot');
+    dots.forEach(dot => {
+      // Случайная начальная позиция
+      const startX = parseFloat(getComputedStyle(dot).left);
+      const startY = parseFloat(getComputedStyle(dot).top);
+      
+      // Анимация движения
+      function animateDot() {
+        const offsetX = Math.random() * 20 - 10;
+        const offsetY = Math.random() * 20 - 10;
+        const duration = Math.random() * 3000 + 2000;
+        
+        dot.animate([
+          { transform: 'translate(0, 0)' },
+          { transform: `translate(${offsetX}px, ${offsetY}px)` },
+          { transform: 'translate(0, 0)' }
+        ], {
+          duration: duration,
+          easing: 'ease-in-out'
+        });
+        
+        setTimeout(animateDot, duration);
+      }
+      
+      animateDot();
+    });
+  </script>
+</body>
+</html> 

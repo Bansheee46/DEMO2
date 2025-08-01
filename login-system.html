@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="desktop-styles.css">
     <link rel="stylesheet" href="desktop-styles-fixed.css">
     <link rel="stylesheet" href="login-system.css">
+    <link rel="stylesheet" href="counterparty-styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lato:wght@400;700&family=Dancing+Script:wght@400&display=swap" rel="stylesheet">
     <script src="https://npmcdn.com/parse/dist/parse.min.js"></script>
@@ -38,6 +39,8 @@
         });
       })();
     </script>
+    <!-- Подключаем скрипт для уведомлений первым -->
+    <script src="notification.js"></script>
 </head>
 <body>
     <!-- Обёртка для всего содержимого страницы -->
@@ -192,7 +195,7 @@
                                 <input type="checkbox" id="rememberMe">
                                 <label for="rememberMe">Запомнить меня</label>
                             </div>
-                            <a href="#" class="forgot-password-link">Забыли пароль?</a>
+                            <a href="#" class="forgot-password-link">Забыли па!роль?</a>
                         </div>
                         
                         <button type="submit" class="submit-button">
@@ -268,6 +271,182 @@
                         </button>
                     </form>
                     
+                    <!-- Форма карточки контрагента -->
+                    <form id="counterpartyForm" class="auth-form counterparty-form">
+                        <button type="button" class="back-button" data-return-to="register">
+                            <i class="fas fa-arrow-left"></i>
+                        </button>
+                        
+                        <h2>Карточка контрагента</h2>
+                        <p class="form-subtitle">Заполните данные вашей организации</p>
+                        
+                        <div class="counterparty-card">
+                            <div class="counterparty-card__header">
+                                <div class="counterparty-card__icon">
+                                    <i class="fas fa-building"></i>
+                                </div>
+                                <div class="counterparty-progress">
+                                    <div class="progress-bar">
+                                        <div class="progress-indicator"></div>
+                                    </div>
+                                    <span class="progress-text">Заполнено: <span class="progress-percent">0%</span></span>
+                                </div>
+                            </div>
+                            
+                            <div class="counterparty-card__content">
+                                <div class="form-group">
+                                    <label for="orgName">Наименование организации</label>
+                                    <div class="input-container">
+                                        <i class="fas fa-building input-icon"></i>
+                                        <input type="text" id="orgName" placeholder="ООО 'Компания'" required>
+                                    </div>
+                                    <span class="error-message"></span>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="legalAddress">Юридический адрес</label>
+                                    <div class="input-container">
+                                        <i class="fas fa-map-marker-alt input-icon"></i>
+                                        <input type="text" id="legalAddress" placeholder="г. Москва, ул. Примерная, д. 1" required>
+                                    </div>
+                                    <span class="error-message"></span>
+                                </div>
+                                
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="inn">ИНН</label>
+                                        <div class="input-container">
+                                            <i class="fas fa-id-card input-icon"></i>
+                                            <input type="text" id="inn" placeholder="7700000000" required>
+                                        </div>
+                                        <span class="error-message"></span>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="kpp">КПП</label>
+                                        <div class="input-container">
+                                            <i class="fas fa-id-card input-icon"></i>
+                                            <input type="text" id="kpp" placeholder="770000000" required>
+                                        </div>
+                                        <span class="error-message"></span>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="ogrn">ОГРН</label>
+                                    <div class="input-container">
+                                        <i class="fas fa-file-alt input-icon"></i>
+                                        <input type="text" id="ogrn" placeholder="1000000000000" required>
+                                    </div>
+                                    <span class="error-message"></span>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="contactPerson">Контактное лицо</label>
+                                    <div class="input-container">
+                                        <i class="fas fa-user input-icon"></i>
+                                        <input type="text" id="contactPerson" placeholder="Иванов Иван Иванович" required>
+                                    </div>
+                                    <span class="error-message"></span>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="contactPosition">Должность</label>
+                                    <div class="input-container">
+                                        <i class="fas fa-briefcase input-icon"></i>
+                                        <input type="text" id="contactPosition" placeholder="Генеральный директор" required>
+                                    </div>
+                                    <span class="error-message"></span>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="workPhone">Рабочий телефон</label>
+                                    <div class="input-container">
+                                        <i class="fas fa-phone input-icon"></i>
+                                        <input type="tel" id="workPhone" placeholder="+7 (999) 123-45-67" required>
+                                    </div>
+                                    <span class="error-message"></span>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="contactEmail">Email для связи</label>
+                                    <div class="input-container">
+                                        <i class="fas fa-envelope input-icon"></i>
+                                        <input type="email" id="contactEmail" placeholder="contact@company.ru" required>
+                                    </div>
+                                    <span class="error-message"></span>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>Предпочтительный способ связи</label>
+                                    <div class="radio-group">
+                                        <div class="radio-option">
+                                            <input type="radio" id="contactMethodWhatsapp" name="contactMethod" value="whatsapp">
+                                            <label for="contactMethodWhatsapp"><i class="fab fa-whatsapp"></i> WhatsApp</label>
+                                        </div>
+                                        <div class="radio-option">
+                                            <input type="radio" id="contactMethodTelegram" name="contactMethod" value="telegram">
+                                            <label for="contactMethodTelegram"><i class="fab fa-telegram"></i> Telegram</label>
+                                        </div>
+                                        <div class="radio-option">
+                                            <input type="radio" id="contactMethodPhone" name="contactMethod" value="phone">
+                                            <label for="contactMethodPhone"><i class="fas fa-phone"></i> Телефон</label>
+                                        </div>
+                                        <div class="radio-option">
+                                            <input type="radio" id="contactMethodEmail" name="contactMethod" value="email" checked>
+                                            <label for="contactMethodEmail"><i class="fas fa-envelope"></i> Email</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-section">
+                                    <h3>Банковские реквизиты</h3>
+                                    
+                                    <div class="form-group">
+                                        <label for="bankName">Наименование банка</label>
+                                        <div class="input-container">
+                                            <i class="fas fa-university input-icon"></i>
+                                            <input type="text" id="bankName" placeholder="АО 'Банк'" required>
+                                        </div>
+                                        <span class="error-message"></span>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="bankAccount">Расчетный счет</label>
+                                        <div class="input-container">
+                                            <i class="fas fa-money-check input-icon"></i>
+                                            <input type="text" id="bankAccount" placeholder="40700000000000000000" required>
+                                        </div>
+                                        <span class="error-message"></span>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="corrAccount">Корреспондентский счет</label>
+                                        <div class="input-container">
+                                            <i class="fas fa-money-check-alt input-icon"></i>
+                                            <input type="text" id="corrAccount" placeholder="30100000000000000000" required>
+                                        </div>
+                                        <span class="error-message"></span>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="bik">БИК</label>
+                                        <div class="input-container">
+                                            <i class="fas fa-hashtag input-icon"></i>
+                                            <input type="text" id="bik" placeholder="044500000" required>
+                                        </div>
+                                        <span class="error-message"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="submit-button">
+                            <span class="button-text">Сохранить данные</span>
+                            <span class="loading-spinner"></span>
+                        </button>
+                    </form>
+                    
                     <!-- Форма восстановления пароля -->
                     <form id="forgotPasswordForm" class="auth-form">
                         <button type="button" class="back-button">
@@ -306,5 +485,6 @@
     </div>
 
     <script src="login-system.js"></script>
+    <script src="admin-login.js"></script>
 </body>
 </html> 

@@ -1,7 +1,4 @@
-/**
- * Модуль управления настройками приложения Chern2
- * Версия 1.0
- */
+
 
 // Объект с настройками по умолчанию
 const DEFAULT_SETTINGS = {
@@ -22,8 +19,29 @@ const DEFAULT_SETTINGS = {
   autoCleanSession: false, // автоматическое очищение данных сессии
   // Настройки тем оформления
   theme: 'default', // default, dark, contrast, elegant, nature, neon, pastel, vintage, tech
-  accentColor: '#BCB88A' // цвет акцента для активных элементов
+  accentColor: '#BCB88A', // цвет акцента для активных элементов
+  // Настройки API
+  apiEnabled: true, // включение/выключение API
+  apiDebugMode: true // режим отладки API
 };
+
+// Настройки API для отправки заказов
+window.API_BASE_URL = 'https://api.damax.ru/api';
+window.API_BACKUP_URL = 'https://backup-api.damax.ru';
+window.API_DEBUG = true; // Включаем режим отладки по умолчанию
+
+// Статические методы оплаты и доставки
+window.STATIC_PAYMENT_METHODS = [
+  { value: 'card', label: 'Банковская карта' },
+  { value: 'cash', label: 'Наличными при получении' },
+  { value: 'online', label: 'Онлайн-оплата' }
+];
+
+window.STATIC_DELIVERY_METHODS = [
+  { value: 'courier', label: 'Курьер' },
+  { value: 'pickup', label: 'Самовывоз' },
+  { value: 'post', label: 'Почта' }
+];
 
 // Глобальные обработчики событий для модального окна настроек
 let currentHandleOutsideClick = null;
@@ -484,11 +502,8 @@ function showSettingsModal() {
         </div>
         
         <div class="settings-actions">
-          <button class="modal-settings__save">
-            <i class="fas fa-save"></i> Сохранить
-          </button>
           <button class="modal-settings__close">
-            <i class="fas fa-times"></i> Отмена
+            <i class="fas fa-times"></i> Закрыть
           </button>
         </div>
       </div>
@@ -569,7 +584,6 @@ function showSettingsModal() {
   
   // Получаем ссылки на элементы управления
   const closeButtons = settingsModal.querySelectorAll('.modal-settings__close, .modal-settings__close-top');
-  const saveButton = settingsModal.querySelector('.modal-settings__save');
   const modalContent = settingsModal.querySelector('.modal-settings__content');
   
   // Обработчик для клика вне модального окна
@@ -596,12 +610,20 @@ function showSettingsModal() {
   toggleSwitches.forEach(switchEl => {
     switchEl.addEventListener('click', () => {
       switchEl.classList.toggle('active');
-      // Воспроизведение звука переключения
       playSound('switch');
+      saveAndApplyCurrentSettings(settingsModal); // Сохраняем и применяем немедленно
+    });
+  });
+
+  // Обработчики для других изменяемых элементов, которые вызывают сохранение
+  const settingsToSave = settingsModal.querySelectorAll('select.settings-select__input, input.settings-slider__input');
+  settingsToSave.forEach(element => {
+    element.addEventListener('change', () => {
+      saveAndApplyCurrentSettings(settingsModal);
     });
   });
   
-  // Обработчик для слайдера громкости
+  // Обработчик для слайдера громкости, чтобы обновлять текст
   const volumeSlider = settingsModal.querySelector('input[data-action="volume"]');
   const volumeValue = settingsModal.querySelector('.settings-slider__value');
   if (volumeSlider && volumeValue) {
@@ -632,94 +654,7 @@ function showSettingsModal() {
     });
   }
   
-  // Обработчик для сохранения настроек
-  if (saveButton) {
-    saveButton.addEventListener('click', (event) => {
-      // Предотвращаем всплытие события, чтобы клик не регистрировался в родительских элементах
-      event.preventDefault();
-      event.stopPropagation();
-      
-      // Сбор настроек из интерфейса
-      const newSettings = { ...currentSettings };
-      
-      // Проверяем изменения темы
-      const isDarkModeNow = settingsModal.querySelector('[data-action="toggle-theme"]').classList.contains('active');
-      
-      // Принудительно устанавливаем значение, даже если оно не изменилось
-      // Это гарантирует применение изменений темы
-      newSettings.isDarkMode = isDarkModeNow;
-      
-      // Обработка остальных переключателей
-      newSettings.isAnimated = settingsModal.querySelector('[data-action="toggle-animations"]').classList.contains('active');
-      newSettings.isSoundEnabled = settingsModal.querySelector('[data-action="toggle-sound"]').classList.contains('active');
-      newSettings.notificationsEnabled = settingsModal.querySelector('[data-action="toggle-notifications"]').classList.contains('active');
-      
-      // Новые настройки
-      newSettings.fullAnimations = settingsModal.querySelector('[data-action="toggle-full-animations"]').classList.contains('active');
-      newSettings.lowResourceMode = settingsModal.querySelector('[data-action="toggle-low-resource"]').classList.contains('active');
-      newSettings.analyticsEnabled = settingsModal.querySelector('[data-action="toggle-analytics"]').classList.contains('active');
-      newSettings.autoCleanSession = settingsModal.querySelector('[data-action="toggle-auto-clean"]').classList.contains('active');
-      
-      // Обработка слайдера громкости
-      newSettings.volume = parseInt(volumeSlider?.value || currentSettings.volume);
-      
-      // Обработка выпадающих списков
-      const durationSelect = settingsModal.querySelector('select[data-action="notification-duration"]');
-      newSettings.notificationDuration = parseInt(durationSelect?.value || currentSettings.notificationDuration);
-      
-      const fontSizeSelect = settingsModal.querySelector('select[data-action="font-size"]');
-      newSettings.fontSize = fontSizeSelect?.value || currentSettings.fontSize;
-      
-      const cacheSizeSelect = settingsModal.querySelector('select[data-action="cache-size"]');
-      newSettings.cacheSize = cacheSizeSelect?.value || currentSettings.cacheSize;
-      
-      // Настройки тем
-      const themeSelect = settingsModal.querySelector('select[data-action="theme"]');
-      newSettings.theme = themeSelect?.value || currentSettings.theme;
-      
-      // Получаем выбранный цвет акцента
-      const activeColorOption = settingsModal.querySelector('.color-option.active');
-      if (activeColorOption) {
-        newSettings.accentColor = activeColorOption.dataset.color || currentSettings.accentColor;
-      }
-      
-      // Сохраняем настройки
-      if (saveSettings(newSettings)) {
-        // Принудительно применяем настройки, независимо от того, изменились ли они
-        applySettings(newSettings);
-        
-        // Дополнительная проверка применения темной темы
-        if (newSettings.isDarkMode) {
-          document.body.setAttribute('data-theme', 'dark');
-          document.documentElement.setAttribute('data-theme', 'dark');
-          document.body.classList.add('dark');
-          document.body.classList.remove('light');
-        } else {
-          document.body.setAttribute('data-theme', 'light');
-          document.documentElement.setAttribute('data-theme', 'light');
-          document.body.classList.remove('dark');
-          document.body.classList.add('light');
-        }
-        
-        // Уведомление об успешном сохранении
-        showNotification('Настройки сохранены', 'success');
-        
-        // Воспроизведение звука успеха
-        playSound('success');
-        
-        // Явно убеждаемся, что модальное окно закроется
-        setTimeout(() => {
-          closeSettingsModal(settingsModal);
-        }, 100);
-      } else {
-        // Уведомление об ошибке
-        showNotification('Не удалось сохранить настройки', 'error');
-        
-        // Воспроизведение звука ошибки
-        playSound('error');
-      }
-    });
-  }
+  // Удаляем старый обработчик кнопки "Сохранить"
   
   // Добавляем обработчики для выбора темы и предпросмотра
   const themeSelect = settingsModal.querySelector('select[data-action="theme"]');
@@ -749,18 +684,8 @@ function showSettingsModal() {
       // Воспроизводим звук переключения
       playSound('switch');
       
-      // Гарантируем, что кнопка сохранения будет доступна
-      if (saveButton) {
-        // Явно убеждаемся, что кнопка сохранения видима и активна
-        saveButton.style.display = 'flex';
-        saveButton.style.pointerEvents = 'auto';
-        saveButton.style.opacity = '1';
-        
-        // Прокручиваем к кнопке сохранения для маленьких экранов
-        setTimeout(() => {
-          saveButton.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }, 100);
-      }
+      // Вызываем сохранение после изменения темы
+      saveAndApplyCurrentSettings(settingsModal);
     });
   }
   
@@ -799,6 +724,9 @@ function showSettingsModal() {
       
       // Воспроизводим звук переключения
       playSound('switch');
+      
+      // Сохраняем настройку цвета
+      saveAndApplyCurrentSettings(settingsModal);
     });
   });
   
@@ -880,6 +808,68 @@ function closeSettingsModal(modalElement) {
       }
     }
   }, 500);
+}
+
+/**
+ * Функция для сбора, сохранения и применения настроек
+ * @param {HTMLElement} modalElement - Элемент модального окна
+ */
+function saveAndApplyCurrentSettings(modalElement) {
+  if (!modalElement) return;
+
+  const currentSettings = loadSettings();
+  const newSettings = { ...currentSettings };
+
+  // Обработка переключателей
+  newSettings.isDarkMode = modalElement.querySelector('[data-action="toggle-theme"]').classList.contains('active');
+  newSettings.isAnimated = modalElement.querySelector('[data-action="toggle-animations"]').classList.contains('active');
+  newSettings.isSoundEnabled = modalElement.querySelector('[data-action="toggle-sound"]').classList.contains('active');
+  newSettings.notificationsEnabled = modalElement.querySelector('[data-action="toggle-notifications"]').classList.contains('active');
+  newSettings.fullAnimations = modalElement.querySelector('[data-action="toggle-full-animations"]').classList.contains('active');
+  newSettings.lowResourceMode = modalElement.querySelector('[data-action="toggle-low-resource"]').classList.contains('active');
+  newSettings.analyticsEnabled = modalElement.querySelector('[data-action="toggle-analytics"]').classList.contains('active');
+  newSettings.autoCleanSession = modalElement.querySelector('[data-action="toggle-auto-clean"]').classList.contains('active');
+
+  // Обработка слайдера громкости
+  const volumeSlider = modalElement.querySelector('input[data-action="volume"]');
+  if (volumeSlider) {
+    newSettings.volume = parseInt(volumeSlider.value);
+  }
+
+  // Обработка выпадающих списков
+  const durationSelect = modalElement.querySelector('select[data-action="notification-duration"]');
+  if (durationSelect) {
+    newSettings.notificationDuration = parseInt(durationSelect.value);
+  }
+  
+  const fontSizeSelect = modalElement.querySelector('select[data-action="font-size"]');
+  if (fontSizeSelect) {
+    newSettings.fontSize = fontSizeSelect.value;
+  }
+
+  const cacheSizeSelect = modalElement.querySelector('select[data-action="cache-size"]');
+  if (cacheSizeSelect) {
+    newSettings.cacheSize = cacheSizeSelect.value;
+  }
+
+  const themeSelect = modalElement.querySelector('select[data-action="theme"]');
+  if (themeSelect) {
+    newSettings.theme = themeSelect.value;
+  }
+  
+  // Получаем выбранный цвет акцента
+  const activeColorOption = modalElement.querySelector('.color-option.active');
+  if (activeColorOption) {
+    newSettings.accentColor = activeColorOption.dataset.color || currentSettings.accentColor;
+  }
+
+  // Сохраняем и применяем настройки
+  if (saveSettings(newSettings)) {
+    applySettings(newSettings);
+    // Не показываем уведомление при каждом изменении, чтобы не спамить
+  } else {
+    showNotification('Ошибка применения настройки', 'error');
+  }
 }
 
 /**
@@ -1080,6 +1070,306 @@ function getAvailableThemes() {
   ];
 }
 
+
+ //Функция для загрузки и применения настроек сайта из Flask-сервера
+async function loadAndApplySettings() {
+  console.log('settings:1118 Начало загрузки настроек...');
+  try {
+    // Попытка получить настройки с разных URL
+    const urls = [
+      '/api/settings',  // Относительный путь
+      'http://localhost:5000/api/settings'  // Абсолютный путь к серверу Flask
+    ];
+    
+    let settingsData = null;
+    let successUrl = '';
+    
+    // Пробуем каждый URL по очереди
+    for (const url of urls) {
+      try {
+        const response = await fetch(url);
+        console.log(`settings:1121 Статус ответа от ${url}: ${response.status} ${response.statusText}`);
+        
+        if (response.ok) {
+          const responseText = await response.text();
+          console.log(`settings:1128 Получен ответ от сервера: ${responseText.substring(0, 100)}...`);
+          settingsData = JSON.parse(responseText);
+          console.log('settings:1133 JSON успешно распарсен');
+          successUrl = url;
+          break;
+        }
+      } catch (err) {
+        console.log(`settings:1138 Ошибка при загрузке с ${url}: ${err.message}`);
+      }
+    }
+    
+    // Если удалось получить настройки
+    if (settingsData) {
+      console.log('settings:1141 Полученные настройки:', settingsData);
+      
+      // Применяем фавиконку
+      if (settingsData.site_favicon) {
+        // Формируем URL для фавиконки
+        let faviconUrl = settingsData.site_favicon;
+        if (!faviconUrl.startsWith('http') && !faviconUrl.startsWith('/')) {
+          faviconUrl = '/' + faviconUrl;
+        }
+        
+        // Если URL относительный, сделаем его абсолютным относительно Flask-сервера
+        if (faviconUrl.startsWith('/uploads/') && successUrl.includes('localhost:5000')) {
+          faviconUrl = 'http://localhost:5000' + faviconUrl;
+          console.log('settings:1534 Преобразован URL фавиконки:', faviconUrl);
+        }
+        
+        // Удаляем существующие теги favicon
+        const existingIcons = document.querySelectorAll('link[rel="icon"]');
+        existingIcons.forEach(icon => icon.remove());
+        
+        // Создаем новый тег favicon и добавляем его в head
+        const link = document.createElement('link');
+        link.rel = 'icon';
+        link.href = faviconUrl;
+        link.type = 'image/x-icon';  // Или другой тип в зависимости от расширения файла
+        document.head.appendChild(link);
+        console.log('settings:1546 Фавиконка успешно применена:', faviconUrl);
+      } else {
+        console.log('settings:1548 Не удалось получить favicon из настроек');
+      }
+      
+      // Применяем название сайта
+      if (settingsData.site_name) {
+        // Обновляем заголовок страницы
+        document.title = settingsData.site_name;
+        console.log('settings:1554 Название сайта обновлено:', settingsData.site_name);
+        
+        // Обновляем логотипы на странице
+        const logoElements = document.querySelectorAll('.top-cloud__logo, .header__logo, .auth-modal__logo, .footer__company-name');
+        logoElements.forEach(element => {
+          element.textContent = settingsData.site_name;
+          console.log('settings:1559 Логотип обновлен:', element);
+        });
+      }
+      
+      // Обрабатываем телефон
+      const phoneElements = document.querySelectorAll('.footer__phone');
+      if (settingsData.contact_phone && settingsData.contact_phone.trim() !== '') {
+        phoneElements.forEach(element => {
+          element.style.display = '';
+          const phoneLink = element.querySelector('a');
+          if (phoneLink) {
+            phoneLink.href = `tel:${settingsData.contact_phone.replace(/\D/g, '')}`;
+            phoneLink.textContent = settingsData.contact_phone;
+          } else {
+            element.innerHTML = `Телефон: ${settingsData.contact_phone}`;
+          }
+        });
+        console.log('settings:1575 Контактный телефон обновлен:', settingsData.contact_phone);
+      } else {
+        phoneElements.forEach(element => {
+          element.style.display = 'none';
+        });
+        console.log('settings:1683 Телефон не указан, скрываем элементы');
+      }
+      
+      // Обрабатываем email
+      const emailElements = document.querySelectorAll('.footer__email');
+      if (settingsData.contact_email && settingsData.contact_email.trim() !== '') {
+        emailElements.forEach(element => {
+          element.style.display = '';
+          const emailLink = element.querySelector('a');
+          if (emailLink) {
+            emailLink.href = `mailto:${settingsData.contact_email}`;
+            emailLink.textContent = settingsData.contact_email;
+          } else {
+            element.innerHTML = `Email: ${settingsData.contact_email}`;
+          }
+        });
+        console.log('settings:1698 Контактный email обновлен:', settingsData.contact_email);
+      } else {
+        emailElements.forEach(element => {
+          element.style.display = 'none';
+        });
+        console.log('settings:1702 Email не указан, скрываем элементы');
+      }
+      
+      // Обрабатываем адрес
+      const addressElements = document.querySelectorAll('.footer__address');
+      if (settingsData.address && settingsData.address.trim() !== '') {
+        addressElements.forEach(element => {
+          element.style.display = '';
+          const addressLink = element.querySelector('a');
+          if (addressLink) {
+            addressLink.href = `https://maps.google.com/maps?q=${encodeURIComponent(settingsData.address)}`;
+            addressLink.textContent = settingsData.address;
+          } else {
+            element.innerHTML = `Адрес: ${settingsData.address}`;
+          }
+        });
+        
+        // Также обновляем обычные ссылки на карту
+        const mapLinks = document.querySelectorAll('a[href^="https://maps.google.com"]');
+        mapLinks.forEach(link => {
+          link.href = `https://maps.google.com/maps?q=${encodeURIComponent(settingsData.address)}`;
+          if (!link.querySelector('i')) {
+            link.textContent = settingsData.address;
+          }
+        });
+        
+        console.log('settings:1724 Адрес обновлен:', settingsData.address);
+      } else {
+        addressElements.forEach(element => {
+          element.style.display = 'none';
+        });
+        console.log('settings:1728 Адрес не указан, скрываем элементы');
+      }
+      
+      // Обрабатываем режим работы
+      const hoursElements = document.querySelectorAll('.footer__hours');
+      if (settingsData.working_hours && settingsData.working_hours.trim() !== '') {
+        hoursElements.forEach(element => {
+          element.style.display = '';
+          if (element.tagName.toLowerCase() === 'p') {
+            element.innerHTML = `Режим работы: ${settingsData.working_hours}`;
+          } else {
+            element.textContent = settingsData.working_hours;
+          }
+        });
+        console.log('settings:1742 Режим работы обновлен:', settingsData.working_hours);
+      } else {
+        hoursElements.forEach(element => {
+          element.style.display = 'none';
+        });
+        console.log('settings:1746 Режим работы не указан, скрываем элементы');
+      }
+      
+      // Обновляем ссылки на соцсети
+      const socialLinks = {
+        'instagram': settingsData.social_instagram,
+        'facebook': settingsData.social_facebook,
+        'twitter': settingsData.social_twitter,
+        'youtube': settingsData.social_youtube,
+        'telegram': settingsData.social_telegram,
+        'whatsapp': settingsData.social_whatsapp
+      };
+      
+      // Сначала скроем все иконки соцсетей
+      const allSocialLinks = document.querySelectorAll('.footer__social-link, a[aria-label^="Instagram"], a[aria-label^="Facebook"], a[aria-label^="Twitter"], a[aria-label^="YouTube"], a[aria-label^="Telegram"], a[aria-label^="WhatsApp"]');
+      allSocialLinks.forEach(link => {
+        link.style.display = 'none'; // По умолчанию скрываем все
+      });
+      
+      // Показываем и обновляем только те соцсети, для которых указаны URL
+      for (const [platform, url] of Object.entries(socialLinks)) {
+        if (url && url.trim() !== '') {
+          // Показываем и обновляем ссылки соответствующие текущей платформе
+          const socialLinks = document.querySelectorAll(`.footer__social-${platform}`);
+          socialLinks.forEach(link => {
+            link.href = url;
+            link.style.display = ''; // Показываем ссылку
+            console.log(`settings:1774 Ссылка на ${platform} обновлена:`, url);
+          });
+          
+          // Для совместимости ищем также по старым селекторам
+          const oldIconElements = document.querySelectorAll(`.fab.fa-${platform}`);
+          oldIconElements.forEach(icon => {
+            const parentLink = icon.closest('a');
+            if (parentLink && !parentLink.classList.contains(`footer__social-${platform}`)) {
+              parentLink.href = url;
+              parentLink.style.display = ''; // Показываем ссылку
+            }
+          });
+          
+          // Также проверяем элементы по aria-label
+          const ariaLinks = document.querySelectorAll(`a[aria-label^="${platform.charAt(0).toUpperCase() + platform.slice(1)}"]`);
+          ariaLinks.forEach(link => {
+            link.href = url;
+            link.style.display = ''; // Показываем ссылку
+          });
+        } else {
+          console.log(`settings:1794 Соцсеть ${platform} не имеет URL - скрываем иконку`);
+        }
+      }
+      
+      // Проверяем, есть ли видимые соцсети
+      const visibleSocialLinks = document.querySelectorAll('.footer__social-link:not([style*="display: none"]), a[aria-label^="Instagram"]:not([style*="display: none"]), a[aria-label^="Facebook"]:not([style*="display: none"]), a[aria-label^="Twitter"]:not([style*="display: none"]), a[aria-label^="YouTube"]:not([style*="display: none"]), a[aria-label^="Telegram"]:not([style*="display: none"]), a[aria-label^="WhatsApp"]:not([style*="display: none"])');
+      
+      // Если нет видимых соцсетей, скрываем весь блок соцсетей
+      if (visibleSocialLinks.length === 0) {
+        // Ищем секции с соцсетями
+        const socialSections = document.querySelectorAll('.footer__social');
+        socialSections.forEach(section => {
+          section.style.display = 'none';
+          console.log('settings:1806 Все соцсети скрыты, скрываем блок footer__social');
+        });
+        
+        // Находим секции, которые содержат иконки соцсетей
+        document.querySelectorAll('.footer__social-icons').forEach(iconsBlock => {
+          const parentSection = iconsBlock.closest('.footer__section');
+          if (parentSection) {
+            parentSection.style.display = 'none';
+            console.log('settings:1814 Все соцсети скрыты, скрываем родительскую секцию');
+          }
+        });
+      } else {
+        // Если есть видимые соцсети, показываем блок
+        const socialSections = document.querySelectorAll('.footer__social');
+        socialSections.forEach(section => {
+          section.style.display = '';
+          console.log('settings:1822 Есть видимые соцсети, показываем блок footer__social');
+        });
+        
+        // Находим секции, которые содержат иконки соцсетей
+        document.querySelectorAll('.footer__social-icons').forEach(iconsBlock => {
+          const parentSection = iconsBlock.closest('.footer__section');
+          if (parentSection) {
+            parentSection.style.display = '';
+            console.log('settings:1830 Есть видимые соцсети, показываем родительскую секцию');
+          }
+        });
+      }
+      
+      // Проверяем, есть ли видимые контакты
+      const visibleContacts = document.querySelectorAll('.footer__contact:not([style*="display: none"])');
+      // Если нет видимых контактов, скрываем весь блок контактов
+      const contactSections = document.querySelectorAll('.footer__contacts, .footer__section:first-child');
+      
+      if (visibleContacts.length === 0) {
+        contactSections.forEach(section => {
+          section.style.display = 'none';
+          console.log('settings:1756 Нет видимых контактов, скрываем блок контактов');
+        });
+      } else {
+        contactSections.forEach(section => {
+          section.style.display = '';
+          console.log('settings:1760 Есть видимые контакты, показываем блок контактов');
+        });
+      }
+      
+      // В конце функции, перед вызовом toggleDeliveryBlocks, добавляем проверку:
+      // Проверяем, существует ли функция toggleDeliveryBlocks в глобальном контексте
+      if (typeof window.toggleDeliveryBlocks === 'function') {
+        // Функция существует, вызываем ее
+        window.toggleDeliveryBlocks();
+      } else if (typeof toggleDeliveryBlocks === 'function') {
+        // Пробуем вызвать без window, если функция доступна
+        toggleDeliveryBlocks();
+      } else {
+        // Функция не существует, пропускаем вызов
+        console.log('settings:1360 Функция toggleDeliveryBlocks не найдена в глобальном контексте');
+      }
+      
+      console.log('settings:1364 Все настройки успешно применены');
+    } else {
+      console.log('settings:1366 Не удалось получить настройки');
+    }
+  } catch (error) {
+    console.error('settings:1364 Ошибка при загрузке настроек:', error);
+  }
+}
+
+// Запускаем загрузку настроек при загрузке страницы
+document.addEventListener('DOMContentLoaded', loadAndApplySettings);
+
 /**
  * Инициализация модуля настроек как глобального объекта
  */
@@ -1092,62 +1382,18 @@ function getAvailableThemes() {
     loadSettings,
     saveSettings,
     playSound,
-    closeSettingsModal
+    closeSettingsModal,
+    getAvailablePaymentMethods,
+    getAvailableDeliveryMethods,
+    toggleDeliveryBlocks,
+    initSettings // Экспортируем initSettings
   };
   
   // Инициализируем настройки при загрузке страницы
   document.addEventListener('DOMContentLoaded', function() {
     console.log('Модуль настроек загружен');
     
-    // Хак для гарантии работы кнопки сохранения
-    // Добавляем глобальный обработчик для проверки и исправления кнопки сохранения
-    const checkSaveButton = function() {
-      const saveButton = document.querySelector('.modal-settings__save');
-      if (saveButton) {
-        // Проверяем, кликабельна ли кнопка
-        const style = window.getComputedStyle(saveButton);
-        if (style.pointerEvents === 'none' || style.opacity !== '1' || style.visibility !== 'visible') {
-          console.log('Восстанавливаем кнопку сохранения...');
-          // Принудительно делаем кнопку видимой и кликабельной
-          saveButton.style.pointerEvents = 'auto';
-          saveButton.style.opacity = '1';
-          saveButton.style.visibility = 'visible';
-          saveButton.style.display = 'flex';
-          saveButton.style.position = 'relative';
-          saveButton.style.zIndex = '20';
-        }
-      }
-    };
-    
-    // Проверяем каждую секунду, пока окно настроек открыто
-    let saveButtonInterval;
-    
-    // Модифицируем функцию showSettingsModal, чтобы добавить интервал
-    const originalShowSettingsModal = window.settingsModule.showSettingsModal;
-    window.settingsModule.showSettingsModal = function() {
-      // Вызываем оригинальную функцию
-      originalShowSettingsModal.apply(this, arguments);
-      
-      // Запускаем интервал проверки
-      saveButtonInterval = setInterval(checkSaveButton, 1000);
-      
-      // Также добавим проверку через 500мс после открытия,
-      // чтобы быстро восстановить кнопку, если она не активна
-      setTimeout(checkSaveButton, 500);
-    };
-    
-    // Модифицируем функцию closeSettingsModal, чтобы удалить интервал
-    const originalCloseSettingsModal = window.settingsModule.closeSettingsModal;
-    window.settingsModule.closeSettingsModal = function() {
-      // Останавливаем интервал
-      if (saveButtonInterval) {
-        clearInterval(saveButtonInterval);
-        saveButtonInterval = null;
-      }
-      
-      // Вызываем оригинальную функцию
-      originalCloseSettingsModal.apply(this, arguments);
-    };
+    // Удаляем старый хак для кнопки сохранения, он больше не нужен
     
     initSettings();
     
@@ -1157,4 +1403,37 @@ function getAvailableThemes() {
       button.addEventListener('click', showSettingsModal);
     });
   });
-})(); 
+})();
+
+/**
+ * Получение доступных методов оплаты
+ * @returns {Array} Массив методов оплаты
+ */
+function getAvailablePaymentMethods() {
+  // Возвращаем статические методы оплаты
+  return window.STATIC_PAYMENT_METHODS || [
+    { value: 'card', label: 'Банковская карта' },
+    { value: 'cash', label: 'Наличными при получении' },
+    { value: 'online', label: 'Онлайн-оплата' }
+  ];
+}
+
+/**
+ * Получение доступных методов доставки
+ * @returns {Array} Массив методов доставки
+ */
+function getAvailableDeliveryMethods() {
+  // Возвращаем статические методы доставки
+  return window.STATIC_DELIVERY_METHODS || [
+    { value: 'courier', label: 'Курьер' },
+    { value: 'pickup', label: 'Самовывоз' },
+    { value: 'post', label: 'Почта' }
+  ];
+}
+
+function toggleDeliveryBlocks() {
+  // Эта функция больше не нужна, так как методы оплаты и доставки теперь статичные
+}
+
+// Экспортируем функцию в глобальный контекст для совместимости
+window.toggleDeliveryBlocks = toggleDeliveryBlocks; 
