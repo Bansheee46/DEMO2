@@ -8,8 +8,8 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <script>
   // Устанавливаем глобальные URL для API
-  window.API_BASE_URL = 'http://localhost:5000/api';
-  window.API_BACKUP_URL = 'http://localhost:5000/api';
+  window.API_BASE_URL = '/api';
+  window.API_BACKUP_URL = '/api';
   
   (async function() {
     try {
@@ -228,7 +228,8 @@
     </div>
   </div>
   
-  <script src="settings.js"></script>
+  <script src="config.js?v=2"></script>
+  <script src="settings.js?v=2"></script>
   <script src="mobile.js"></script>
   <style>
     /* Скрываем форму оформления заказа при загрузке */
@@ -671,7 +672,7 @@
       
       try {
         // Получаем базовый URL API из настроек или используем значение по умолчанию
-        const apiBaseUrl = window.API_BASE_URL || 'http://localhost:5000/api';
+        const apiBaseUrl = window.API_BASE_URL || '/api';
         const orderEndpoint = `${apiBaseUrl}/orders`;
         
         // Подготавливаем данные для отправки на сервер
@@ -739,7 +740,7 @@
         try {
           
           // Используем JSON для резервного метода вместо FormData
-          const backupEndpoint = `${window.API_BACKUP_URL || 'http://localhost:5000/api'}/orders`;
+          const backupEndpoint = `${window.API_BACKUP_URL || '/api'}/orders`;
           
           const backupResponse = await fetch(backupEndpoint, {
             method: 'POST',

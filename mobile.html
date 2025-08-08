@@ -17,8 +17,9 @@
   <!-- Подключение улучшенных стилей уведомлений -->
   <link rel="stylesheet" href="notifications.css">
   
-  <!-- Подключение скрипта настроек для динамической загрузки favicon -->
-  <script src="settings.js"></script>
+  <!-- SITE_CONFIG должен грузиться до settings.js -->
+  <script src="config.js?v=2"></script>
+  <!-- Отключено: settings.js временно не подключаем, чтобы исключить перезапись бренда -->
 
   <script>
   (async function() {
@@ -145,12 +146,59 @@
     </div>
   </footer>
 
+  <script src="config.js"></script>
+  <script>
+    (function(){
+      const cfg = window.SITE_CONFIG || {};
+      const map = [
+        ['.footer__social-instagram', cfg.social_instagram],
+        ['.footer__social-facebook', cfg.social_facebook],
+        ['.footer__social-twitter', cfg.social_twitter],
+        ['.footer__social-telegram', cfg.social_telegram],
+        ['.footer__social-whatsapp', cfg.social_whatsapp]
+      ];
+      map.forEach(([sel, url]) => {
+        document.querySelectorAll(sel).forEach(a => {
+          if (url) {
+            a.href = url;
+            a.target = '_blank';
+            a.rel = 'noopener noreferrer';
+          } else {
+            a.style.display = 'none';
+          }
+        });
+      });
+      if (cfg.contact_phone) {
+        const phoneLink = document.querySelector('.footer__phone a');
+        if (phoneLink) {
+          phoneLink.textContent = cfg.contact_phone;
+          phoneLink.href = 'tel:' + cfg.contact_phone.replace(/[^+\d]/g, '');
+        }
+      }
+      if (cfg.contact_email) {
+        const emailLink = document.querySelector('.footer__email a');
+        if (emailLink) {
+          emailLink.textContent = cfg.contact_email;
+          emailLink.href = 'mailto:' + cfg.contact_email;
+        }
+      }
+      if (cfg.address) {
+        const addressEl = document.querySelector('.footer__address');
+        if (addressEl) addressEl.textContent = 'Адрес: ' + cfg.address;
+      }
+      if (cfg.site_name) {
+        const companyName = document.querySelector('.footer__company-name');
+        if (companyName) companyName.textContent = cfg.site_name;
+      }
+    })();
+  </script>
+ 
   <div class="floating-contact">
     <a href="tel:+79274008865" class="floating-contact__link floating-contact__link--reverse" aria-label="Позвонить">
       <i class="fas fa-phone"></i>
       <span class="floating-contact__text">Позвонить</span>
     </a>
-    <a href="https://wa.me/79274008865?text=%D0%97%D0%B4%D1%80%D0%B0%D0%B2%D1%81%D1%82%D0%B2%D1%83%D0%B9%D1%82%D0%B5%2C%20%D1%8F%20%D1%81%20%D1%81%D0%B0%D0%B9%D1%82%D0%B0%20ooodamax.ru" target="_blank" class="floating-contact__link" aria-label="Написать в WhatsApp">
+    <a href="https://wa.me/79274008865?text=%D0%97%D0%B4%D1%80%D0%B0%D0%B2%D1%81%D1%82%D0%B2%D1%83%D0%B9%D1%82%D0%B5%2C%20%D1%8F%20%D1%81%20%D1%81%D0%B0%D0%B9%D1%82%D0%B0%20ooodamax.shop" target="_blank" class="floating-contact__link" aria-label="Написать в WhatsApp">
       <i class="fab fa-whatsapp"></i>
       <span class="floating-contact__text">Написать</span>
     </a>

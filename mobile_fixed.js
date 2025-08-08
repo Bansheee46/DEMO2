@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const cartWrapper = document.querySelector('.cart-wrapper');
     const productPopup = document.querySelector('#productPopup');
   
-    const API_BASE_URL = 'http://localhost:5000';
+    const API_BASE_URL = '';
   
     // Инициализация счетчика корзины при загрузке страницы
     updateCartCount();

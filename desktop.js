@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', function() {
   renderIslandCategories();
   // Глобальная переменная для хранения данных пользователей
   let registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+  let cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
   
   // Удаляем все существующие меню пользователя при загрузке страницы
   if (typeof deleteUserMenu === 'function') {
@@ -27,6 +28,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Инициализация декоративного градиента с блестками
   initDecorativeEffects();
+
+  // Initialize cart count
+  updateCartCount();
 
 
   // Функция для инициализации декоративных эффектов
@@ -961,9 +965,6 @@ document.addEventListener('DOMContentLoaded', function() {
     `;
     document.head.appendChild(style);
   }
-
-  // Initialize cart count
-  updateCartCount();
 
   // Filter products
   categoryButtons.forEach(button => {
@@ -5310,7 +5311,7 @@ function hideSubcategoriesBar() {
 // --- СЕРВЕРНАЯ СИНХРОНИЗАЦИЯ КОРЗИНЫ ---
 async function fetchCartFromServer(email) {
   try {
-    const res = await fetch(`http://localhost:5000/api/cart?email=${encodeURIComponent(email)}`);
+    const res = await fetch(`/api/cart?email=${encodeURIComponent(email)}`);
     const data = await res.json();
     if (data.success) {
       return data.cart || [];
@@ -5321,7 +5322,7 @@ async function fetchCartFromServer(email) {
 
 async function saveCartToServer(email, cart) {
   try {
-    await fetch('http://localhost:5000/api/cart', {
+    await fetch('/api/cart', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, cart })
@@ -5330,7 +5331,7 @@ async function saveCartToServer(email, cart) {
 }
 
 // --- ПЕРЕОПРЕДЕЛЯЕМ ВСЮ ЛОГИКУ КОРЗИНЫ ---
-let cartItems = [];
+// let cartItems = [];
 
 async function loadCartAfterLogin(userEmail) {
   cartItems = await fetchCartFromServer(userEmail);

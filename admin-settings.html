@@ -516,6 +516,7 @@
   </style>
 </head>
 <body>
+  <script src="config.js"></script>
   <div class="sidebar">
     <div class="sidebar-header">
       <h2>Админ-панель</h2>
@@ -973,27 +974,27 @@
     }
 
     document.addEventListener('DOMContentLoaded', function() {
+      console.log('DOM загружен, начинаем инициализацию...');
+      
       // Загружаем все настройки
+      console.log('Загружаем настройки...');
       loadSettings();
       
       // Проверка на необходимость перезагрузки страницы
+      console.log('Проверяем флаг перезагрузки...');
       checkReloadFlag();
       
-      // Обработчик для формы настроек
-      const settingsForm = document.getElementById('settings-form');
-      if (settingsForm) {
-        settingsForm.addEventListener('submit', function(e) {
-          e.preventDefault();
-          saveSettings();
-        });
-      }
       
       // Добавляем обработчик для кнопки "Сохранить все"
       const saveAllSettingsBtn = document.getElementById('saveAllSettings');
       if (saveAllSettingsBtn) {
+        console.log('Кнопка "Сохранить все" найдена, добавляем обработчик');
         saveAllSettingsBtn.addEventListener('click', function() {
+          console.log('Кнопка "Сохранить все" нажата');
           saveSettings();
         });
+      } else {
+        console.error('Кнопка "Сохранить все" не найдена');
       }
       
       // Обработчик для чекбокса доставки
@@ -1005,9 +1006,6 @@
         });
       }
       
-      // Обработчики для методов оплаты удалены, так как методы оплаты теперь статические
-      
-      // Обработчик для добавления пункта выдачи удален, так как способы доставки теперь статические
 
       // Логотип: предпросмотр и загрузка
       logoInput = document.getElementById('site_logo');
@@ -1021,7 +1019,7 @@
           if (logoInput.files && logoInput.files[0]) {
             const formData = new FormData();
             formData.append('file', logoInput.files[0]);
-            const res = await fetch('http://localhost:5000/api/upload-logo', { method: 'POST', body: formData });
+            const res = await fetch('/api/upload-logo', { method: 'POST', body: formData });
             const data = await res.json();
             if (data.success) {
               logoUrl = '/' + data.url;
@@ -1040,7 +1038,7 @@
           if (faviconInput.files && faviconInput.files[0]) {
             const formData = new FormData();
             formData.append('file', faviconInput.files[0]);
-            const res = await fetch('http://localhost:5000/api/upload-favicon', { method: 'POST', body: formData });
+            const res = await fetch('/api/upload-favicon', { method: 'POST', body: formData });
             const data = await res.json();
             if (data.success) {
               faviconUrl = '/' + data.url;
@@ -1062,10 +1060,11 @@
     // Загрузка всех настроек с сервера
     async function loadSettings() {
       try {
+        console.log('Начинаем загрузку настроек...');
         
         // Добавляем параметр для предотвращения кэширования
         const timestamp = new Date().getTime();
-        const response = await fetch(`http://localhost:5000/api/settings?_=${timestamp}`, {
+        const response = await fetch(`/api/settings?_=${timestamp}`, {
           method: 'GET',
           headers: {
             'Accept': 'application/json',
@@ -1074,25 +1073,36 @@
           mode: 'cors' // Явно указываем режим CORS
         });
         
+        console.log('Получен ответ от сервера:', response.status, response.statusText);
         
         if (!response.ok) {
           throw new Error(`Ошибка HTTP: ${response.status} ${response.statusText}`);
         }
         
         const responseText = await response.text();
+        console.log('Текст ответа:', responseText.substring(0, 200) + '...');
         
         let result;
         try {
           result = JSON.parse(responseText);
-          
+          console.log('JSON успешно распарсен');
         } catch (parseError) {
-          
+          console.error('Ошибка парсинга JSON:', parseError);
           throw new Error('Ошибка при парсинге ответа сервера');
         }
         
         const settings = result.settings || result; // поддержка старого формата
         
-        // Заполняем основные настройки
+        // Отладочная информация
+        console.log('Загруженные настройки:', settings);
+        console.log('Основные настройки:', {
+          site_name: settings.site_name,
+          contact_email: settings.contact_email,
+          contact_phone: settings.contact_phone,
+          address: settings.address
+        });
+        
+        // Заполняем основные настройки (часть значений берём строго из SITE_CONFIG)
         const siteNameEl = document.getElementById('site_name');
         const contactEmailEl = document.getElementById('contact_email');
         const contactPhoneEl = document.getElementById('contact_phone');
@@ -1100,12 +1110,58 @@
         const metaKeywordsEl = document.getElementById('meta_keywords');
         const metaDescriptionEl = document.getElementById('meta_description');
         
-        if (siteNameEl) siteNameEl.value = settings.site_name || '';
-        if (contactEmailEl) contactEmailEl.value = settings.contact_email || '';
-        if (contactPhoneEl) contactPhoneEl.value = settings.contact_phone || '';
-        if (addressEl) addressEl.value = settings.address || '';
+        if (siteNameEl) {
+          siteNameEl.value = (window.SITE_CONFIG?.site_name ?? '');
+          siteNameEl.readOnly = true;
+          siteNameEl.classList.add('form-control--readonly');
+        }
+        if (contactEmailEl) {
+          contactEmailEl.value = (window.SITE_CONFIG?.contact_email ?? '');
+          contactEmailEl.readOnly = true;
+          contactEmailEl.classList.add('form-control--readonly');
+        }
+        if (contactPhoneEl) {
+          contactPhoneEl.value = (window.SITE_CONFIG?.contact_phone ?? '');
+          contactPhoneEl.readOnly = true;
+          contactPhoneEl.classList.add('form-control--readonly');
+        }
+        if (addressEl) {
+          addressEl.value = (window.SITE_CONFIG?.address ?? '');
+          addressEl.readOnly = true;
+          addressEl.classList.add('form-control--readonly');
+        }
         if (metaKeywordsEl) metaKeywordsEl.value = settings.meta_keywords || '';
         if (metaDescriptionEl) metaDescriptionEl.value = settings.meta_description || '';
+        
+        console.log('Заполненные значения:', {
+          site_name: siteNameEl?.value,
+          contact_email: contactEmailEl?.value,
+          contact_phone: contactPhoneEl?.value,
+          address: addressEl?.value
+        });
+        
+        // Проверяем видимость элементов
+        console.log('Проверка видимости элементов:');
+        const elementsToCheck = ['site_name', 'contact_email', 'contact_phone', 'address'];
+        elementsToCheck.forEach(id => {
+          const element = document.getElementById(id);
+          if (element) {
+            const rect = element.getBoundingClientRect();
+            const isVisible = rect.width > 0 && rect.height > 0;
+            const computedStyle = window.getComputedStyle(element);
+            console.log(`${id}:`, {
+              exists: true,
+              visible: isVisible,
+              display: computedStyle.display,
+              visibility: computedStyle.visibility,
+              opacity: computedStyle.opacity,
+              width: rect.width,
+              height: rect.height
+            });
+          } else {
+            console.log(`${id}:`, { exists: false });
+          }
+        });
         
         // Настройки методов оплаты и доставки удалены, так как они теперь статические
 
@@ -1200,49 +1256,17 @@
           document.getElementById('partner_program_4').value = settings.partner_program_4 || '';
         }
         
-        // Соцсети
-        if (document.getElementById('social_instagram')) {
-          // Проверяем разные форматы данных
-          const instagramValue = typeof settings.social_instagram === 'object' ? 
-            settings.social_instagram?.value || '' : 
-            settings.social_instagram || '';
-          document.getElementById('social_instagram').value = instagramValue;
-        }
-        
-        if (document.getElementById('social_facebook')) {
-          const facebookValue = typeof settings.social_facebook === 'object' ? 
-            settings.social_facebook?.value || '' : 
-            settings.social_facebook || '';
-          document.getElementById('social_facebook').value = facebookValue;
-        }
-        
-        if (document.getElementById('social_twitter')) {
-          const twitterValue = typeof settings.social_twitter === 'object' ? 
-            settings.social_twitter?.value || '' : 
-            settings.social_twitter || '';
-          document.getElementById('social_twitter').value = twitterValue;
-        }
-        
-        if (document.getElementById('social_youtube')) {
-          const youtubeValue = typeof settings.social_youtube === 'object' ? 
-            settings.social_youtube?.value || '' : 
-            settings.social_youtube || '';
-          document.getElementById('social_youtube').value = youtubeValue;
-        }
-        
-        if (document.getElementById('social_telegram')) {
-          const telegramValue = typeof settings.social_telegram === 'object' ? 
-            settings.social_telegram?.value || '' : 
-            settings.social_telegram || '';
-          document.getElementById('social_telegram').value = telegramValue;
-        }
-        
-        if (document.getElementById('social_whatsapp')) {
-          const whatsappValue = typeof settings.social_whatsapp === 'object' ? 
-            settings.social_whatsapp?.value || '' : 
-            settings.social_whatsapp || '';
-          document.getElementById('social_whatsapp').value = whatsappValue;
-        }
+        // Соцсети — только из SITE_CONFIG и поле заблокировано
+        const socialIds = ['social_instagram', 'social_facebook', 'social_twitter', 'social_youtube', 'social_telegram', 'social_whatsapp'];
+        socialIds.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) {
+            const key = id.replace('social_', 'social_');
+            el.value = (window.SITE_CONFIG?.[key] ?? '');
+            el.readOnly = true;
+            el.classList.add('form-control--readonly');
+          }
+        });
         
         // Email для заказов и поддержки
         if (document.getElementById('order_email')) {
@@ -1362,19 +1386,16 @@
 
     // Сохранение настроек на сервер
     async function saveSettings() {
+      const saveAllBtn = document.getElementById('saveAllSettings');
       try {
-        // Показываем индикатор загрузки на кнопке "Сохранить все"
-        const saveAllBtn = document.getElementById('saveAllSettings');
-        const originalText = saveAllBtn.innerHTML;
-        saveAllBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Сохранение...';
-        saveAllBtn.disabled = true;
-        
+        if (saveAllBtn) {
+          saveAllBtn.dataset.originalText = saveAllBtn.innerHTML;
+          saveAllBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Сохранение...';
+          saveAllBtn.disabled = true;
+        }
         // Собираем все настройки
         const settings = {
-          site_name: document.getElementById('site_name')?.value || '',
-          contact_email: document.getElementById('contact_email')?.value || '',
-          contact_phone: document.getElementById('contact_phone')?.value || '',
-          address: document.getElementById('address')?.value || '',
+          // Базовые поля убраны из сохранения — они управляются кодом
           meta_keywords: document.getElementById('meta_keywords')?.value || '',
           meta_description: document.getElementById('meta_description')?.value || '',
           
@@ -1399,13 +1420,7 @@
           // Настройки юридических документов
           documents_last_update: document.getElementById('documents_last_update')?.value || '',
           
-          // Социальные сети
-          social_instagram: document.getElementById('social_instagram')?.value || '',
-          social_facebook: document.getElementById('social_facebook')?.value || '',
-          social_twitter: document.getElementById('social_twitter')?.value || '',
-          social_youtube: document.getElementById('social_youtube')?.value || '',
-          social_telegram: document.getElementById('social_telegram')?.value || '',
-          social_whatsapp: document.getElementById('social_whatsapp')?.value || '',
+          // Социальные сети — исключены из сохранения
           
           // Email и режим работы
           order_email: document.getElementById('order_email')?.value || '',
@@ -1437,8 +1452,36 @@
           partner_program_4: document.getElementById('partner_program_4')?.value || ''
         };
         
+        // Отладочная информация
+        console.log('Собираем настройки для сохранения:', {
+          site_name: settings.site_name,
+          contact_email: settings.contact_email,
+          contact_phone: settings.contact_phone,
+          address: settings.address
+        });
+        
+        console.log('Элементы формы:', {
+          site_name_el: !!document.getElementById('site_name'),
+          contact_email_el: !!document.getElementById('contact_email'),
+          contact_phone_el: !!document.getElementById('contact_phone'),
+          address_el: !!document.getElementById('address')
+        });
+        
+        // Проверяем значения элементов перед сохранением
+        console.log('Значения элементов перед сохранением:');
+        const elementsToCheck = ['site_name', 'contact_email', 'contact_phone', 'address'];
+        elementsToCheck.forEach(id => {
+          const element = document.getElementById(id);
+          if (element) {
+            console.log(`${id}: "${element.value}"`);
+          } else {
+            console.log(`${id}: элемент не найден`);
+          }
+        });
+        
         // Сохраняем настройки на сервер
-        const response = await fetch('http://localhost:5000/api/settings', {
+        console.log('Отправляем запрос на сохранение настроек...');
+        const response = await fetch('/api/settings', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -1446,18 +1489,35 @@
           body: JSON.stringify(settings)
         });
         
-        if (!response.ok) throw new Error('Ошибка сохранения настроек');
+        console.log('Получен ответ от сервера при сохранении:', response.status, response.statusText);
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('Ошибка сохранения настроек:', errorText);
+          throw new Error(`Ошибка сохранения настроек: ${response.status} ${response.statusText}`);
+        }
         
         const responseData = await response.json();
+        console.log('Настройки успешно сохранены:', responseData);
         
         // Синхронизируем данные компании с документами
         try {
-          const syncResponse = await fetch('http://localhost:5000/api/sync-company-data', {
+          const syncResponse = await fetch('/api/sync-company-data', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
             },
             body: JSON.stringify({
+              company_data: {
+                company_name: settings.company_name,
+                company_inn: settings.company_inn,
+                company_ogrn: settings.company_ogrn,
+                company_kpp: settings.company_kpp,
+                company_legal_address: settings.company_legal_address,
+                company_postal_address: settings.company_postal_address,
+                company_email: settings.company_email,
+                company_phone: settings.company_phone
+              },
               document_dates: {
                 documents_last_update: settings.documents_last_update
               },
@@ -1511,11 +1571,13 @@
         console.error('Ошибка при сохранении настроек:', error);
         showNotification('error', 'Ошибка при сохранении настроек: ' + error.message);
       } finally {
-        // Восстанавливаем исходный вид кнопки
-        const saveAllBtn = document.getElementById('saveAllSettings');
-        if (saveAllBtn) {
-          saveAllBtn.innerHTML = originalText;
-          saveAllBtn.disabled = false;
+        try {
+          if (saveAllBtn) {
+            saveAllBtn.innerHTML = saveAllBtn.dataset.originalText || 'Сохранить';
+            saveAllBtn.disabled = false;
+          }
+        } catch (e) {
+          // Ошибку игнорируем, чтобы не мешать работе интерфейса
         }
       }
     }

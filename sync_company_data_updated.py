@@ -33,7 +33,7 @@ def sync_company_data():
         ]
         
         # Формируем данные компании
-        company_name = company_data.get('company_name', 'ООО «Дамакс»')
+        company_name = company_data.get('company_name', '')
         company_inn = company_data.get('company_inn', '')
         company_ogrn = company_data.get('company_ogrn', '')
         company_kpp = company_data.get('company_kpp', '')

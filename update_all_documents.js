@@ -11,7 +11,7 @@ async function updateAllDocuments() {
   try {
     // Получаем текущие настройки
     console.log('Получение текущих настроек...');
-    const settingsResponse = await fetch('http://localhost:5000/api/settings', {
+    const settingsResponse = await fetch('/api/settings', {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
@@ -48,7 +48,7 @@ async function updateAllDocuments() {
     
     // Вызываем API для синхронизации документов
     console.log('Синхронизация документов...');
-    const syncResponse = await fetch('http://localhost:5000/api/sync-company-data', {
+    const syncResponse = await fetch('/api/sync-company-data', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', async function() {
       else if (filename === 'warranty-return.html') documentType = 'warranty';
       
       // Вызываем API для синхронизации данных компании
-      const response = await fetch('http://localhost:5000/api/sync-company-data', {
+      const response = await fetch('/api/sync-company-data', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

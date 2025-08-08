@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Базовый URL API сервера
-const API_BASE_URL = 'http://localhost:5000';
+const API_BASE_URL = '';
 
 /**
  * Получение всех товаров с сервера

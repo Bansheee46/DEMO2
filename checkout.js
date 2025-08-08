@@ -934,7 +934,7 @@ const checkoutModule = (function() {
       console.log('Отправка заказа на сервер:', serverOrderData);
       
       // Добавляем отладочную информацию
-      const apiUrl = 'http://localhost:5000/api/orders';
+      const apiUrl = '/api/orders';
       console.log('URL запроса:', apiUrl);
       console.log('Метод запроса:', 'POST');
       console.log('Заголовки запроса:', {

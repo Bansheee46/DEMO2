@@ -1070,7 +1070,7 @@
         return;
       }
 
-      let url = `http://localhost:5000/api/orders?page=${page}&status=${statusFilter}`;
+      let url = `/api/orders?page=${page}&status=${statusFilter}`;
       if (searchQuery) {
         url += `&search=${searchQuery}`;
       }
@@ -1103,7 +1103,7 @@
     
     // Функция для получения информации о текущем пользователе
     function fetchUserData() {
-      fetch('http://localhost:5000/api/auth/user')
+      fetch('/api/auth/user')
         .then(response => response.json())
         .then(data => {
           if (data.success) {
@@ -1258,7 +1258,7 @@
     // Функция для просмотра деталей заказа
     function viewOrder(orderId) {
       // Показываем модальное окно с деталями заказа
-      fetch(`http://localhost:5000/api/orders/${orderId}`)
+      fetch(`/api/orders/${orderId}`)
         .then(response => response.json())
         .then(data => {
           if (data.success) {
@@ -1430,7 +1430,7 @@
     // Функция для отправки запроса на обновление статуса заказа
     function updateOrderStatusApi(orderId, status) {
       return new Promise((resolve, reject) => {
-        fetch(`http://localhost:5000/api/orders/${orderId}/status`, {
+        fetch(`/api/orders/${orderId}/status`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -1783,7 +1783,7 @@
     // Функция для экспорта заказа в Excel
     function exportOrderToExcel(orderId) {
       // Получаем данные заказа
-      fetch(`http://localhost:5000/api/orders/${orderId}`)
+      fetch(`/api/orders/${orderId}`)
         .then(response => response.json())
         .then(data => {
           if (data.success) {
@@ -1846,7 +1846,7 @@
     // Функция для экспорта заказа в 1C
     function exportOrderTo1C(orderId) {
       // Получаем данные заказа
-      fetch(`http://localhost:5000/api/orders/${orderId}`)
+      fetch(`/api/orders/${orderId}`)
         .then(response => response.json())
         .then(data => {
           if (data.success) {
@@ -1934,7 +1934,7 @@
       }
       
       // Отправляем запрос на сохранение номера счета
-      fetch(`http://localhost:5000/api/orders/${orderId}/invoice`, {
+      fetch(`/api/orders/${orderId}/invoice`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -1957,7 +1957,7 @@
     
     // Функция для обновления статуса экспорта заказа
     function updateOrderExportStatus(orderId, exportType) {
-      fetch(`http://localhost:5000/api/orders/${orderId}/export-status`, {
+      fetch(`/api/orders/${orderId}/export-status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -1981,7 +1981,7 @@
         showNotification('Удаление заказов...', 'info');
         
         // Получаем список всех заказов для удаления
-        fetch('http://localhost:5000/api/orders')
+        fetch('/api/orders')
           .then(response => response.json())
           .then(data => {
             if (data.success && data.orders && data.orders.length > 0) {
@@ -2234,7 +2234,7 @@
       console.log('%c Анализ данных заказов ', 'background: #3f51b5; color: white; font-size: 16px; padding: 5px;');
       
       // Проверяем API
-      fetch('http://localhost:5000/api/orders')
+      fetch('/api/orders')
         .then(response => response.json())
         .then(data => {
           console.log('%c Данные с сервера:', 'font-weight: bold; color: #3f51b5;');

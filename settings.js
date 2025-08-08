@@ -1,6 +1,4 @@
-
-
-// Объект с настройками по умолчанию
+// ВАЖНО: DEFAULT_SETTINGS объявляется только один раз в этом файле!
 const DEFAULT_SETTINGS = {
   isDarkMode: false,
   isAnimated: true,
@@ -26,8 +24,8 @@ const DEFAULT_SETTINGS = {
 };
 
 // Настройки API для отправки заказов
-window.API_BASE_URL = 'https://api.damax.ru/api';
-window.API_BACKUP_URL = 'https://backup-api.damax.ru';
+window.API_BASE_URL = 'https://api.damax.shop/api';
+window.API_BACKUP_URL = 'https://backup-api.damax.shop';
 window.API_DEBUG = true; // Включаем режим отладки по умолчанию
 
 // Статические методы оплаты и доставки
@@ -882,6 +880,13 @@ function playSound(soundName, volumeMultiplier = 1) {
   const settings = loadSettings();
   if (!settings.isSoundEnabled) return;
   
+  // Проверяем, было ли взаимодействие пользователя с документом
+  if (!document.body.classList.contains('user-interacted')) {
+    // Если пользователь не взаимодействовал с документом, не воспроизводим звук
+    console.log('Звук не воспроизводится - пользователь не взаимодействовал с документом');
+    return;
+  }
+  
   let soundElement = document.getElementById(`sound-${soundName}`);
   
   if (!soundElement) {
@@ -902,8 +907,8 @@ function playSound(soundName, volumeMultiplier = 1) {
       const checkAndPlay = (index) => {
         if (index >= possibleFileNames.length) {
           console.error(`Не удалось найти звуковой файл для ${soundName}.${extension}`);
-          // Если WAV не воспроизвелся, пробуем MP3
-          if (extension === 'wav') {
+          // Если WAV не воспроизвелся, пробуем MP3 только если это не error
+          if (extension === 'wav' && soundName.toLowerCase() !== 'error') {
             // Проверяем, является ли элемент частью DOM перед удалением
             if (document.body.contains(soundElement)) {
               document.body.removeChild(soundElement);
@@ -1072,8 +1077,18 @@ function getAvailableThemes() {
 
 
  //Функция для загрузки и применения настроек сайта из Flask-сервера
+let settingsLoaded = false; // Флаг для предотвращения повторной загрузки
+
 async function loadAndApplySettings() {
+  if (settingsLoaded) {
+    console.log('settings:DEBUG Настройки уже загружены, пропускаем повторную загрузку');
+    return;
+  }
+  
   console.log('settings:1118 Начало загрузки настроек...');
+  console.log('settings:DEBUG DOM готов:', document.readyState);
+  console.log('settings:DEBUG URL страницы:', window.location.href);
+  
   try {
     // Попытка получить настройки с разных URL
     const urls = [
@@ -1087,7 +1102,14 @@ async function loadAndApplySettings() {
     // Пробуем каждый URL по очереди
     for (const url of urls) {
       try {
-        const response = await fetch(url);
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+          }
+        });
         console.log(`settings:1121 Статус ответа от ${url}: ${response.status} ${response.statusText}`);
         
         if (response.ok) {
@@ -1105,6 +1127,7 @@ async function loadAndApplySettings() {
     
     // Если удалось получить настройки
     if (settingsData) {
+      const CFG = window.SITE_CONFIG || {};
       console.log('settings:1141 Полученные настройки:', settingsData);
       
       // Применяем фавиконку
@@ -1136,102 +1159,131 @@ async function loadAndApplySettings() {
         console.log('settings:1548 Не удалось получить favicon из настроек');
       }
       
-      // Применяем название сайта
-      if (settingsData.site_name) {
-        // Обновляем заголовок страницы
-        document.title = settingsData.site_name;
-        console.log('settings:1554 Название сайта обновлено:', settingsData.site_name);
-        
-        // Обновляем логотипы на странице
+      // Применяем название сайта: только из SITE_CONFIG, без серверного fallback
+      const siteNameFromConfig = (typeof CFG.site_name === 'string' && CFG.site_name.trim() !== '') ? CFG.site_name.trim() : '';
+      const currentMarkupName = (() => {
+        const el = document.querySelector('.top-cloud__logo, .header__logo, .auth-modal__logo, .footer__company-name');
+        return el && typeof el.textContent === 'string' ? el.textContent.trim() : '';
+      })();
+      const siteNameToApply = siteNameFromConfig || currentMarkupName || '';
+      if (siteNameToApply) {
+        document.title = siteNameToApply;
         const logoElements = document.querySelectorAll('.top-cloud__logo, .header__logo, .auth-modal__logo, .footer__company-name');
         logoElements.forEach(element => {
-          element.textContent = settingsData.site_name;
-          console.log('settings:1559 Логотип обновлен:', element);
+          element.textContent = siteNameToApply;
         });
+        console.log('settings:site_name Применено название сайта:', siteNameToApply);
       }
       
       // Обрабатываем телефон
-      const phoneElements = document.querySelectorAll('.footer__phone');
-      if (settingsData.contact_phone && settingsData.contact_phone.trim() !== '') {
-        phoneElements.forEach(element => {
-          element.style.display = '';
-          const phoneLink = element.querySelector('a');
-          if (phoneLink) {
-            phoneLink.href = `tel:${settingsData.contact_phone.replace(/\D/g, '')}`;
-            phoneLink.textContent = settingsData.contact_phone;
-          } else {
-            element.innerHTML = `Телефон: ${settingsData.contact_phone}`;
-          }
-        });
-        console.log('settings:1575 Контактный телефон обновлен:', settingsData.contact_phone);
-      } else {
-        phoneElements.forEach(element => {
-          element.style.display = 'none';
-        });
-        console.log('settings:1683 Телефон не указан, скрываем элементы');
+      const phoneElements = document.querySelectorAll('.footer__phone, .footer__contact.footer__phone');
+      console.log('settings:DEBUG Найдено элементов телефона:', phoneElements.length);
+      phoneElements.forEach((el, index) => {
+        console.log(`settings:DEBUG Элемент телефона ${index}:`, el.className, el.textContent);
+      });
+      
+      {
+        const phone = (CFG.contact_phone ?? settingsData.contact_phone) || '';
+        if (phone.trim() !== '') {
+          phoneElements.forEach(element => {
+            element.style.display = '';
+            const link = element.querySelector('a');
+            const phoneLink = link || element;
+            phoneLink.href = `tel:${phone.replace(/\D/g, '')}`;
+            phoneLink.textContent = phone;
+            if (element.tagName.toLowerCase() === 'p') {
+              element.innerHTML = `Телефон: ${phone}`;
+            }
+          });
+          console.log('settings:contact_phone Применен телефон:', phone);
+        } else {
+          phoneElements.forEach(element => {
+            element.style.display = 'none';
+          });
+          console.log('settings:1580 Контактный телефон не указан, скрываем элементы');
+        }
       }
       
       // Обрабатываем email
-      const emailElements = document.querySelectorAll('.footer__email');
-      if (settingsData.contact_email && settingsData.contact_email.trim() !== '') {
-        emailElements.forEach(element => {
-          element.style.display = '';
-          const emailLink = element.querySelector('a');
-          if (emailLink) {
-            emailLink.href = `mailto:${settingsData.contact_email}`;
-            emailLink.textContent = settingsData.contact_email;
-          } else {
-            element.innerHTML = `Email: ${settingsData.contact_email}`;
-          }
-        });
-        console.log('settings:1698 Контактный email обновлен:', settingsData.contact_email);
-      } else {
-        emailElements.forEach(element => {
-          element.style.display = 'none';
-        });
-        console.log('settings:1702 Email не указан, скрываем элементы');
+      const emailElements = document.querySelectorAll('.footer__email, .footer__contact.footer__email');
+      console.log('settings:DEBUG Найдено элементов email:', emailElements.length);
+      emailElements.forEach((el, index) => {
+        console.log(`settings:DEBUG Элемент email ${index}:`, el.className, el.textContent);
+      });
+      
+      {
+        const email = (CFG.contact_email ?? settingsData.contact_email) || '';
+        if (email.trim() !== '') {
+          emailElements.forEach(element => {
+            element.style.display = '';
+            const link = element.querySelector('a');
+            const emailLink = link || element;
+            emailLink.href = `mailto:${email}`;
+            emailLink.textContent = email;
+            if (element.tagName.toLowerCase() === 'p') {
+              element.innerHTML = `Email: ${email}`;
+            }
+          });
+          console.log('settings:contact_email Применен email:', email);
+        } else {
+          emailElements.forEach(element => {
+            element.style.display = 'none';
+          });
+          console.log('settings:1703 Контактный email не указан, скрываем элементы');
+        }
       }
       
       // Обрабатываем адрес
-      const addressElements = document.querySelectorAll('.footer__address');
-      if (settingsData.address && settingsData.address.trim() !== '') {
-        addressElements.forEach(element => {
-          element.style.display = '';
-          const addressLink = element.querySelector('a');
-          if (addressLink) {
-            addressLink.href = `https://maps.google.com/maps?q=${encodeURIComponent(settingsData.address)}`;
-            addressLink.textContent = settingsData.address;
-          } else {
-            element.innerHTML = `Адрес: ${settingsData.address}`;
-          }
-        });
-        
-        // Также обновляем обычные ссылки на карту
-        const mapLinks = document.querySelectorAll('a[href^="https://maps.google.com"]');
-        mapLinks.forEach(link => {
-          link.href = `https://maps.google.com/maps?q=${encodeURIComponent(settingsData.address)}`;
-          if (!link.querySelector('i')) {
-            link.textContent = settingsData.address;
-          }
-        });
-        
-        console.log('settings:1724 Адрес обновлен:', settingsData.address);
-      } else {
-        addressElements.forEach(element => {
-          element.style.display = 'none';
-        });
-        console.log('settings:1728 Адрес не указан, скрываем элементы');
+      const addressElements = document.querySelectorAll('.footer__address, .footer__contact.footer__address');
+      console.log('settings:DEBUG Найдено элементов адреса:', addressElements.length);
+      addressElements.forEach((el, index) => {
+        console.log(`settings:DEBUG Элемент адреса ${index}:`, el.className, el.textContent);
+      });
+      
+      {
+        const address = (CFG.address ?? settingsData.address) || '';
+        if (address.trim() !== '') {
+          addressElements.forEach(element => {
+            element.style.display = '';
+            const link = element.querySelector('a');
+            if (link) {
+              link.href = `https://maps.google.com/maps?q=${encodeURIComponent(address)}`;
+              link.textContent = address;
+            } else {
+              element.innerHTML = `Адрес: ${address}`;
+            }
+          });
+          // Обновляем все ссылки на адрес в документе
+          const allAddressLinks = document.querySelectorAll('a[href^="https://maps.google.com/maps?q="]');
+          allAddressLinks.forEach(link => {
+            link.href = `https://maps.google.com/maps?q=${encodeURIComponent(address)}`;
+            link.textContent = address;
+          });
+          console.log('settings:address Применен адрес:', address);
+        } else {
+          addressElements.forEach(element => {
+            element.style.display = 'none';
+          });
+          console.log('settings:1729 Адрес не указан, скрываем элементы');
+        }
       }
       
       // Обрабатываем режим работы
-      const hoursElements = document.querySelectorAll('.footer__hours');
+      const hoursElements = document.querySelectorAll('.footer__hours, .footer__contact.footer__hours');
+      console.log('settings:DEBUG Найдено элементов режима работы:', hoursElements.length);
+      hoursElements.forEach((el, index) => {
+        console.log(`settings:DEBUG Элемент режима работы ${index}:`, el.className, el.textContent);
+      });
+      
       if (settingsData.working_hours && settingsData.working_hours.trim() !== '') {
         hoursElements.forEach(element => {
           element.style.display = '';
           if (element.tagName.toLowerCase() === 'p') {
             element.innerHTML = `Режим работы: ${settingsData.working_hours}`;
+            console.log('settings:DEBUG Обновлен режим работы:', element.innerHTML);
           } else {
             element.textContent = settingsData.working_hours;
+            console.log('settings:DEBUG Обновлен режим работы:', element.textContent);
           }
         });
         console.log('settings:1742 Режим работы обновлен:', settingsData.working_hours);
@@ -1244,12 +1296,12 @@ async function loadAndApplySettings() {
       
       // Обновляем ссылки на соцсети
       const socialLinks = {
-        'instagram': settingsData.social_instagram,
-        'facebook': settingsData.social_facebook,
-        'twitter': settingsData.social_twitter,
-        'youtube': settingsData.social_youtube,
-        'telegram': settingsData.social_telegram,
-        'whatsapp': settingsData.social_whatsapp
+        'instagram': (CFG.social_instagram ?? settingsData.social_instagram),
+        'facebook': (CFG.social_facebook ?? settingsData.social_facebook),
+        'twitter': (CFG.social_twitter ?? settingsData.social_twitter),
+        'youtube': (CFG.social_youtube ?? settingsData.social_youtube),
+        'telegram': (CFG.social_telegram ?? settingsData.social_telegram),
+        'whatsapp': (CFG.social_whatsapp ?? settingsData.social_whatsapp)
       };
       
       // Сначала скроем все иконки соцсетей
@@ -1359,16 +1411,83 @@ async function loadAndApplySettings() {
       }
       
       console.log('settings:1364 Все настройки успешно применены');
+      settingsLoaded = true; // Устанавливаем флаг успешной загрузки
     } else {
       console.log('settings:1366 Не удалось получить настройки');
     }
   } catch (error) {
     console.error('settings:1364 Ошибка при загрузке настроек:', error);
+    console.error('settings:DEBUG Стек ошибки:', error.stack);
+    settingsLoaded = false; // Сбрасываем флаг при ошибке
   }
 }
 
 // Запускаем загрузку настроек при загрузке страницы
 document.addEventListener('DOMContentLoaded', loadAndApplySettings);
+
+// Делаем функцию доступной глобально для отладки
+window.loadAndApplySettings = loadAndApplySettings;
+
+// Функция для ручного тестирования настроек
+window.testSettings = function() {
+  console.log('testSettings: Начинаем ручное тестирование настроек');
+  settingsLoaded = false; // Сбрасываем флаг для повторного тестирования
+  return loadAndApplySettings();
+};
+
+function lockBrandingToStaticText() {
+  try {
+    const CFG = window.SITE_CONFIG || {};
+    const selectors = ['.top-cloud__logo', '.header__logo', '.auth-modal__logo', '.footer__company-name'];
+    const findFirstEl = () => document.querySelector(selectors.join(', '));
+    const initialEl = findFirstEl();
+    const initialFromDom = initialEl && initialEl.textContent ? initialEl.textContent.trim() : '';
+    const brandName = (typeof CFG.site_name === 'string' && CFG.site_name.trim()) || initialFromDom || document.title || 'Damax';
+
+    // Применяем сразу
+    document.title = brandName;
+    document.querySelectorAll(selectors.join(', ')).forEach(el => { el.textContent = brandName; });
+
+    // Наблюдатель для узлов логотипа
+    const logoObserver = new MutationObserver(() => {
+      document.querySelectorAll(selectors.join(', ')).forEach(el => {
+        if ((el.textContent || '').trim() !== brandName) {
+          el.textContent = brandName;
+        }
+      });
+    });
+
+    // Вешаем наблюдателя на контейнер документа (чтобы поймать поздние изменения/подмены)
+    logoObserver.observe(document.body, { childList: true, characterData: true, subtree: true });
+
+    // Наблюдатель для <title>
+    const titleEl = document.querySelector('head > title') || (() => {
+      const t = document.createElement('title');
+      document.head.appendChild(t);
+      return t;
+    })();
+    const titleObserver = new MutationObserver(() => {
+      if (document.title !== brandName) {
+        document.title = brandName;
+      }
+    });
+    titleObserver.observe(titleEl, { childList: true, characterData: true, subtree: true });
+
+    // Также периодическая подстраховка (раз в 2 сек, легкая операция)
+    if (!window.__brandLockInterval) {
+      window.__brandLockInterval = setInterval(() => {
+        if (document.title !== brandName) document.title = brandName;
+        document.querySelectorAll(selectors.join(', ')).forEach(el => {
+          if ((el.textContent || '').trim() !== brandName) {
+            el.textContent = brandName;
+          }
+        });
+      }, 2000);
+    }
+  } catch (e) {
+    console.warn('lockBrandingToStaticText: ошибка блокировки брендинга', e);
+  }
+}
 
 /**
  * Инициализация модуля настроек как глобального объекта
@@ -1396,11 +1515,24 @@ document.addEventListener('DOMContentLoaded', loadAndApplySettings);
     // Удаляем старый хак для кнопки сохранения, он больше не нужен
     
     initSettings();
+    // Форсируем статический брендинг после инициализации
+    try { lockBrandingToStaticText(); } catch (e) {}
     
     // Добавляем обработчики для существующих элементов
     const settingsButtons = document.querySelectorAll('[data-action="settings"]');
     settingsButtons.forEach(button => {
       button.addEventListener('click', showSettingsModal);
+    });
+    
+    // Добавляем обработчик для отслеживания взаимодействия пользователя
+    const userInteractionEvents = ['click', 'keydown', 'touchstart', 'mousedown'];
+    userInteractionEvents.forEach(eventType => {
+      document.addEventListener(eventType, function() {
+        if (!document.body.classList.contains('user-interacted')) {
+          document.body.classList.add('user-interacted');
+          console.log('Пользователь взаимодействовал с документом - звук разрешен');
+        }
+      }, { once: true });
     });
   });
 })();
@@ -1418,22 +1550,6 @@ function getAvailablePaymentMethods() {
   ];
 }
 
-/**
- * Получение доступных методов доставки
- * @returns {Array} Массив методов доставки
- */
-function getAvailableDeliveryMethods() {
-  // Возвращаем статические методы доставки
-  return window.STATIC_DELIVERY_METHODS || [
-    { value: 'courier', label: 'Курьер' },
-    { value: 'pickup', label: 'Самовывоз' },
-    { value: 'post', label: 'Почта' }
-  ];
-}
-
-function toggleDeliveryBlocks() {
-  // Эта функция больше не нужна, так как методы оплаты и доставки теперь статичные
-}
 
 // Экспортируем функцию в глобальный контекст для совместимости
 window.toggleDeliveryBlocks = toggleDeliveryBlocks; 

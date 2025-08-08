@@ -82,7 +82,7 @@ const server = http.createServer(function(req, res) {
         
         // Создаем новый запрос с собранным телом
         const options = {
-          target: 'http://localhost:5000',
+          target: 'http://127.0.0.1:5000',
           buffer: Buffer.from(body),
           headers: {
             'Content-Type': req.headers['content-type'] || 'application/json'
@@ -94,7 +94,7 @@ const server = http.createServer(function(req, res) {
       });
     } else {
       // Для GET, DELETE и других запросов
-      proxy.web(req, res, { target: 'http://localhost:5000' });
+      proxy.web(req, res, { target: 'http://127.0.0.1:5000' });
     }
   } else {
     // Для статических файлов
@@ -148,7 +148,7 @@ const server = http.createServer(function(req, res) {
   }
 });
 
-// Запускаем сервер на порту 5500
-server.listen(5500, () => {
-  console.log('Сервер запущен на http://localhost:5500');
+// Запускаем сервер на порту 5000
+server.listen(5000, () => {
+  console.log('Proxy+Static server running at http://185.207.64.189:5000');
 }); 

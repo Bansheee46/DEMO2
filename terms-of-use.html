@@ -151,7 +151,7 @@
         // Если синхронизация не выполнялась или прошло более 1 часа
         if (!syncTimestamp || (currentTime - parseInt(syncTimestamp)) > 3600000) {
           // Вызываем API для синхронизации данных компании
-          const response = await fetch('http://localhost:5000/api/sync-company-data', {
+          const response = await fetch('/api/sync-company-data', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
@@ -187,7 +187,7 @@
                         1. Общие положения
                     </h2>
                     <p class="terms__text">
-                        Настоящие Условия пользования (далее — «Условия») регулируют отношения между <span id="company_name">НАЗКОМП</span> (ИНН: <span id="company_inn">ИНН!!!ы</span>, ОГРН: <span id="company_ogrn">ОГРН</span>, юридический адрес: <span id="company_legal_address">ЮРАДР</span>) (далее — «Компания») и физическим лицом (далее — «Пользователь»), использующим сервисы и услуги Компании, доступные на сайте damax.ru (далее — «Сайт»).
+                        Настоящие Условия пользования (далее — «Условия») регулируют отношения между <span id="company_name">НАЗКОМП</span> (ИНН: <span id="company_inn">ИНН!!!ы</span>, ОГРН: <span id="company_ogrn">ОГРН</span>, юридический адрес: <span id="company_legal_address">ЮРАДР</span>) (далее — «Компания») и физическим лицом (далее — «Пользователь»), использующим сервисы и услуги Компании, доступные на сайте damax.shop (далее — «Сайт»).
                     </p>
                     <p class="terms__text">
                         Используя Сайт, Вы подтверждаете, что прочитали, поняли и согласны с настоящими Условиями. Если Вы не согласны с Условиями, пожалуйста, не используйте Сайт.
@@ -353,7 +353,7 @@
         // Загружаем настройки компании
         document.addEventListener('DOMContentLoaded', async function() {
             try {
-                const response = await fetch('http://localhost:5000/api/settings');
+                const response = await fetch('/api/settings');
                 if (response.ok) {
                     const settings = await response.json();
                     

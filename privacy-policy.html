@@ -125,7 +125,7 @@
         // Если синхронизация не выполнялась или прошло более 1 часа
         if (!syncTimestamp || (currentTime - parseInt(syncTimestamp)) > 3600000) {
           // Вызываем API для синхронизации данных компании
-          const response = await fetch('http://localhost:5000/api/sync-company-data', {
+          const response = await fetch('/api/sync-company-data', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
@@ -168,7 +168,7 @@
                         Юридический адрес: <span id="company_legal_address">423816, Республика Татарстан, Г.О. Город Набережные Челны, Пр-кт Им Вахитова, Д. 44/78,КВ.16</span><br>
                         Фактический адрес: <span id="company_actual_address">423816, Республика Татарстан, Г.О. Город Набережные Челны, Пр-кт Им Вахитова, Д. 44/78,КВ.16</span><br>
                         Телефон: <span id="company_phone">+7 (999) 123-45-67(Нуждается в уточнении)</span><br>
-                        Email: <span id="company_email">info@damax.ru(Нуждается в уточнении)</span>
+                        Email: <span id="company_email">info@damax.shop(Нуждается в уточнении)</span>
                     </p>
                 </div>
 
@@ -271,7 +271,7 @@
                     </p>
                     <ul class="legal-document__list">
                         <li class="legal-document__list-item">Отправить письменное заявление по адресу компании</li>
-                        <li class="legal-document__list-item">Направить электронное письмо на адрес <span id="company_privacy_email">privacy@damax.ru</span></li>
+                        <li class="legal-document__list-item">Направить электронное письмо на адрес <span id="company_privacy_email">privacy@damax.shop</span></li>
                         <li class="legal-document__list-item">Использовать форму в личном кабинете</li>
                     </ul>
                     <p class="legal-document__text">
@@ -285,7 +285,7 @@
                         По всем вопросам, связанным с обработкой персональных данных, обращайтесь:
                     </p>
                     <ul class="legal-document__list">
-                        <li class="legal-document__list-item">Email: <span id="company_privacy_email2">privacy@damax.ru</span></li>
+                        <li class="legal-document__list-item">Email: <span id="company_privacy_email2">privacy@damax.shop</span></li>
                         <li class="legal-document__list-item">Телефон: <span id="company_phone2">+7 (999) 123-45-67</span></li>
                         <li class="legal-document__list-item">Адрес: <span id="company_legal_address2">423816, Республика Татарстан, Г.О. Город Набережные Челны, Пр-кт Им Вахитова, Д. 44/78,КВ.16</span></li>
                     </ul>
@@ -309,7 +309,7 @@
         // Загружаем настройки компании
         document.addEventListener('DOMContentLoaded', async function() {
             try {
-                const response = await fetch('http://localhost:5000/api/settings');
+                const response = await fetch('/api/settings');
                 if (response.ok) {
                     const settings = await response.json();
                     

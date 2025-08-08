@@ -140,7 +140,7 @@
         // Если синхронизация не выполнялась или прошло более 1 часа
         if (!syncTimestamp || (currentTime - parseInt(syncTimestamp)) > 3600000) {
           // Вызываем API для синхронизации данных компании
-          const response = await fetch('http://localhost:5000/api/sync-company-data', {
+          const response = await fetch('/api/sync-company-data', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
@@ -173,7 +173,7 @@
                 <div class="privacy-consent__section">
                     <h2 class="privacy-consent__section-title">1. Введение</h2>
                     <p class="privacy-consent__text">
-                        Настоящим я выражаю свое согласие на обработку ООО "Дамакс" (ИНН: <span id="company_inn">ИНН</span>, ОГРН: <span id="company_ogrn">ОГРН</span>, юридический адрес: <span id="company_legal_address">ЮРАДР</span>) (далее – «Оператор») моих персональных данных, указанных при регистрации и/или оформлении заказа на сайте damax.ru.
+                        Настоящим я выражаю свое согласие на обработку ООО "Дамакс" (ИНН: <span id="company_inn">ИНН</span>, ОГРН: <span id="company_ogrn">ОГРН</span>, юридический адрес: <span id="company_legal_address">ЮРАДР</span>) (далее – «Оператор») моих персональных данных, указанных при регистрации и/или оформлении заказа на сайте damax.shop.
                     </p>
                 </div>
 
@@ -253,7 +253,7 @@
                 <div class="privacy-consent__section">
                     <h2 class="privacy-consent__section-title">6. Порядок отзыва согласия</h2>
                     <p class="privacy-consent__text">
-                        Я вправе отозвать свое согласие путем направления соответствующего письменного уведомления Оператору по адресу: <span id="company_postal_address">123456, г. Москва, ул. Примерная, д. 123</span>, или по электронной почте: <span id="company_privacy_email">privacy@damax.ru</span>.
+                        Я вправе отозвать свое согласие путем направления соответствующего письменного уведомления Оператору по адресу: <span id="company_postal_address">123456, г. Москва, ул. Примерная, д. 123</span>, или по электронной почте: <span id="company_privacy_email">privacy@damax.shop</span>.
                     </p>
                     <p class="privacy-consent__text">
                         В случае отзыва согласия Оператор обязан прекратить обработку персональных данных и уничтожить их в срок, не превышающий 30 дней с даты поступления указанного отзыва, за исключением случаев, когда обработка персональных данных необходима для исполнения договора или требования законодательства.
@@ -301,7 +301,7 @@
         // Загружаем настройки компании
         document.addEventListener('DOMContentLoaded', async function() {
             try {
-                const response = await fetch('http://localhost:5000/api/settings');
+                const response = await fetch('/api/settings');
                 if (response.ok) {
                     const settings = await response.json();
                     

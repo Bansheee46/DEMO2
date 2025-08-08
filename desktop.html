@@ -26,8 +26,8 @@
   <!-- Подключение улучшенных стилей уведомлений -->
   <link rel="stylesheet" href="notifications.css">
   
-  <!-- Подключение скрипта настроек для динамической загрузки favicon -->
-  <script src="settings.js"></script>
+  <!-- SITE_CONFIG должен быть загружен раньше settings.js -->
+  <script src="config.js?v=2"></script>
   
   <style>
     /* Определение CSS-переменных для светлой и темной темы */
@@ -262,6 +262,57 @@
     
   </footer>
 </div><!-- конец .page-wrapper -->
+
+<script src="config.js"></script>
+<script>
+  (function(){
+    const cfg = window.SITE_CONFIG || {};
+    const map = [
+      ['.footer__social-instagram', cfg.social_instagram],
+      ['.footer__social-facebook', cfg.social_facebook],
+      ['.footer__social-twitter', cfg.social_twitter],
+      ['.footer__social-youtube', cfg.social_youtube],
+      ['.footer__social-telegram', cfg.social_telegram],
+      ['.footer__social-whatsapp', cfg.social_whatsapp]
+    ];
+    map.forEach(([sel, url]) => {
+      document.querySelectorAll(sel).forEach(a => {
+        if (url) {
+          a.href = url;
+          a.target = '_blank';
+          a.rel = 'noopener noreferrer';
+        } else {
+          a.style.display = 'none';
+        }
+      });
+    });
+    // Контакты в подвале (телефон/email/адрес) если нужно проставлять из конфигурации
+    if (cfg.contact_phone) {
+      const phoneLink = document.querySelector('.footer__phone a');
+      if (phoneLink) {
+        phoneLink.textContent = cfg.contact_phone;
+        phoneLink.href = 'tel:' + cfg.contact_phone.replace(/[^+\d]/g, '');
+      }
+    }
+    if (cfg.contact_email) {
+      const emailLink = document.querySelector('.footer__email a');
+      if (emailLink) {
+        emailLink.textContent = cfg.contact_email;
+        emailLink.href = 'mailto:' + cfg.contact_email;
+      }
+    }
+    if (cfg.address) {
+      const addressEl = document.querySelector('.footer__address');
+      if (addressEl) {
+        addressEl.innerHTML = 'Адрес: ' + cfg.address;
+      }
+    }
+    if (cfg.site_name) {
+      const companyName = document.querySelector('.footer__company-name');
+      if (companyName) companyName.textContent = cfg.site_name;
+    }
+  })();
+</script>
 
 <!-- Модальное окно авторизации (новый двухколоночный дизайн) -->
 <div class="auth-modal" aria-hidden="true">
@@ -646,9 +697,7 @@
 <script src="search-animation.js"></script>
 <script src="product-search.js"></script>
 <script src="desktop.js"></script>
-<script src="settings.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
-<script src="notification-examples.js"></script>
 <script>
   AOS.init({
     duration: 800,

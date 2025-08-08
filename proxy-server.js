@@ -7,7 +7,7 @@ const serve = serveStatic('.', { index: ['desktop.html', 'index.html'] });
 
 // Прокси для всех /api/* запросов
 const apiProxy = createProxyMiddleware('/api', {
-  target: 'http://localhost:5000',
+  target: 'http://127.0.0.1:5000',
   changeOrigin: true,
   onProxyReq: (proxyReq, req, res) => {
     console.log(`[PROXY] ${req.method} ${req.url}`);
@@ -41,6 +41,6 @@ const server = http.createServer((req, res) => {
   }
 });
 
-server.listen(5500, () => {
-  console.log('Proxy+Static server running at http://localhost:5500');
+server.listen(5000, () => {
+  console.log('Proxy+Static server running at http://185.207.64.189:5000');
 }); 

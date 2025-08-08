@@ -81,101 +81,11 @@ def init_store_db():
         )
         ''')
         
-        # Проверяем, пуста ли таблица settings
-        cursor.execute('SELECT COUNT(*) FROM settings')
-        settings_count = cursor.fetchone()[0]
-        
-        if settings_count == 0:
-            # Добавляем базовые настройки
-            settings = [
-                ('site_name', 'Интернет-магазин', 'Название сайта'),
-                ('contact_email', 'contact@example.com', 'Контактный email'),
-                ('contact_phone', '+7 (999) 123-45-67', 'Контактный телефон'),
-                ('address', 'г. Москва, ул. Примерная, д. 1', 'Адрес'),
-                ('currency', 'RUB', 'Валюта'),
-                ('currency_symbol', '₽', 'Символ валюты'),
-                ('meta_keywords', 'магазин, товары, купить', 'Мета-ключевые слова'),
-                ('meta_description', 'Интернет-магазин качественных товаров', 'Мета-описание'),
-                # Настройки методов оплаты
-                ('payment_cash', 'true', 'Оплата наличными при получении'),
-                ('payment_card', 'true', 'Оплата картой при получении'),
-                ('payment_online', 'false', 'Онлайн-оплата'),
-                ('payment_api_key', '', 'API-ключ платежной системы'),
-                ('payment_merchant_id', '', 'ID мерчанта платежной системы'),
-                # Настройки доставки
-                ('delivery_enabled', 'true', 'Включена ли доставка'),
-                ('delivery_price', '300', 'Стоимость доставки'),
-                ('free_delivery_threshold', '5000', 'Бесплатная доставка от суммы'),
-                ('delivery_regions', 'Москва\nМосковская область', 'Регионы доставки'),
-                # Пункты выдачи (JSON-строка с массивом объектов)
-                ('pickup_points', '[]', 'Пункты выдачи'),
-                # Юридические данные компании
-                ('company_name', 'ООО "Дамакс"', 'Название компании'),
-                ('company_inn', '1650421897', 'ИНН компании'),
-                ('company_ogrn', '1231600009740', 'ОГРН компании'),
-                ('company_kpp', '', 'КПП компании'),
-                ('company_legal_address', '423816, Республика Татарстан, Г.О. Город Набережные Челны, Пр-кт Им Вахитова, Д. 44/78,КВ.16', 'Юридический адрес'),
-                ('company_actual_address', '423816, Республика Татарстан, Г.О. Город Набережные Челны, Пр-кт Им Вахитова, Д. 44/78,КВ.16', 'Фактический адрес'),
-                ('company_postal_address', '123456, г. Москва, ул. Примерная, д. 123', 'Почтовый адрес'),
-                ('company_email', 'info@damax.ru', 'Email компании'),
-                ('company_privacy_email', 'privacy@damax.ru', 'Email для вопросов приватности'),
-                ('company_phone', '+7 (999) 123-45-67', 'Телефон компании'),
-                # Банковские реквизиты
-                ('company_bank_name', '', 'Название банка'),
-                ('company_bank_account', '', 'Расчетный счет'),
-                ('company_bank_corr_account', '', 'Корреспондентский счет'),
-                ('company_bank_bik', '', 'БИК банка'),
-                # Соцсети и мессенджеры
-                ('social_instagram', '', 'Ссылка на Instagram'),
-                ('social_facebook', '', 'Ссылка на Facebook'),
-                ('social_twitter', '', 'Ссылка на Twitter'),
-                ('social_youtube', '', 'Ссылка на YouTube'),
-                ('social_telegram', '', 'Ссылка на Telegram'),
-                ('social_whatsapp', '', 'Ссылка на WhatsApp'),
-                # Логотип и favicon
-                ('site_logo', '', 'URL логотипа сайта'),
-                ('site_favicon', '', 'URL favicon сайта'),
-                # Email для заказов и поддержки
-                ('order_email', 'orders@example.com', 'Email для заказов'),
-                ('support_email', 'support@example.com', 'Email для поддержки'),
-                # Режим работы
-                ('working_hours', '', 'Режим работы магазина'),
-                # Настройки способов получения
-                ('enable_courier', 'true', 'Включить курьерскую доставку'),
-                ('enable_pickup', 'true', 'Включить самовывоз'),
-                ('enable_post', 'false', 'Включить почтовую доставку'),
-                ('courier_price', '300', 'Стоимость курьерской доставки'),
-                ('courier_free_from', '5000', 'Бесплатная курьерская доставка от суммы'),
-                ('courier_regions', 'Москва\nМосковская область', 'Регионы курьерской доставки'),
-                ('courier_description', '', 'Описание/условия курьерской доставки'),
-                ('pickup_description', '', 'Описание/условия самовывоза'),
-                ('post_price', '350', 'Стоимость почтовой доставки'),
-                ('post_free_from', '7000', 'Бесплатная почтовая доставка от суммы'),
-                ('post_regions', 'Россия', 'Регионы почтовой доставки'),
-                ('post_description', '', 'Описание/условия почтовой доставки'),
-                ('post_regular', 'true', 'Почта: обычная доставка'),
-                ('post_express', 'false', 'Почта: экспресс-доставка'),
-                ('post_insured', 'false', 'Почта: страхование')
-            ]
-            
-            for key, value, description in settings:
-                cursor.execute(
-                    'INSERT INTO settings (key, value, description, updated_at) VALUES (?, ?, ?, ?)',
-                    (key, value, description, datetime.now().isoformat())
-                )
-            
-            print(f"Добавлены базовые настройки в таблицу settings")
-        
         # Сохраняем изменения и закрываем соединение
         conn.commit()
-        # соединение оставляем открытым для миграции
+        conn.close()
         
         print(f"База данных store.db успешно инициализирована")
-        
-        if not db_exists:
-            print("Создана новая база данных с настройками по умолчанию")
-        else:
-            print("Обновлена существующая база данных")
     except Exception as e:
         print(f"Ошибка при инициализации базы данных store.db: {e}")
 
@@ -1926,11 +1836,15 @@ def update_order_export_status(order_id):
 
 # --- Новый эндпоинт для синхронизации данных компании с terms-of-use.html ---
 @app.route('/api/sync-company-data', methods=['POST'])
+@admin_required
 def sync_company_data():
     try:
         print("Получен запрос на синхронизацию данных компании")
         
-        # Получаем данные компании из настроек
+        # Получаем данные из запроса
+        request_data = request.get_json() or {}
+        
+        # Получаем данные компании из настроек (база данных)
         conn = sqlite3.connect('store.db')
         cursor = conn.cursor()
         cursor.execute("SELECT key, value FROM settings WHERE key IN ('company_name', 'company_inn', 'company_ogrn', 'company_kpp', 'company_legal_address', 'company_actual_address', 'company_postal_address', 'company_email', 'company_phone')")
@@ -1940,6 +1854,14 @@ def sync_company_data():
         company_data = {}
         for key, value in settings_rows:
             company_data[key] = value
+        
+        # Если в запросе есть данные компании, используем их (приоритет над базой данных)
+        if 'company_data' in request_data:
+            request_company_data = request_data['company_data']
+            company_data.update(request_company_data)
+            print("Используются данные компании из запроса")
+        else:
+            print("Используются данные компании из базы данных")
         
         # Список файлов для обновления
         files_to_update = [
@@ -1952,7 +1874,7 @@ def sync_company_data():
         ]
         
         # Формируем данные компании
-        company_name = company_data.get('company_name', 'ООО «Дамакс»')
+        company_name = company_data.get('company_name', '')
         company_inn = company_data.get('company_inn', '')
         company_ogrn = company_data.get('company_ogrn', '')
         company_kpp = company_data.get('company_kpp', '')

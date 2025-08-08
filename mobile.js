@@ -1,6 +1,6 @@
 // Глобальные настройки API URL
-window.API_BASE_URL = 'http://localhost:5000/api';
-window.API_BACKUP_URL = 'http://localhost:5000/api';
+window.API_BASE_URL = '/api';
+window.API_BACKUP_URL = '/api';
 
 document.addEventListener('DOMContentLoaded', () => {
     console.log('Script loaded');
@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const cartWrapper = document.querySelector('.cart-wrapper');
     const productPopup = document.querySelector('#productPopup');
   
-    const API_BASE_URL = 'http://localhost:5000';
+    const API_BASE_URL = '/api';
     
     // Функция для расширенного логирования
     function logDebug(context, message, data = null) {
