@@ -15,7 +15,7 @@ COPY . .
 
 # Переменные окружения (можно переопределить при запуске)
 ENV FLASK_ENV=production
-ENV SECRET_KEY=замени_на_секретный_ключ
+ENV SECRET_KEY=d1326b7bee5b4b962f94e36da7a45b3ab92913e338f9f5a87d8fdfef25831f0b
 
 # Открываем порт (Flask по умолчанию 5000, gunicorn 8000)
 EXPOSE 8000
