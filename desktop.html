@@ -144,7 +144,7 @@
     let found = await checkStatus('/api/site-status');
     if (!found) {
       // 2. Пробуем абсолютный адрес Flask-сервера
-      found = await checkStatus('http://localhost:5000/api/site-status');
+      found = await checkStatus(window.location.origin + '/api/site-status');
     }
   })();
   </script>
