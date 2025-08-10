@@ -24,8 +24,8 @@ const DEFAULT_SETTINGS = {
 };
 
 // Настройки API для отправки заказов
-window.API_BASE_URL = 'https://api.damax.shop/api';
-window.API_BACKUP_URL = 'https://backup-api.damax.shop';
+window.API_BASE_URL = (typeof window.API_BASE_URL !== 'undefined' && window.API_BASE_URL !== null) ? window.API_BASE_URL : '/api';
+window.API_BACKUP_URL = (typeof window.API_BACKUP_URL !== 'undefined' && window.API_BACKUP_URL !== null) ? window.API_BACKUP_URL : '/api';
 window.API_DEBUG = true; // Включаем режим отладки по умолчанию
 
 // Статические методы оплаты и доставки

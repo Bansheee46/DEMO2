@@ -1490,7 +1490,7 @@
       try {
         productsContainer.innerHTML = '<div class="loader"></div>';
         
-        const response = await fetchWithCsrf(`${API_BASE_URL}/api/products`);
+        const response = await fetchWithCsrf(`${API_BASE_URL}/products`);
         const data = await response.json();
         
         if (!data.success) {
@@ -1586,7 +1586,7 @@
             saveBtn.disabled = true;
             saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
             try {
-              const res = await fetchWithCsrf(`${API_BASE_URL}/api/products/${id}`, {
+              const res = await fetchWithCsrf(`${API_BASE_URL}/products/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ title: newTitle, price: newPrice, sku: newSku, category: newCat })
@@ -1641,7 +1641,7 @@
         modalTitle.textContent = 'Редактирование товара';
         
         // Загружаем данные товара с сервера
-        const response = await fetchWithCsrf(`${API_BASE_URL}/api/products/${productId}`);
+        const response = await fetchWithCsrf(`${API_BASE_URL}/products/${productId}`);
         const data = await response.json();
         
         if (!data.success) {
@@ -1721,12 +1721,12 @@
         };
         
         const productId = productIdInput.value;
-        let url = `${API_BASE_URL}/api/products`;
+        let url = `${API_BASE_URL}/products`;
         let method = 'POST';
         
         // Если редактируем существующий товар
         if (productId) {
-          url = `${API_BASE_URL}/api/products/${productId}`;
+          url = `${API_BASE_URL}/products/${productId}`;
           method = 'PUT';
         }
         
@@ -1766,7 +1766,7 @@
     // Функция для удаления товара
     async function deleteProduct(productId) {
       try {
-        const response = await fetchWithCsrf(`${API_BASE_URL}/api/products/${productId}`, {
+        const response = await fetchWithCsrf(`${API_BASE_URL}/products/${productId}`, {
           method: 'DELETE'
         });
         
@@ -1826,7 +1826,7 @@
       currentCategoryCode = null;
     }
     async function loadCategories() {
-      const res = await fetchWithCsrf(`${API_BASE_URL}/api/categories`);
+      const res = await fetchWithCsrf(`${API_BASE_URL}/categories`);
       const data = await res.json();
       if(data.success) {
         categoriesCache = data.categories;
@@ -1885,7 +1885,7 @@
       if (newCategoryImage.files && newCategoryImage.files[0]) {
         const formData = new FormData();
         formData.append('file', newCategoryImage.files[0]);
-        const res = await fetch(`${API_BASE_URL}/api/upload-category-image`, { method: 'POST', body: formData });
+        const res = await fetch(`${API_BASE_URL}/upload-category-image`, { method: 'POST', body: formData });
         const data = await res.json();
         if (!data.success) {
           categoriesError.textContent = data.message || 'Ошибка загрузки фото';
@@ -1900,7 +1900,7 @@
         return;
       }
       // 3. Отправляем категорию
-      const res = await fetchWithCsrf(`${API_BASE_URL}/api/categories`, {
+      const res = await fetchWithCsrf(`${API_BASE_URL}/categories`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, code, image_url })
@@ -1918,7 +1918,7 @@
     }
     async function deleteCategory(id) {
       if(!confirm('Удалить категорию?'))return;
-      const res = await fetchWithCsrf(`${API_BASE_URL}/api/categories/${id}`,{method:'DELETE'});
+      const res = await fetchWithCsrf(`${API_BASE_URL}/categories/${id}`,{method:'DELETE'});
       const data = await res.json();
       if(data.success){
         await loadCategories();
@@ -1944,7 +1944,7 @@
         // Если пользователь выбрал новый файл
         const formData = new FormData();
         formData.append('file', img.dataset.newFile);
-        const res = await fetch(`${API_BASE_URL}/api/upload-category-image`, { method: 'POST', body: formData });
+        const res = await fetch(`${API_BASE_URL}/upload-category-image`, { method: 'POST', body: formData });
         const data = await res.json();
         if (!data.success) {
           categoriesError.textContent = data.message || 'Ошибка загрузки фото';
@@ -1958,7 +1958,7 @@
         categoriesError.textContent = 'Название, код и фото обязательны';
         return;
       }
-      const res = await fetchWithCsrf(`${API_BASE_URL}/api/categories/${id}`, {
+      const res = await fetchWithCsrf(`${API_BASE_URL}/categories/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, code, image_url })
@@ -2006,7 +2006,7 @@
       subcategoriesList.innerHTML = '<li style="color:#888;">Загрузка...</li>';
       subcategoriesError.textContent = '';
       try {
-        const res = await fetchWithCsrf(`${API_BASE_URL}/api/subcategories?category=${encodeURIComponent(categoryCode)}`);
+        const res = await fetchWithCsrf(`${API_BASE_URL}/subcategories?category=${encodeURIComponent(categoryCode)}`);
         const data = await res.json();
         if (data.success) {
           renderSubcategoriesList(data.subcategories);
@@ -2045,7 +2045,7 @@
       if (!name || !currentCategoryCode) return;
       const code = generateCategoryCode(name);
       try {
-        const res = await fetchWithCsrf(`${API_BASE_URL}/api/subcategories`, {
+        const res = await fetchWithCsrf(`${API_BASE_URL}/subcategories`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name, code, category_code: currentCategoryCode })
@@ -2070,7 +2070,7 @@
         if (!confirm('Удалить подкатегорию?')) return;
         const id = btnDel.getAttribute('data-del');
         try {
-          const res = await fetchWithCsrf(`${API_BASE_URL}/api/subcategories/${id}`, { method: 'DELETE' });
+          const res = await fetchWithCsrf(`${API_BASE_URL}/subcategories/${id}`, { method: 'DELETE' });
           const data = await res.json();
           if (data.success) {
             await loadSubcategories(currentCategoryCode);
@@ -2089,7 +2089,7 @@
         if (newName === null) return;
         const newCode = generateCategoryCode(newName);
         try {
-          const res = await fetchWithCsrf(`${API_BASE_URL}/api/subcategories/${id}`, {
+          const res = await fetchWithCsrf(`${API_BASE_URL}/subcategories/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ name: newName.trim(), code: newCode, category_code: currentCategoryCode })
@@ -2132,7 +2132,7 @@
         
         // Иначе загружаем с сервера
         subcategoryInput.innerHTML = '<option value="">Загрузка...</option>';
-        const res = await fetchWithCsrf(`${API_BASE_URL}/api/subcategories?category=${encodeURIComponent(categoryCode)}`);
+        const res = await fetchWithCsrf(`${API_BASE_URL}/subcategories?category=${encodeURIComponent(categoryCode)}`);
         const data = await res.json();
         
         if (data.success) {

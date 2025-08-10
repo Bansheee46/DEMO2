@@ -96,23 +96,22 @@ load_site_settings()
 # Генерация секретного ключа при запуске сервера
 CSRF_TOKEN = secrets.token_hex(32)
 
-# Добавляем поддержку CORS для всех маршрутов
-# @app.after_request
-# def after_request(response):
-#     response.headers.add('Access-Control-Allow-Origin', '*')
-#     response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-Client-Version,X-Platform')
-#     response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
-#     return response
+    # Добавляем поддержку CORS для всех маршрутов
+    @app.after_request
+    def after_request(response):
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-Client-Version,X-Platform')
+        response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+        return response
 
-# Обработка OPTIONS запросов для CORS
-# Закомментировано из-за дублирования с универсальным маршрутом /api/orders
-# @app.route('/api/orders', methods=['OPTIONS'])
-# def handle_options_orders():
-#     response = app.make_default_options_response()
-#     response.headers.add('Access-Control-Allow-Origin', '*')
-#     response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
-#     response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
-#     return response
+    # Обработка OPTIONS запросов для CORS
+    @app.route('/api/orders', methods=['OPTIONS'])
+    def handle_options_orders():
+        response = app.make_default_options_response()
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+        response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+        return response
 
 # Обработка OPTIONS запросов для API настроек
 @app.route('/api/settings', methods=['OPTIONS'])
@@ -240,13 +239,6 @@ def save_image_from_url(image_url):
     except Exception as e:
         print(f"Ошибка при загрузке изображения: {e}")
         return image_url
-
-# Функция для проверки IP-адреса
-def is_allowed_ip(ip):
-    # Список разрешенных IP-адресов (можно настроить)
-    allowed_ips = ['127.0.0.1', 'localhost']
-    # Проверяем, входит ли IP в список разрешенных
-    return ip in allowed_ips
 
 # Упрощенный декоратор для админ-панели (без проверки авторизации)
 def admin_required(f):

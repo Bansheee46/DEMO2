@@ -27,7 +27,7 @@ const API_BASE_URL = '';
  */
 async function getProducts(category = '') {
   try {
-    const url = new URL(`${API_BASE_URL}/api/products`);
+    const url = new URL('/api/products', window.location.origin);
     if (category) {
       url.searchParams.append('category', category);
     }
@@ -55,7 +55,7 @@ async function getProducts(category = '') {
  */
 async function getProductById(productId) {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/products/${productId}`);
+    const response = await fetch(`/api/products/${productId}`);
     const data = await response.json();
     
     if (!data.success) {

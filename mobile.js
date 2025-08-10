@@ -287,7 +287,7 @@ document.addEventListener('DOMContentLoaded', () => {
           productPopup.querySelectorAll('.product-popup__image').forEach(img => img.src = '');
           // Получаем подробную инфу с сервера
           try {
-            const res = await fetch(`${API_BASE_URL}/api/products/${productId}`);
+            const res = await fetch(`${API_BASE_URL}/products/${productId}`);
             const data = await res.json();
             if (!data.success || !data.product) throw new Error('Нет данных');
             const product = data.product;
@@ -531,7 +531,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
           }
           
-          fetch(`${API_BASE_URL}/api/orders`, {
+          fetch(`${API_BASE_URL}/orders`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -1566,7 +1566,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!track) return;
       track.innerHTML = '<div style="color:#888;padding:20px;">Загрузка категорий...</div>';
       try {
-        const res = await fetch(`${API_BASE_URL}/api/categories`);
+        const res = await fetch(`${API_BASE_URL}/categories`);
         const data = await res.json();
         if (!data.success || !data.categories || !data.categories.length) {
           track.innerHTML = '<div style="color:#888;padding:20px;">Нет категорий</div>';
@@ -1641,7 +1641,7 @@ document.addEventListener('DOMContentLoaded', () => {
       container.innerHTML = '<div style="text-align:center;color:#888;padding:10px;width:100%;">Загрузка подкатегорий...</div>';
       
       try {
-        const response = await fetch(`${API_BASE_URL}/api/subcategories?category=${encodeURIComponent(categoryCode)}`);
+        const response = await fetch(`${API_BASE_URL}/subcategories?category=${encodeURIComponent(categoryCode)}`);
         const data = await response.json();
         
         console.log('Полученные подкатегории:', data);
@@ -1728,7 +1728,7 @@ document.addEventListener('DOMContentLoaded', () => {
       productsGrid.innerHTML = '<div class="loading-indicator">Загрузка товаров...</div>';
       
       try {
-        const url = new URL(`${API_BASE_URL}/api/products`);
+        const url = new URL(`${API_BASE_URL}/products`, window.location.origin);
         url.searchParams.append('category', categoryCode);
         url.searchParams.append('subcategory', subcatCode);
         
@@ -1751,7 +1751,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- API для работы с товарами (аналогично products-api.js) ---
     async function getProducts(category = '') {
       try {
-        const url = new URL(`${API_BASE_URL}/api/products`);
+        const url = new URL(`${API_BASE_URL}/products`, window.location.origin);
         if (category) {
           url.searchParams.append('category', category);
         }
@@ -2593,5 +2593,31 @@ document.addEventListener('DOMContentLoaded', () => {
         return { success: false, message: 'Ошибка соединения с сервером' };
       }
     }
+
+    // Получение продукта по ID
+    async function getProductById(productId) {
+      const res = await fetch(`${API_BASE_URL}/products/${productId}`);
+      // ... existing code ...
+    }
+
+    // Оформление заказа
+    function submitOrder(orderData) {
+      return fetch(`${API_BASE_URL}/orders`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderData)
+      });
+    }
+
+    // Поиск/построение URL для списка товаров
+    (function buildProductsList() {
+      const url = new URL(`${window.location.origin}${API_BASE_URL}/products`);
+      // ... existing code ...
+    })();
+
+    (function buildFilteredProductsList() {
+      const url = new URL(`${window.location.origin}${API_BASE_URL}/products`);
+      // ... existing code ...
+    })();
 
 });

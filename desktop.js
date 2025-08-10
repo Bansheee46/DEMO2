@@ -5082,7 +5082,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Получаем категории с сервера
     let cats = [];
     try {
-      const res = await fetch(`${API_BASE_URL}/api/categories`);
+      const res = await fetch('/api/categories');
       const data = await res.json();
       if (data.success) cats = data.categories;
     } catch (e) { cats = [] }
@@ -5175,8 +5175,8 @@ document.addEventListener('DOMContentLoaded', function() {
     bar.style.display = 'flex';
     
     // Загружаем подкатегории из API
-    fetch(`${API_BASE_URL}/api/subcategories?category=${encodeURIComponent(categoryCode)}`)
-      .then(response => response.json())
+    fetch(`/api/subcategories?category=${encodeURIComponent(categoryCode)}`)
+      .then(res => res.json())
       .then(data => {
         if (!data.success || !data.subcategories || data.subcategories.length === 0) {
           bar.style.display = 'none';
@@ -5254,7 +5254,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const cards = document.querySelectorAll('.product-card');
     
     // Загружаем товары по выбранной подкатегории
-    fetch(`${API_BASE_URL}/api/products?category=${encodeURIComponent(categoryCode)}&subcategory=${encodeURIComponent(subcatCode)}`)
+    fetch(`/api/products?category=${encodeURIComponent(categoryCode)}&subcategory=${encodeURIComponent(subcatCode)}`)
       .then(response => response.json())
       .then(data => {
         if (!data.success || !data.products) {
