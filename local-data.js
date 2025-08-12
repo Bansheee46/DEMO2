@@ -28,16 +28,5 @@ window.LOCAL_SUBCATEGORIES = [
 // Товары (минимально необходимые поля: id, title/name, price, image_url, category, subcategory_code)
 // Допустимо хранить любые другие поля, которые ваш фронт использует при рендере.
 window.LOCAL_PRODUCTS = [
-  { id: 101, title: 'iPhone 13', price: 69990, image_url: '/images/p-iphone13.jpg', category: 'electronics', subcategory_code: 'phones', description: 'Смартфон Apple' },
-  { id: 102, title: 'MacBook Air', price: 119990, image_url: '/images/p-macbookair.jpg', category: 'electronics', subcategory_code: 'laptops', description: 'Ноутбук Apple' },
-  { id: 103, title: 'PlayStation 5', price: 55990, image_url: '/images/p-ps5.jpg', category: 'electronics', subcategory_code: 'consoles', description: 'Игровая консоль Sony' },
-
-  { id: 201, title: 'Медвежонок плюшевый', price: 1990, image_url: '/images/p-plushbear.jpg', category: 'toys', subcategory_code: 'plush', description: 'Мягкая игрушка' },
-  { id: 202, title: 'Конструктор City', price: 4990, image_url: '/images/p-lego-city.jpg', category: 'toys', subcategory_code: 'lego', description: 'Конструктор' },
-
-  { id: 301, title: 'Футболка базовая', price: 990, image_url: '/images/p-tshirt.jpg', category: 'clothing', subcategory_code: 'tshirts', description: 'Хлопок 100%' },
-  { id: 302, title: 'Куртка демисезонная', price: 6990, image_url: '/images/p-jacket.jpg', category: 'clothing', subcategory_code: 'jackets', description: 'Легкая и тёплая' },
-
-  { id: 401, title: 'Смарт-часы', price: 6990, image_url: '/images/p-watch.jpg', category: 'accessories', subcategory_code: 'watches', description: 'Уведомления и фитнес' },
-  { id: 402, title: 'Рюкзак городской', price: 2990, image_url: '/images/p-backpack.jpg', category: 'accessories', subcategory_code: 'backpacks', description: '20 л' }
+  
 ]; 

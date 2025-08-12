@@ -29,8 +29,8 @@ document.addEventListener('DOMContentLoaded', function() {
   // Инициализация декоративного градиента с блестками
   initDecorativeEffects();
 
-  // Initialize cart count
-  updateCartCount();
+  // Initialize cart count after current tick (чтобы дождаться объявления DOM-переменных)
+  setTimeout(() => { try { updateCartCount(); } catch(e) {} }, 0);
 
 
   // Функция для инициализации декоративных эффектов
@@ -138,6 +138,9 @@ document.addEventListener('DOMContentLoaded', function() {
   const cartItemsList = document.querySelector('.cart-panel__items');
   const cartTotal = document.querySelector('.cart-panel__total span');
   const cartCheckout = document.querySelector('.cart-panel__checkout');
+
+  // Теперь, когда cartCount/cartIcon объявлены, можно безопасно обновить счётчик
+  updateCartCount();
 
   // Создаем оверлей для затемнения страницы при открытом меню
   const overlayDiv = document.createElement('div');

@@ -4,95 +4,248 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Редактор каталога (офлайн)</title>
-  <link rel="stylesheet" href="mobile-styles.css">
+  
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    h1 { margin-bottom: 10px; }
-    .hint { color: #555; margin-bottom: 16px; }
-    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
-    .card { border: 1px solid #ddd; border-radius: 8px; padding: 16px; background: #fff; }
-    .card h2 { margin-top: 0; font-size: 18px; }
-    .row { display: grid; grid-template-columns: 140px 1fr; gap: 10px; align-items: center; margin-bottom: 8px; }
-    input[type="text"], input[type="number"], textarea { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 6px; }
-    textarea { min-height: 64px; }
-    .list { margin-top: 10px; max-height: 260px; overflow: auto; border: 1px solid #eee; border-radius: 6px; }
-    .list table { width: 100%; border-collapse: collapse; }
-    .list th, .list td { padding: 6px 8px; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
-    .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
-    button { padding: 8px 12px; border: none; border-radius: 6px; background: #C9897B; color: #fff; cursor: pointer; }
-    button.secondary { background: #888; }
-    button.danger { background: #d33; }
-    .two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; }
-    .ok { color: #2e7d32; }
-    .warn { color: #b26a00; }
-    .err { color: #c62828; }
-    .toolbar { display: flex; gap: 10px; align-items: center; margin-bottom: 16px; }
-    .toolbar input[type="file"] { display: none; }
-    label.file { padding: 8px 12px; background: #4a6da7; color: #fff; border-radius: 6px; cursor: pointer; }
-    .note { font-size: 12px; color: #666; }
+    :root {
+      --primary: #4a6da7;
+      --accent: #C9897B;
+      --bg: #f7f8fb;
+      --card: #fff;
+      --text: #2b2d33;
+      --muted: #667085;
+      --border: #e5e7eb;
+      --success: #2e7d32;
+      --danger: #c62828;
+      --warning: #b26a00;
+    }
+    * { box-sizing: border-box; }
+    body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial; background: var(--bg); color: var(--text); margin: 0; }
+    header { position: sticky; top:0; z-index:10; background:linear-gradient(90deg,#4a6da7,#87c0cd); color:#fff; padding:14px 20px; box-shadow:0 2px 10px rgba(0,0,0,.05); }
+    header .title { font-size: 18px; font-weight: 600; }
+    main { padding: 24px; max-width: 1440px; margin: 0 auto; }
+    .hint { color: #eef2ff; opacity: .95; font-size: 13px; }
+    .toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 10px; }
+    .toolbar .spacer { flex: 1; }
+    .toolbar .status { font-size: 12px; color: #e5f7ea; }
+    .toolbar .status.saved::before { content: '● '; color: #7dd87d; }
+    .toolbar .status.warn::before { content: '● '; color: #ffd166; }
+
+    .btn { padding: 9px 12px; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,.06); }
+    .btn.primary { background: var(--accent); color:#fff; }
+    .btn.secondary { background: #eef2ff; color: #1f2937; }
+    .btn.ghost { background: transparent; color:#fff; border:1px solid #ffffff33; }
+    .btn.danger { background: #fee2e2; color: var(--danger); }
+    .file-label { padding: 9px 12px; border:1px dashed #ffffff77; border-radius: 10px; color:#fff; cursor:pointer; }
+    .file-label input { display:none; }
+    
+    .grid { display: grid; grid-template-columns: 360px 1fr 1fr; gap: 24px; align-items: start; margin-top: 18px; }
+    .card { border: 1px solid var(--border); border-radius: 16px; padding: 16px; background: var(--card); box-shadow: 0 4px 14px rgba(0,0,0,.04); }
+    .card h2 { margin: 0 0 12px 0; font-size: 18px; }
+    .section-actions { display:flex; gap:8px; align-items:center; margin: 8px 0 12px; }
+    .row { display: grid; grid-template-columns: 220px 1fr; gap: 12px; align-items: center; margin-bottom: 10px; }
+    input[type="text"], input[type="number"], textarea, select { width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: 10px; background:#fff; font-size: 15px; }
+    textarea { min-height: 72px; }
+
+    .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .list { margin-top: 10px; max-height: 480px; overflow: auto; border: 1px solid var(--border); border-radius: 12px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 10px 12px; border-bottom: 1px solid #f2f4f7; font-size: 14px; text-align:left; }
+    th { position: sticky; top: 0; background: #f9fafb; z-index: 1; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; color:#475467; }
+    .note { font-size: 12px; color: var(--muted); margin-top:8px; }
+    .pill { display:inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; background:#eef2ff; color:#334155; }
+    .right { text-align: right; }
+    /* ——— UI улучшения без изменения логики ——— */
+    .note.strong { color:#475467; font-weight:600; }
+    .row > label { font-weight:600; color:#334155; display:flex; align-items:center; gap:6px; }
+    .req { color: var(--danger); font-weight: 700; margin-left: 2px; }
+    input[type="text"], input[type="number"], textarea, select { transition: border-color .15s, box-shadow .15s, background-color .15s; }
+    input[type="text"]:focus, input[type="number"]:focus, textarea:focus, select:focus { outline: none; border-color: #93c5fd; box-shadow: 0 0 0 3px #93c5fd33; background:#fff; }
+    .btn { transition: transform .04s ease, background-color .15s; }
+    .btn:hover { transform: translateY(-1px); }
+    .btn.primary { box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+    .btn.primary:hover { filter: brightness(0.97); }
+    .btn.secondary:hover { background:#e3e8ff; }
+    .btn.danger:hover { background:#ffdfe0; }
+    .card h2 { display:flex; align-items:center; gap:10px; }
+    .lead { margin: 8px 0 14px; color:#475467; font-size: 13px; }
+    .hint-inline { font-size:12px; color:#667085; }
+    .stepper { display:flex; gap:16px; align-items:center; margin: 8px 0 2px; flex-wrap: wrap; }
+    .stepper .step { display:flex; align-items:center; gap:8px; color:#334155; background:#ffffff; border:1px solid var(--border); border-radius:999px; padding:6px 10px; font-size:13px; }
+    .stepper .num { width:22px; height:22px; display:inline-grid; place-items:center; background:#eef2ff; color:#334155; border-radius:999px; font-weight:700; }
+    table tbody tr:nth-child(odd) { background:#fafbff; }
+    table tbody tr:hover { background:#f3f6ff; }
   </style>
   <script src="api-client.js"></script>
   <script>
+    let lastSaveTimer;
+
+    function markSaved(msg='Сохранено'){ const s = document.getElementById('saveStatus'); s.textContent = msg; s.className = 'status saved'; clearTimeout(lastSaveTimer); lastSaveTimer = setTimeout(()=>{ s.textContent = 'Готово'; }, 2000); }
+    function markWarn(msg){ const s = document.getElementById('saveStatus'); s.textContent = msg; s.className = 'status warn'; }
+
+    // —— Автоматизация тех.полей ——
+    function transliterateRuToLat(str){
+      const map = { 'а':'a','б':'b','в':'v','г':'g','д':'d','е':'e','ё':'e','ж':'zh','з':'z','и':'i','й':'y','к':'k','л':'l','м':'m','н':'n','о':'o','п':'p','р':'r','с':'s','т':'t','у':'u','ф':'f','х':'h','ц':'c','ч':'ch','ш':'sh','щ':'shch','ъ':'','ы':'y','ь':'','э':'e','ю':'yu','я':'ya' };
+      return (str||'').split('').map(ch=>{
+        const lower = ch.toLowerCase();
+        const rep = map[lower];
+        if (rep===undefined) return ch;
+        return ch===lower ? rep : rep.toUpperCase();
+      }).join('');
+    }
+    const slugify = (text) => {
+      const pre = transliterateRuToLat((text||'').toString());
+      return pre
+        .normalize('NFKD')
+        .replace(/\p{Diacritic}+/gu, '')
+        .replace(/[^a-zA-Z0-9\s-_]+/g, '')
+        .trim()
+        .replace(/[\s_]+/g, '-')
+        .toLowerCase();
+    };
+
+    function nextId(kind){
+      const st = store();
+      const arr = st[kind] || [];
+      const max = arr.reduce((m, r)=> Math.max(m, Number(r.id)||0), 0);
+      return max + 1;
+    }
+
+    function ensureUniqueCode(kind, baseCode){
+      const st = store();
+      const arr = st[kind] || [];
+      const base = slugify(baseCode||'');
+      if (!base) return '';
+      let code = base; let i = 1;
+      const exists = (c)=> arr.some(r=> String(r.code||'').toLowerCase() === String(c).toLowerCase());
+      while (exists(code)) { code = `${base}-${i++}`; }
+      return code;
+    }
+
+    function generateSku(prod){
+      const cat = slugify(prod.category||'').replace(/-/g,'').slice(0,3).toUpperCase();
+      const sub = slugify(prod.subcategory_code||'').replace(/-/g,'').slice(0,3).toUpperCase();
+      const title = slugify(prod.title||'').replace(/-/g,'').slice(0,4).toUpperCase();
+      const idPart = String(prod.id||'').padStart(4,'0').slice(-4);
+      return [cat, sub||'GEN', title||'PRD', idPart].filter(Boolean).join('-');
+    }
+
     function loadDefaults(){
       const cats = (window.LOCAL_CATEGORIES||[]).slice();
       const subs = (window.LOCAL_SUBCATEGORIES||[]).slice();
       const prods = (window.LOCAL_PRODUCTS||[]).slice();
       return { categories: cats, subcategories: subs, products: prods };
     }
-
-    function loadCustom(){
-      try { return JSON.parse(localStorage.getItem('CUSTOM_CATALOG_V1')||'null'); } catch { return null; }
-    }
-
-    function saveCustom(data){
-      localStorage.setItem('CUSTOM_CATALOG_V1', JSON.stringify(data));
-    }
+    function loadCustom(){ try { return JSON.parse(localStorage.getItem('CUSTOM_CATALOG_V1')||'null'); } catch { return null; } }
+    function saveCustom(data){ localStorage.setItem('CUSTOM_CATALOG_V1', JSON.stringify(data)); markSaved(); }
+    function store(){ return loadCustom() || loadDefaults(); }
 
     function byId(id){ return document.getElementById(id); }
 
+    function rebuildSelects(){
+      const data = store();
+      // Справочник категорий по code
+      const catOptions = data.categories.map(c=>({ value:c.code, label:`${c.name} (${c.code})` }));
+      // Категория для подкатегории
+      const subCatSel = byId('sub_cat_code');
+      buildOptions(subCatSel, catOptions, '— выберите категорию —');
+      // Категория товара
+      const pCatSel = byId('p_category');
+      buildOptions(pCatSel, catOptions, '— выберите категорию —');
+      // Подкатегория товара (зависит от категории)
+      buildProductSubcats();
+    }
+
+    function buildOptions(selectEl, options, placeholder){
+      const current = selectEl.value;
+      selectEl.innerHTML = '';
+      const ph = document.createElement('option'); ph.value=''; ph.textContent = placeholder; selectEl.appendChild(ph);
+      options.forEach(o=>{ const op=document.createElement('option'); op.value=o.value; op.textContent=o.label; selectEl.appendChild(op); });
+      if ([...selectEl.options].some(o=>o.value===current)) selectEl.value = current;
+    }
+
+    function buildProductSubcats(){
+      const data = store();
+      const catCode = byId('p_category').value;
+      const scSel = byId('p_subcat');
+      const relevant = data.subcategories.filter(s=>s.category_code && s.category_code.toLowerCase() === (catCode||'').toLowerCase())
+        .map(s=>({ value:s.code, label:`${s.name} (${s.code})` }));
+      buildOptions(scSel, relevant, '— (необязательно) —');
+    }
+
     function refreshPreview(){
       const custom = loadCustom();
-      const data = custom || loadDefaults();
+      const data = store();
       byId('catsCount').textContent = data.categories.length;
       byId('subsCount').textContent = data.subcategories.length;
       byId('prodsCount').textContent = data.products.length;
 
-      // таблицы
-      renderTable('catsTable', data.categories, ['id','name','code','image_url']);
-      renderTable('subsTable', data.subcategories, ['id','name','code','category_code']);
-      renderTable('prodsTable', data.products, ['id','title','price','category','subcategory_code']);
+      renderTable('catsTable', data.categories, [
+        {key:'id', label:'id'},
+        {key:'name', label:'Название'},
+        {key:'code', label:'Код'},
+        {key:'image_url', label:'Картинка'}
+      ], 'categories');
+
+      renderTable('subsTable', data.subcategories, [
+        {key:'id', label:'id'},
+        {key:'name', label:'Название'},
+        {key:'code', label:'Код'},
+        {key:'category_code', label:'Категория (код)'},
+        {key:'_catName', label:'Категория (название)'}
+      ], 'subcategories');
+
+      renderTable('prodsTable', data.products, [
+        {key:'id', label:'id'},
+        {key:'title', label:'Название'},
+        {key:'price', label:'Цена'},
+        {key:'category', label:'Категория (код)'},
+        {key:'_catName', label:'Категория (название)'},
+        {key:'subcategory_code', label:'Подкатегория (код)'},
+        {key:'_subName', label:'Подкатегория (название)'}
+      ], 'products');
 
       byId('activeSource').textContent = (custom ? 'Пользовательские данные (localStorage)' : 'Данные по умолчанию (local-data.js)');
+      rebuildSelects();
+      markSaved('Готово');
     }
 
-    function renderTable(tableId, rows, cols){
+    function withDecor(row){
+      const data = store();
+      if (row.category_code){
+        const cat = data.categories.find(c=>c.code && c.code.toLowerCase()===row.category_code.toLowerCase());
+        row._catName = cat ? cat.name : '';
+      }
+      if (row.category){
+        const cat = data.categories.find(c=>c.code && c.code.toLowerCase()===row.category.toLowerCase());
+        row._catName = cat ? cat.name : '';
+      }
+      if (row.subcategory_code){
+        const sub = data.subcategories.find(s=>s.code && s.code.toLowerCase()===row.subcategory_code.toLowerCase());
+        row._subName = sub ? sub.name : '';
+      }
+      return row;
+    }
+
+    function renderTable(tableId, rows, cols, kind){
       const el = byId(tableId);
       el.innerHTML = '';
       const thead = document.createElement('thead');
-      thead.innerHTML = '<tr>' + cols.map(c=>`<th>${c}</th>`).join('') + '<th></th></tr>';
+      thead.innerHTML = '<tr>' + cols.map(c=>`<th>${c.label}</th>`).join('') + '<th class="right">Действия</th></tr>';
       el.appendChild(thead);
       const tbody = document.createElement('tbody');
-      rows.forEach((r, i)=>{
+      rows.map(r=>withDecor({...r})).forEach((r, i)=>{
         const tr = document.createElement('tr');
         cols.forEach(c=>{
           const td = document.createElement('td');
-          td.className = 'mono';
-          td.textContent = (r[c]!==undefined? r[c] : '');
+          const val = r[c.key];
+          td.innerHTML = (c.key==='price' && typeof val==='number') ? `<span class="mono">${val.toLocaleString('ru-RU')} ₽</span>` : `<span class="mono">${val!==undefined? val : ''}</span>`;
           tr.appendChild(td);
         });
-        const tdAct = document.createElement('td');
-        const btn = document.createElement('button');
-        btn.textContent = 'Удалить';
-        btn.className = 'danger';
-        btn.onclick = ()=>{
-          const custom = loadCustom() || loadDefaults();
-          if (tableId==='catsTable') custom.categories.splice(i,1);
-          if (tableId==='subsTable') custom.subcategories.splice(i,1);
-          if (tableId==='prodsTable') custom.products.splice(i,1);
-          saveCustom(custom); refreshPreview();
-        };
-        tdAct.appendChild(btn);
+        const tdAct = document.createElement('td'); tdAct.className = 'right';
+        const del = document.createElement('button'); del.textContent = 'Удалить'; del.className = 'btn danger';
+        del.onclick = ()=>{ const st = store(); st[kind].splice(i,1); saveCustom(st); refreshPreview(); };
+        tdAct.appendChild(del);
         tr.appendChild(tdAct);
         tbody.appendChild(tr);
       });
@@ -100,39 +253,41 @@
     }
 
     function addCategory(){
+      const st = store();
       const cat = {
-        id: Number(byId('cat_id').value||0),
+        id: Number(byId('cat_id').value||0) || nextId('categories'),
         name: byId('cat_name').value.trim(),
         code: byId('cat_code').value.trim(),
         image_url: byId('cat_image').value.trim()
       };
-      const store = loadCustom() || loadDefaults();
-      if (!cat.id || !cat.name || !cat.code){ alert('Заполните id, name, code'); return; }
-      if (store.categories.some(c=>String(c.id)===String(cat.id))) { alert('id категории уже существует'); return; }
-      if (store.categories.some(c=>c.code.toLowerCase()===cat.code.toLowerCase())) { alert('code категории уже существует'); return; }
-      store.categories.push(cat); saveCustom(store); refreshPreview();
+      if (!cat.code && cat.name){ cat.code = ensureUniqueCode('categories', cat.name); byId('cat_code').value = cat.code; }
+      if (!cat.id || !cat.name || !cat.code){ return markWarn('Заполните id, name, code'); }
+      if (st.categories.some(c=>String(c.id)===String(cat.id))) { return markWarn('id категории уже существует'); }
+      if (st.categories.some(c=>c.code.toLowerCase()===cat.code.toLowerCase())) { return markWarn('code категории уже существует'); }
+      st.categories.push(cat); saveCustom(st); refreshPreview();
       ['cat_id','cat_name','cat_code','cat_image'].forEach(id=>byId(id).value='');
     }
 
     function addSubcategory(){
       const sub = {
-        id: Number(byId('sub_id').value||0),
+        id: Number(byId('sub_id').value||0) || nextId('subcategories'),
         name: byId('sub_name').value.trim(),
         code: byId('sub_code').value.trim(),
         category_code: byId('sub_cat_code').value.trim()
       };
-      const store = loadCustom() || loadDefaults();
-      if (!sub.id || !sub.name || !sub.code || !sub.category_code){ alert('Заполните id, name, code, category_code'); return; }
-      if (!store.categories.some(c=>c.code.toLowerCase()===sub.category_code.toLowerCase())){ alert('category_code не найден в категориях'); return; }
-      if (store.subcategories.some(s=>String(s.id)===String(sub.id))) { alert('id подкатегории уже существует'); return; }
-      if (store.subcategories.some(s=>s.code.toLowerCase()===sub.code.toLowerCase())) { alert('code подкатегории уже существует'); return; }
-      store.subcategories.push(sub); saveCustom(store); refreshPreview();
+      if (!sub.code && sub.name){ sub.code = ensureUniqueCode('subcategories', sub.name); byId('sub_code').value = sub.code; }
+      const st = store();
+      if (!sub.id || !sub.name || !sub.code || !sub.category_code){ return markWarn('Заполните id, name, code, category_code'); }
+      if (!st.categories.some(c=>c.code.toLowerCase()===sub.category_code.toLowerCase())){ return markWarn('category_code не найден в категориях'); }
+      if (st.subcategories.some(s=>String(s.id)===String(sub.id))) { return markWarn('id подкатегории уже существует'); }
+      if (st.subcategories.some(s=>s.code.toLowerCase()===sub.code.toLowerCase())) { return markWarn('code подкатегории уже существует'); }
+      st.subcategories.push(sub); saveCustom(st); refreshPreview();
       ['sub_id','sub_name','sub_code','sub_cat_code'].forEach(id=>byId(id).value='');
     }
 
     function addProduct(){
       const prod = {
-        id: Number(byId('p_id').value||0),
+        id: Number(byId('p_id').value||0) || nextId('products'),
         title: byId('p_title').value.trim(),
         price: Number(byId('p_price').value||0),
         image_url: byId('p_image').value.trim(),
@@ -141,112 +296,135 @@
         description: byId('p_desc').value.trim(),
         sku: byId('p_sku').value.trim()
       };
-      const store = loadCustom() || loadDefaults();
-      if (!prod.id || !prod.title || !prod.price || !prod.category){ alert('Заполните id, title, price, category'); return; }
-      if (!store.categories.some(c=>c.code.toLowerCase()===prod.category.toLowerCase())){ alert('category (код) не найден в категориях'); return; }
-      if (prod.subcategory_code && !store.subcategories.some(s=>s.code.toLowerCase()===prod.subcategory_code.toLowerCase())){ alert('subcategory_code не найден в подкатегориях'); return; }
-      if (store.products.some(p=>String(p.id)===String(prod.id))) { alert('id товара уже существует'); return; }
-      store.products.push(prod); saveCustom(store); refreshPreview();
+      if (!prod.sku){ const auto = generateSku(prod); if (auto){ prod.sku = auto; byId('p_sku').value = prod.sku; } }
+      const st = store();
+      if (!prod.id || !prod.title || !prod.price || !prod.category){ return markWarn('Заполните id, title, price, category'); }
+      if (!st.categories.some(c=>c.code.toLowerCase()===prod.category.toLowerCase())){ return markWarn('category (код) не найден в категориях'); }
+      if (prod.subcategory_code && !st.subcategories.some(s=>s.code.toLowerCase()===prod.subcategory_code.toLowerCase())){ return markWarn('subcategory_code не найден в подкатегориях'); }
+      if (st.products.some(p=>String(p.id)===String(prod.id))) { return markWarn('id товара уже существует'); }
+      st.products.push(prod); saveCustom(st); refreshPreview();
       ['p_id','p_title','p_price','p_image','p_category','p_subcat','p_desc','p_sku'].forEach(id=>byId(id).value='');
     }
 
-    function clearCustom(){
-      if (!confirm('Удалить пользовательские данные из браузера?')) return;
-      localStorage.removeItem('CUSTOM_CATALOG_V1');
-      refreshPreview();
-    }
+    function clearCustom(){ if (!confirm('Удалить пользовательские данные из браузера?')) return; localStorage.removeItem('CUSTOM_CATALOG_V1'); refreshPreview(); }
+    function clearSection(kind){ const st = store(); if (!confirm('Очистить раздел?')) return; st[kind] = []; saveCustom(st); refreshPreview(); }
 
-    function exportJson(){
-      const data = loadCustom() || loadDefaults();
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = 'catalog.json';
-      a.click();
-    }
-
-    function handleImport(file){
-      const reader = new FileReader();
-      reader.onload = ()=>{
-        try {
-          const data = JSON.parse(reader.result);
-          if (!data || !Array.isArray(data.categories) || !Array.isArray(data.subcategories) || !Array.isArray(data.products)) {
-            alert('Неверный формат файла'); return;
-          }
-          saveCustom({ categories: data.categories, subcategories: data.subcategories, products: data.products });
-          refreshPreview();
-        } catch(e){ alert('Ошибка чтения файла: '+e.message); }
-      };
-      reader.readAsText(file);
-    }
+    function exportJson(){ const data = store(); const blob=new Blob([JSON.stringify(data, null, 2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='catalog.json'; a.click(); }
+    function handleImport(file){ const reader=new FileReader(); reader.onload=()=>{ try{ const data=JSON.parse(reader.result); if(!data||!Array.isArray(data.categories)||!Array.isArray(data.subcategories)||!Array.isArray(data.products)){ alert('Неверный формат файла'); return;} saveCustom({categories:data.categories, subcategories:data.subcategories, products:data.products}); refreshPreview(); }catch(e){ alert('Ошибка чтения файла: '+e.message);} }; reader.readAsText(file); }
 
     document.addEventListener('DOMContentLoaded', ()=>{
       refreshPreview();
-      byId('importFile').addEventListener('change', (e)=>{
-        if (e.target.files && e.target.files[0]) handleImport(e.target.files[0]);
+      byId('importFile').addEventListener('change', (e)=>{ if (e.target.files && e.target.files[0]) handleImport(e.target.files[0]); });
+      byId('p_category').addEventListener('change', buildProductSubcats);
+
+      // Живая автогенерация
+      let catCodeDirty=false, subCodeDirty=false;
+      byId('cat_code').addEventListener('input', ()=>{ catCodeDirty = !!byId('cat_code').value.trim(); });
+      byId('cat_name').addEventListener('input', ()=>{ if (!catCodeDirty) { const v=ensureUniqueCode('categories', byId('cat_name').value); byId('cat_code').value=v; }});
+      byId('sub_code').addEventListener('input', ()=>{ subCodeDirty = !!byId('sub_code').value.trim(); });
+      byId('sub_name').addEventListener('input', ()=>{ if (!subCodeDirty) { const v=ensureUniqueCode('subcategories', byId('sub_name').value); byId('sub_code').value=v; }});
+      // Авто ID по фокусу, если пусто
+      byId('cat_id').addEventListener('focus', ()=>{ if(!byId('cat_id').value) byId('cat_id').value = nextId('categories'); });
+      byId('sub_id').addEventListener('focus', ()=>{ if(!byId('sub_id').value) byId('sub_id').value = nextId('subcategories'); });
+      byId('p_id').addEventListener('focus',  ()=>{ if(!byId('p_id').value)  byId('p_id').value  = nextId('products'); });
+      // SKU автогенерация при изменениях
+      ['p_title','p_category','p_subcat','p_id'].forEach(id=>{
+        byId(id).addEventListener('input', ()=>{ if(!byId('p_sku').value.trim()){ const p={ id: Number(byId('p_id').value||0)||nextId('products'), title: byId('p_title').value, category: byId('p_category').value, subcategory_code: byId('p_subcat').value }; byId('p_sku').value = generateSku(p); } });
       });
     });
   </script>
 </head>
 <body>
-  <h1>Редактор каталога (без сервера)</h1>
-  <div class="hint">Данные сохраняются в вашем браузере (localStorage). Витрина сайта автоматически берёт их в приоритете, если включён офлайн-режим.</div>
+  <header>
+    <div class="title">Редактор каталога (оффлайн)</div>
+    <div class="toolbar">
+      <button class="btn ghost" onclick="location.href='index.html'">Открыть витрину</button>
+      <button class="btn ghost" onclick="location.href='desktop.html'">Desktop</button>
+      <button class="btn ghost" onclick="location.href='mobile.html'">Mobile</button>
+      <span class="spacer"></span>
+      <button class="btn secondary" onclick="exportJson()">Экспорт JSON</button>
+      <label class="file-label">Импорт JSON<input id="importFile" type="file" accept="application/json"></label>
+      <button class="btn danger" onclick="clearCustom()">Сбросить все пользовательские данные</button>
+      <span id="saveStatus" class="status">Готово</span>
+    </div>
+    <div class="hint">Данные сохраняются в вашем браузере (localStorage). Витрина автоматически подхватывает их при включённом офлайн-режиме.</div>
+  </header>
 
-  <div class="toolbar">
-    <button onclick="refreshPreview()">Обновить предпросмотр</button>
-    <button onclick="exportJson()">Экспорт в JSON</button>
-    <label class="file">Импорт JSON<input id="importFile" type="file" accept="application/json"></label>
-    <button class="secondary" onclick="clearCustom()">Сбросить пользовательские данные</button>
-    <span class="note">Источник сейчас: <strong id="activeSource"></strong></span>
-  </div>
-
-  <div class="grid">
-    <div class="card">
-      <h2>Категории</h2>
-      <div class="row"><label>ID</label><input id="cat_id" type="number" placeholder="Напр. 10"></div>
-      <div class="row"><label>Название</label><input id="cat_name" type="text" placeholder="Напр. Электроника"></div>
-      <div class="row"><label>Код</label><input id="cat_code" type="text" placeholder="Напр. electronics"></div>
-      <div class="row"><label>Картинка</label><input id="cat_image" type="text" placeholder="/images/cat-electronics.jpg"></div>
-      <div class="actions">
-        <button onclick="addCategory()">Добавить категорию</button>
+  <main>
+    <!-- Шаги и подсказка -->
+    <div class="stepper" role="list" aria-label="Порядок действий">
+      <div class="step" role="listitem"><span class="num">1</span><span>Добавьте категории</span></div>
+      <div class="step" role="listitem"><span class="num">2</span><span>Создайте подкатегории</span></div>
+      <div class="step" role="listitem"><span class="num">3</span><span>Заполните товары</span></div>
+    </div>
+    <p class="note strong">Поля, помеченные <span class="req" title="Обязательное">*</span>, обязательны.</p>
+    <div class="grid">
+      <div class="card">
+        <h2>Категории <span class="pill" id="catsCount">0</span></h2>
+        <p class="lead">Сначала создайте основные группы товаров. Минимум: ID, Название и уникальный Код.</p>
+        <div class="section-actions">
+          <button class="btn danger" onclick="clearSection('categories')">🧹 Очистить категории</button>
+        </div>
+        <div class="row"><label>ID <span class="req" title="Обязательное">*</span></label><input id="cat_id" type="number" placeholder="Напр. 10" title="Уникальный числовой идентификатор категории"></div>
+        <div class="row"><label>Название <span class="req" title="Обязательное">*</span></label><input id="cat_name" type="text" placeholder="Напр. Электроника" title="Имя категории"></div>
+        <div class="row"><label>Код <span class="req" title="Обязательное">*</span></label><input id="cat_code" type="text" placeholder="Напр. electronics" title="Код на латинице, должен быть уникальным"></div>
+        <div class="row"><label>Картинка <span class="hint-inline">(необязательно)</span></label><input id="cat_image" type="text" placeholder="/images/cat-electronics.jpg" title="URL картинки категории"></div>
+        <div class="section-actions">
+          <button class="btn primary" onclick="addCategory()">➕ Добавить категорию</button>
+        </div>
+        <div class="list"><table id="catsTable"></table></div>
+        <div class="note">Источник сейчас: <strong id="activeSource"></strong></div>
       </div>
-      <div class="list"><table id="catsTable"></table></div>
-      <div class="note">Всего категорий: <span id="catsCount">0</span></div>
+
+      <div class="card">
+        <h2>Подкатегории <span class="pill" id="subsCount">0</span></h2>
+        <p class="lead">Подкатегории уточняют категорию. Все поля обязательны. Сначала выберите категорию.</p>
+        <div class="section-actions">
+          <button class="btn danger" onclick="clearSection('subcategories')">🧹 Очистить подкатегории</button>
+        </div>
+        <div class="row"><label>ID <span class="req" title="Обязательное">*</span></label><input id="sub_id" type="number" placeholder="Напр. 101" title="Уникальный числовой идентификатор подкатегории"></div>
+        <div class="row"><label>Название <span class="req" title="Обязательное">*</span></label><input id="sub_name" type="text" placeholder="Напр. Пылесосы" title="Имя подкатегории"></div>
+        <div class="row"><label>Код <span class="req" title="Обязательное">*</span></label><input id="sub_code" type="text" placeholder="Напр. vacuum" title="Код подкатегории на латинице"></div>
+        <div class="row"><label>Код категории <span class="req" title="Обязательное">*</span></label>
+          <select id="sub_cat_code" title="Выберите категорию"></select>
+        </div>
+        <div class="section-actions">
+          <button class="btn primary" onclick="addSubcategory()">➕ Добавить подкатегорию</button>
+        </div>
+        <div class="list"><table id="subsTable"></table></div>
+      </div>
+
+      <div class="card" style="grid-column: 1 / span 3;">
+        <h2>Товары <span class="pill" id="prodsCount">0</span></h2>
+        <p class="lead">Заполните карточку товара. Обязательные поля: ID, Название, Цена и Категория. Остальное — по желанию.</p>
+        <div class="section-actions">
+          <button class="btn danger" onclick="clearSection('products')">🧹 Очистить товары</button>
+        </div>
+        <div class="two">
+          <div class="row"><label>ID <span class="req" title="Обязательное">*</span></label><input id="p_id" type="number" placeholder="Напр. 1001" title="Уникальный идентификатор товара"></div>
+          <div class="row"><label>Название <span class="req" title="Обязательное">*</span></label><input id="p_title" type="text" placeholder="Напр. Робот-пылесос X1" title="Название товара"></div>
+          <div class="row"><label>Цена <span class="req" title="Обязательное">*</span></label><input id="p_price" type="number" placeholder="Напр. 19990" title="Цена в руб."></div>
+          <div class="row"><label>SKU <span class="hint-inline">(необязательно)</span></label><input id="p_sku" type="text" placeholder="Напр. X1-2025" title="Артикул"></div>
+          <div class="row"><label>Картинка <span class="hint-inline">(необязательно)</span></label><input id="p_image" type="text" placeholder="/images/robot-x1.jpg" title="URL картинки"></div>
+          <div class="row"><label>Категория (код) <span class="req" title="Обязательное">*</span></label>
+            <select id="p_category" title="Выберите категорию"></select>
+          </div>
+          <div class="row"><label>Подкатегория (код) <span class="hint-inline">(если есть)</span></label>
+            <select id="p_subcat" title="Выберите подкатегорию (опционально)"></select>
+          </div>
+        </div>
+        <div class="row"><label>Описание <span class="hint-inline">(необязательно)</span></label><textarea id="p_desc" placeholder="Короткое описание" title="Краткое описание товара"></textarea></div>
+        <div class="section-actions">
+          <button class="btn primary" onclick="addProduct()">➕ Добавить товар</button>
+        </div>
+        <div class="list"><table id="prodsTable"></table></div>
+      </div>
     </div>
 
-    <div class="card">
-      <h2>Подкатегории</h2>
-      <div class="row"><label>ID</label><input id="sub_id" type="number" placeholder="Напр. 101"></div>
-      <div class="row"><label>Название</label><input id="sub_name" type="text" placeholder="Напр. Пылесосы"></div>
-      <div class="row"><label>Код</label><input id="sub_code" type="text" placeholder="Напр. vacuum"></div>
-      <div class="row"><label>Код категории</label><input id="sub_cat_code" type="text" placeholder="Напр. appliances"></div>
-      <div class="actions">
-        <button onclick="addSubcategory()">Добавить подкатегорию</button>
-      </div>
-      <div class="list"><table id="subsTable"></table></div>
-      <div class="note">Всего подкатегорий: <span id="subsCount">0</span></div>
-    </div>
-
-    <div class="card" style="grid-column: 1 / span 2;">
-      <h2>Товары</h2>
-      <div class="two">
-        <div class="row"><label>ID</label><input id="p_id" type="number" placeholder="Напр. 1001"></div>
-        <div class="row"><label>Название</label><input id="p_title" type="text" placeholder="Напр. Робот-пылесос X1"></div>
-        <div class="row"><label>Цена</label><input id="p_price" type="number" placeholder="Напр. 19990"></div>
-        <div class="row"><label>SKU</label><input id="p_sku" type="text" placeholder="Напр. X1-2025"></div>
-        <div class="row"><label>Картинка</label><input id="p_image" type="text" placeholder="/images/robot-x1.jpg"></div>
-        <div class="row"><label>Категория (код)</label><input id="p_category" type="text" placeholder="Напр. appliances"></div>
-        <div class="row"><label>Подкатегория (код)</label><input id="p_subcat" type="text" placeholder="Напр. vacuum"></div>
-      </div>
-      <div class="row"><label>Описание</label><textarea id="p_desc" placeholder="Короткое описание"></textarea></div>
-      <div class="actions">
-        <button onclick="addProduct()">Добавить товар</button>
-      </div>
-      <div class="list"><table id="prodsTable"></table></div>
-      <div class="note">Всего товаров: <span id="prodsCount">0</span></div>
-    </div>
-  </div>
-
-  <p class="note">Подсказка: витрина использует пользовательские данные, если включён офлайн-флаг в `local-data.js` (window.USE_LOCAL_DATA = true). Для полного переноса на файл — экспортируйте JSON и отправьте разработчику для обновления `local-data.js`.</p>
+    <p class="note">Подсказка:
+      <br>- Чтобы полностью заменить демо-данные, просто добавьте свои и при необходимости используйте «Очистить товары/категории/подкатегории».
+      <br>- Витрина обновится после обычного обновления страницы.
+    </p>
+  </main>
 </body>
 </html> 

@@ -1,9 +1,9 @@
 window.SITE_CONFIG = {
   // Базовые данные сайта — управляются только из этого файла
   site_name: 'Damax',
-  contact_email: 'QQQ',
-  contact_phone: 'QQQ',
-  address: 'QQQ',
+  contact_email: '',
+  contact_phone: '',
+  address: '',
 
   // Соцсети — управляются только из этого файла
   social_instagram: '',
