@@ -3,69 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Избранное - Damax</title>
+  <title>Избранное — Damax</title>
+  <script src="local-data.js"></script>
+  <script src="api-client.js"></script>
   <link rel="stylesheet" href="mobile-styles.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lato:wght@400;700&family=Dancing+Script:wght@400&display=swap" rel="stylesheet">
-  <script>
-  (async function() {
-    try {
-      const res = await fetch('/api/site-status');
-      if (res.ok) {
-        const data = await res.json();
-        if (!data.enabled) {
-          window.location.href = '/site-offline.html';
-        }
-      }
-    } catch (e) {}
-  })();
-  </script>
 </head>
-<body class="favorites-page">
-  <header class="header">
-    <div class="header__logo">Damax</div>
-    <div class="header__main-icons">
-      <div class="icon-wrapper" data-tooltip="Профиль">
-        <a href="account.html" class="header__icon header__icon--active" aria-label="Профиль"><i class="fas fa-user"></i></a>
-      </div>
-      <div class="cart-wrapper">
-        <div class="icon-wrapper" id="cart-icon-wrapper" data-tooltip="На главную">
-          <a href="index.html" class="header__icon" id="cart-icon-link" aria-label="На главную">
-            <i id="cart-icon" class="fas fa-home"></i>
-            <span class="cart-count">0</span>
-          </a>
-        </div>
-      </div>
-    </div>
-    <div class="header__extra">
-      <div class="header__extra-icons">
-        <div class="icon-wrapper">
-          <a href="favorites.html" class="header__icon" aria-label="Избранное"><i class="fas fa-heart"></i><span class="icon-bg"><span class="icon-text">Избранное</span></span></a>
-        </div>
-        <div class="icon-wrapper search-wrapper">
-          <a href="#" class="header__icon search-icon" aria-label="Поиск"><i class="fas fa-search"></i><span class="icon-bg"><span class="icon-text">Поиск</span></span></a>
-        </div>
-        <div class="icon-wrapper">
-          <a href="about.html" class="header__icon" aria-label="О нас"><i class="fas fa-info-circle"></i><span class="icon-bg"><span class="icon-text">О нас</span></span></a>
-        </div>
-      </div>
-    </div>
-  </header>
-
-  <section class="favorites-page">
-    <div class="favorites-page__container">
-      <h2 class="favorites-page__title">Ваше избранное</h2>
-      <ul class="favorites-page__items" role="list"></ul>
-      <div class="favorites-page__footer">
-        <p class="favorites-page__total">Товаров: <span>0</span></p>
-        <button class="favorites-page__to-cart">Перенести всё в корзину</button>
-        <a href="index.html" class="favorites-page__back">Вернуться к покупкам</a>
-      </div>
-    </div>
-  </section>
-
-  <script src="mobile.js"></script>
-</body>
-</html>
+<body>

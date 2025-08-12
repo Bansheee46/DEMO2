@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Редактор каталога (офлайн)</title>
+  <link rel="stylesheet" href="mobile-styles.css">
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    h1 { margin-bottom: 10px; }
+    .hint { color: #555; margin-bottom: 16px; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+    .card { border: 1px solid #ddd; border-radius: 8px; padding: 16px; background: #fff; }
+    .card h2 { margin-top: 0; font-size: 18px; }
+    .row { display: grid; grid-template-columns: 140px 1fr; gap: 10px; align-items: center; margin-bottom: 8px; }
+    input[type="text"], input[type="number"], textarea { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 6px; }
+    textarea { min-height: 64px; }
+    .list { margin-top: 10px; max-height: 260px; overflow: auto; border: 1px solid #eee; border-radius: 6px; }
+    .list table { width: 100%; border-collapse: collapse; }
+    .list th, .list td { padding: 6px 8px; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
+    .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+    button { padding: 8px 12px; border: none; border-radius: 6px; background: #C9897B; color: #fff; cursor: pointer; }
+    button.secondary { background: #888; }
+    button.danger { background: #d33; }
+    .two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; }
+    .ok { color: #2e7d32; }
+    .warn { color: #b26a00; }
+    .err { color: #c62828; }
+    .toolbar { display: flex; gap: 10px; align-items: center; margin-bottom: 16px; }
+    .toolbar input[type="file"] { display: none; }
+    label.file { padding: 8px 12px; background: #4a6da7; color: #fff; border-radius: 6px; cursor: pointer; }
+    .note { font-size: 12px; color: #666; }
+  </style>
+  <script src="api-client.js"></script>
+  <script>
+    function loadDefaults(){
+      const cats = (window.LOCAL_CATEGORIES||[]).slice();
+      const subs = (window.LOCAL_SUBCATEGORIES||[]).slice();
+      const prods = (window.LOCAL_PRODUCTS||[]).slice();
+      return { categories: cats, subcategories: subs, products: prods };
+    }
+
+    function loadCustom(){
+      try { return JSON.parse(localStorage.getItem('CUSTOM_CATALOG_V1')||'null'); } catch { return null; }
+    }
+
+    function saveCustom(data){
+      localStorage.setItem('CUSTOM_CATALOG_V1', JSON.stringify(data));
+    }
+
+    function byId(id){ return document.getElementById(id); }
+
+    function refreshPreview(){
+      const custom = loadCustom();
+      const data = custom || loadDefaults();
+      byId('catsCount').textContent = data.categories.length;
+      byId('subsCount').textContent = data.subcategories.length;
+      byId('prodsCount').textContent = data.products.length;
+
+      // таблицы
+      renderTable('catsTable', data.categories, ['id','name','code','image_url']);
+      renderTable('subsTable', data.subcategories, ['id','name','code','category_code']);
+      renderTable('prodsTable', data.products, ['id','title','price','category','subcategory_code']);
+
+      byId('activeSource').textContent = (custom ? 'Пользовательские данные (localStorage)' : 'Данные по умолчанию (local-data.js)');
+    }
+
+    function renderTable(tableId, rows, cols){
+      const el = byId(tableId);
+      el.innerHTML = '';
+      const thead = document.createElement('thead');
+      thead.innerHTML = '<tr>' + cols.map(c=>`<th>${c}</th>`).join('') + '<th></th></tr>';
+      el.appendChild(thead);
+      const tbody = document.createElement('tbody');
+      rows.forEach((r, i)=>{
+        const tr = document.createElement('tr');
+        cols.forEach(c=>{
+          const td = document.createElement('td');
+          td.className = 'mono';
+          td.textContent = (r[c]!==undefined? r[c] : '');
+          tr.appendChild(td);
+        });
+        const tdAct = document.createElement('td');
+        const btn = document.createElement('button');
+        btn.textContent = 'Удалить';
+        btn.className = 'danger';
+        btn.onclick = ()=>{
+          const custom = loadCustom() || loadDefaults();
+          if (tableId==='catsTable') custom.categories.splice(i,1);
+          if (tableId==='subsTable') custom.subcategories.splice(i,1);
+          if (tableId==='prodsTable') custom.products.splice(i,1);
+          saveCustom(custom); refreshPreview();
+        };
+        tdAct.appendChild(btn);
+        tr.appendChild(tdAct);
+        tbody.appendChild(tr);
+      });
+      el.appendChild(tbody);
+    }
+
+    function addCategory(){
+      const cat = {
+        id: Number(byId('cat_id').value||0),
+        name: byId('cat_name').value.trim(),
+        code: byId('cat_code').value.trim(),
+        image_url: byId('cat_image').value.trim()
+      };
+      const store = loadCustom() || loadDefaults();
+      if (!cat.id || !cat.name || !cat.code){ alert('Заполните id, name, code'); return; }
+      if (store.categories.some(c=>String(c.id)===String(cat.id))) { alert('id категории уже существует'); return; }
+      if (store.categories.some(c=>c.code.toLowerCase()===cat.code.toLowerCase())) { alert('code категории уже существует'); return; }
+      store.categories.push(cat); saveCustom(store); refreshPreview();
+      ['cat_id','cat_name','cat_code','cat_image'].forEach(id=>byId(id).value='');
+    }
+
+    function addSubcategory(){
+      const sub = {
+        id: Number(byId('sub_id').value||0),
+        name: byId('sub_name').value.trim(),
+        code: byId('sub_code').value.trim(),
+        category_code: byId('sub_cat_code').value.trim()
+      };
+      const store = loadCustom() || loadDefaults();
+      if (!sub.id || !sub.name || !sub.code || !sub.category_code){ alert('Заполните id, name, code, category_code'); return; }
+      if (!store.categories.some(c=>c.code.toLowerCase()===sub.category_code.toLowerCase())){ alert('category_code не найден в категориях'); return; }
+      if (store.subcategories.some(s=>String(s.id)===String(sub.id))) { alert('id подкатегории уже существует'); return; }
+      if (store.subcategories.some(s=>s.code.toLowerCase()===sub.code.toLowerCase())) { alert('code подкатегории уже существует'); return; }
+      store.subcategories.push(sub); saveCustom(store); refreshPreview();
+      ['sub_id','sub_name','sub_code','sub_cat_code'].forEach(id=>byId(id).value='');
+    }
+
+    function addProduct(){
+      const prod = {
+        id: Number(byId('p_id').value||0),
+        title: byId('p_title').value.trim(),
+        price: Number(byId('p_price').value||0),
+        image_url: byId('p_image').value.trim(),
+        category: byId('p_category').value.trim(),
+        subcategory_code: byId('p_subcat').value.trim(),
+        description: byId('p_desc').value.trim(),
+        sku: byId('p_sku').value.trim()
+      };
+      const store = loadCustom() || loadDefaults();
+      if (!prod.id || !prod.title || !prod.price || !prod.category){ alert('Заполните id, title, price, category'); return; }
+      if (!store.categories.some(c=>c.code.toLowerCase()===prod.category.toLowerCase())){ alert('category (код) не найден в категориях'); return; }
+      if (prod.subcategory_code && !store.subcategories.some(s=>s.code.toLowerCase()===prod.subcategory_code.toLowerCase())){ alert('subcategory_code не найден в подкатегориях'); return; }
+      if (store.products.some(p=>String(p.id)===String(prod.id))) { alert('id товара уже существует'); return; }
+      store.products.push(prod); saveCustom(store); refreshPreview();
+      ['p_id','p_title','p_price','p_image','p_category','p_subcat','p_desc','p_sku'].forEach(id=>byId(id).value='');
+    }
+
+    function clearCustom(){
+      if (!confirm('Удалить пользовательские данные из браузера?')) return;
+      localStorage.removeItem('CUSTOM_CATALOG_V1');
+      refreshPreview();
+    }
+
+    function exportJson(){
+      const data = loadCustom() || loadDefaults();
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'catalog.json';
+      a.click();
+    }
+
+    function handleImport(file){
+      const reader = new FileReader();
+      reader.onload = ()=>{
+        try {
+          const data = JSON.parse(reader.result);
+          if (!data || !Array.isArray(data.categories) || !Array.isArray(data.subcategories) || !Array.isArray(data.products)) {
+            alert('Неверный формат файла'); return;
+          }
+          saveCustom({ categories: data.categories, subcategories: data.subcategories, products: data.products });
+          refreshPreview();
+        } catch(e){ alert('Ошибка чтения файла: '+e.message); }
+      };
+      reader.readAsText(file);
+    }
+
+    document.addEventListener('DOMContentLoaded', ()=>{
+      refreshPreview();
+      byId('importFile').addEventListener('change', (e)=>{
+        if (e.target.files && e.target.files[0]) handleImport(e.target.files[0]);
+      });
+    });
+  </script>
+</head>
+<body>
+  <h1>Редактор каталога (без сервера)</h1>
+  <div class="hint">Данные сохраняются в вашем браузере (localStorage). Витрина сайта автоматически берёт их в приоритете, если включён офлайн-режим.</div>
+
+  <div class="toolbar">
+    <button onclick="refreshPreview()">Обновить предпросмотр</button>
+    <button onclick="exportJson()">Экспорт в JSON</button>
+    <label class="file">Импорт JSON<input id="importFile" type="file" accept="application/json"></label>
+    <button class="secondary" onclick="clearCustom()">Сбросить пользовательские данные</button>
+    <span class="note">Источник сейчас: <strong id="activeSource"></strong></span>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Категории</h2>
+      <div class="row"><label>ID</label><input id="cat_id" type="number" placeholder="Напр. 10"></div>
+      <div class="row"><label>Название</label><input id="cat_name" type="text" placeholder="Напр. Электроника"></div>
+      <div class="row"><label>Код</label><input id="cat_code" type="text" placeholder="Напр. electronics"></div>
+      <div class="row"><label>Картинка</label><input id="cat_image" type="text" placeholder="/images/cat-electronics.jpg"></div>
+      <div class="actions">
+        <button onclick="addCategory()">Добавить категорию</button>
+      </div>
+      <div class="list"><table id="catsTable"></table></div>
+      <div class="note">Всего категорий: <span id="catsCount">0</span></div>
+    </div>
+
+    <div class="card">
+      <h2>Подкатегории</h2>
+      <div class="row"><label>ID</label><input id="sub_id" type="number" placeholder="Напр. 101"></div>
+      <div class="row"><label>Название</label><input id="sub_name" type="text" placeholder="Напр. Пылесосы"></div>
+      <div class="row"><label>Код</label><input id="sub_code" type="text" placeholder="Напр. vacuum"></div>
+      <div class="row"><label>Код категории</label><input id="sub_cat_code" type="text" placeholder="Напр. appliances"></div>
+      <div class="actions">
+        <button onclick="addSubcategory()">Добавить подкатегорию</button>
+      </div>
+      <div class="list"><table id="subsTable"></table></div>
+      <div class="note">Всего подкатегорий: <span id="subsCount">0</span></div>
+    </div>
+
+    <div class="card" style="grid-column: 1 / span 2;">
+      <h2>Товары</h2>
+      <div class="two">
+        <div class="row"><label>ID</label><input id="p_id" type="number" placeholder="Напр. 1001"></div>
+        <div class="row"><label>Название</label><input id="p_title" type="text" placeholder="Напр. Робот-пылесос X1"></div>
+        <div class="row"><label>Цена</label><input id="p_price" type="number" placeholder="Напр. 19990"></div>
+        <div class="row"><label>SKU</label><input id="p_sku" type="text" placeholder="Напр. X1-2025"></div>
+        <div class="row"><label>Картинка</label><input id="p_image" type="text" placeholder="/images/robot-x1.jpg"></div>
+        <div class="row"><label>Категория (код)</label><input id="p_category" type="text" placeholder="Напр. appliances"></div>
+        <div class="row"><label>Подкатегория (код)</label><input id="p_subcat" type="text" placeholder="Напр. vacuum"></div>
+      </div>
+      <div class="row"><label>Описание</label><textarea id="p_desc" placeholder="Короткое описание"></textarea></div>
+      <div class="actions">
+        <button onclick="addProduct()">Добавить товар</button>
+      </div>
+      <div class="list"><table id="prodsTable"></table></div>
+      <div class="note">Всего товаров: <span id="prodsCount">0</span></div>
+    </div>
+  </div>
+
+  <p class="note">Подсказка: витрина использует пользовательские данные, если включён офлайн-флаг в `local-data.js` (window.USE_LOCAL_DATA = true). Для полного переноса на файл — экспортируйте JSON и отправьте разработчику для обновления `local-data.js`.</p>
+</body>
+</html> 

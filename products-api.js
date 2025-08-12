@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// Базовый URL API сервера
+// Базовый URL API сервера (не используется напрямую — fetch патчен api-client.js)
 const API_BASE_URL = '';
 
 /**
@@ -115,94 +115,46 @@ function renderProducts(products, activeCategory = '') {
     // Формируем URL изображения
     let imageUrl = product.image_url;
     if (imageUrl && !imageUrl.startsWith('http') && !imageUrl.startsWith('/')) {
-      imageUrl = `${API_BASE_URL}/${imageUrl}`;
+      imageUrl = `${window.location.origin}/${imageUrl}`;
     }
     
+    // Создаем HTML для карточки товара
+    const imageHtml = imageUrl ? `<img src="${imageUrl}" alt="${product.title || 'Товар'}" class="product-card__image">` : '';
+    const priceHtml = `<div class="product-card__price">${(product.price || 0).toLocaleString('ru-RU', { style: 'currency', currency: 'RUB' })}</div>`;
+    
     productCard.innerHTML = `
-      <div class="product-card__image">
-        <img src="${imageUrl || 'https://via.placeholder.com/300x300?text=Нет+изображения'}" alt="${product.title}">
-      </div>
-      <div class="product-card__info">
-        <h3 class="product-card__title">${product.title}</h3>
-        <p class="product-card__price"><i class="fas fa-ruble-sign"></i> ${product.price}</p>
-        ${product.sku ? `<p class="product-card__sku">Артикул: ${product.sku}</p>` : ''}
-        <button class="product-card__button">В корзину</button>
+      <div class="product-card__content">
+        ${imageHtml}
+        <h3 class="product-card__title">${product.title || ''}</h3>
+        ${priceHtml}
+        <div class="product-card__actions">
+          <button class="btn btn-primary" data-action="add-to-cart">Добавить в корзину</button>
+          <button class="btn btn-secondary" data-action="details">Подробнее</button>
+        </div>
       </div>
     `;
-    
-    // Добавляем карточку товара в сетку
-    productsGrid.appendChild(productCard);
-    
-    // Добавляем анимацию появления с задержкой
-    setTimeout(() => {
-      productCard.classList.add('visible');
-    }, index * 100);
-    
-    // Добавляем обработчик клика на кнопку "В корзину"
-    const addToCartButton = productCard.querySelector('.product-card__button');
-    addToCartButton.addEventListener('click', (event) => {
-      event.preventDefault();
-      
-      // Проверяем наличие функции addToCart перед её вызовом
-      if (typeof addToCart === 'function') {
-        // Используем существующую функцию добавления в корзину
-        addToCart(
-          product.id,
-          product.title,
-          product.price,
-          imageUrl || 'https://via.placeholder.com/300x300?text=Нет+изображения'
-        );
-      } else if (window.addToCart) {
-        // Пробуем найти функцию в глобальном объекте window
-        window.addToCart(
-          product.id,
-          product.title,
-          product.price,
-          imageUrl || 'https://via.placeholder.com/300x300?text=Нет+изображения'
-        );
-      } else {
-        console.error('Функция addToCart не определена');
-        showNotification('Не удалось добавить товар в корзину', 'error');
-      }
-      
-      // Добавляем эффект при клике на кнопку
-      if (typeof addCartButtonEffect === 'function') {
-        addCartButtonEffect(addToCartButton);
-      }
-    });
-    
-    // Добавляем обработчик клика на карточку товара для открытия модального окна
-    productCard.addEventListener('click', (event) => {
-      // Если клик был не по кнопке "В корзину"
-      if (!event.target.closest('.product-card__button')) {
-        
-        // Обновляем данные о товаре в модуле поиска перед открытием модального окна
-        if (window.productSearch && typeof window.productSearch.updateProductsData === 'function') {
-          // Обновляем только один товар
-          window.productSearch.updateProductsData([product]);
+
+    // Обработчики кнопок
+    const addBtn = productCard.querySelector('[data-action="add-to-cart"]');
+    if (addBtn) {
+      addBtn.addEventListener('click', () => {
+        if (typeof addToCart === 'function') {
+          addToCart(product.id);
         }
-        
+      });
+    }
+
+    const detailsBtn = productCard.querySelector('[data-action="details"]');
+    if (detailsBtn) {
+      detailsBtn.addEventListener('click', () => {
         if (typeof openProductModal === 'function') {
           openProductModal(product.id);
-        } else if (window.openProductModal) {
-          window.openProductModal(product.id);
-        } else {
-          console .error('Функция openProductModal не определена');
-          showNotification('Не удалось открыть информацию о товаре', 'error');
         }
-      }
-    });
+      });
+    }
+
+    productsGrid.appendChild(productCard);
   });
-  
-  // Инициализируем AOS для новых элементов
-  if (typeof AOS !== 'undefined') {
-    AOS.refresh();
-  }
-  
-  // Запускаем эффект пульсации для карточек товаров
-  if (typeof addProductCardsPulseEffect === 'function') {
-    addProductCardsPulseEffect();
-  }
 }
 
 /**

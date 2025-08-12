@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
+    <!-- API client must be loaded early -->
+    <script src="local-data.js"></script>
+    <script src="api-client.js"></script>
+    
     <!-- SEO метатеги -->
     <meta name="description" content="Damax - ваш выставочный сайт">
     <meta name="keywords" content="Damax, интернет-магазин, электроника, игрушки, аксессуары, одежда, бытовая техника">
@@ -82,7 +86,7 @@
         return false;
       }
 
-      // 1. Пробуем локальный API (относительно домена)
+      // 1. Пробуем локальный API (патченный fetch пройдётся по резервным ORIGINS сам)
       let found = await checkStatus('/api/site-status');
       if (!found) {
         // 2. Пробуем абсолютный адрес Flask-сервера
@@ -119,31 +123,11 @@
             line-height: 1.6;
         }
         a {
-            display: inline-block;
-            padding: 10px 20px;
-            background: linear-gradient(135deg, #BCB88A, #C9897B);
-            color: white;
+            color: #C9897B;
             text-decoration: none;
-            border-radius: 30px;
-            font-weight: 500;
-            transition: all 0.3s ease;
         }
         a:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
-        }
-        .loader {
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid #BCB88A;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-            margin-bottom: 20px;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            text-decoration: underline;
         }
     </style>
 </head>

@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, send_from_directory, session, redirect, send_file
+from flask import Flask, request, jsonify, send_from_directory, session, redirect, send_file, g
 from flask_cors import CORS
 import sqlite3
 import os
@@ -13,11 +13,131 @@ import secrets
 from functools import wraps
 import re
 import threading
+import logging
+from logging.handlers import RotatingFileHandler
 
 app = Flask(__name__)
 # Настройка CORS для всех маршрутов
 CORS(app, resources={r"/*": {"origins": "*", "supports_credentials": True, "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"], "allow_headers": ["Content-Type", "Authorization", "Accept", "X-Client-Version", "X-Platform"]}})  # Разрешаем кросс-доменные запросы для всех маршрутов
 app.secret_key = os.environ.get('SECRET_KEY', 'default_secret_key_for_development')
+
+# --- Централизованный логгер приложения ---
+LOG_LEVEL = os.environ.get('LOG_LEVEL', 'INFO').upper()
+LOG_BODY_PREVIEW_BYTES = int(os.environ.get('LOG_BODY_PREVIEW_BYTES', '2000'))
+SLOW_REQUEST_THRESHOLD_S = float(os.environ.get('SLOW_REQUEST_THRESHOLD_S', '2.0'))
+
+logger = logging.getLogger('app')
+if not logger.handlers:
+    logger.setLevel(LOG_LEVEL)
+    formatter = logging.Formatter('%(asctime)s %(levelname)s [%(name)s] %(message)s')
+
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(LOG_LEVEL)
+    console_handler.setFormatter(formatter)
+    logger.addHandler(console_handler)
+
+    file_handler = RotatingFileHandler('server.log', maxBytes=5*1024*1024, backupCount=3, encoding='utf-8')
+    file_handler.setLevel(LOG_LEVEL)
+    file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)
+
+# Урезаем болтливость werkzeug access-логов, так как у нас есть свой
+logging.getLogger('werkzeug').setLevel(logging.WARNING)
+
+# Вспомогательные функции для логов
+def _get_client_ip():
+    forwarded_for = request.headers.get('X-Forwarded-For')
+    if forwarded_for:
+        return forwarded_for.split(',')[0].strip()
+    return request.remote_addr
+
+# Корреляционный ID и логирование запроса
+@app.before_request
+def assign_request_id_and_log_request():
+    try:
+        g.request_id = request.headers.get('X-Request-ID') or uuid.uuid4().hex
+        g.request_start_ts = time.time()
+        query_string = request.query_string.decode('utf-8', errors='ignore') if request.query_string else ''
+        content_type = request.headers.get('Content-Type', '-')
+        content_length = request.headers.get('Content-Length', '-')
+        origin = request.headers.get('Origin', '-')
+        referer = request.headers.get('Referer', '-')
+        ua = request.headers.get('User-Agent', '-')
+
+        # Безопасный предпросмотр тела запроса (ограниченный)
+        body_preview = ''
+        if request.method in ['POST', 'PUT', 'PATCH']:
+            try:
+                raw = request.get_data(cache=True) or b''
+                body_preview = raw[:LOG_BODY_PREVIEW_BYTES].decode('utf-8', errors='replace')
+            except Exception:
+                body_preview = '<unavailable>'
+
+        logger.info(
+            f"REQ id={g.request_id} {request.method} {request.path} qs='{query_string}' "
+            f"ip={_get_client_ip()} ct='{content_type}' clen={content_length} "
+            f"origin='{origin}' referer='{referer}' ua='{ua}' body_preview='{body_preview}'"
+        )
+    except Exception as log_err:
+        # Никогда не роняем обработку запроса из-за логирования
+        print(f"[LOG_ERROR] before_request: {log_err}")
+
+# Логирование ответа и добавление X-Request-ID
+@app.after_request
+def add_request_id_and_log_response(response):
+    try:
+        request_id = getattr(g, 'request_id', uuid.uuid4().hex)
+        duration_ms = None
+        if hasattr(g, 'request_start_ts'):
+            duration_ms = int((time.time() - g.request_start_ts) * 1000)
+        response.headers['X-Request-ID'] = request_id
+
+        status = response.status_code
+        content_length = response.calculate_content_length()
+        level = logging.INFO
+        if status >= 500:
+            level = logging.ERROR
+        elif status >= 400:
+            level = logging.WARNING
+
+        msg = f"RES id={request_id} {request.method} {request.path} status={status} dur_ms={duration_ms} rlen={content_length}"
+        if duration_ms is not None and duration_ms >= int(SLOW_REQUEST_THRESHOLD_S * 1000):
+            msg += " SLOW"
+            level = max(level, logging.WARNING)
+        logger.log(level, msg)
+    except Exception as log_err:
+        print(f"[LOG_ERROR] after_request: {log_err}")
+    return response
+
+# Унифицированные обработчики ошибок с логами
+@app.errorhandler(404)
+def handle_404(e):
+    try:
+        rid = getattr(g, 'request_id', '-')
+        logger.warning(f"ERR id={rid} 404 {request.method} {request.path} qs={dict(request.args)}")
+    except Exception:
+        pass
+    return e
+
+@app.errorhandler(405)
+def handle_405(e):
+    try:
+        rid = getattr(g, 'request_id', '-')
+        logger.warning(f"ERR id={rid} 405 {request.method} {request.path} qs={dict(request.args)}")
+    except Exception:
+        pass
+    return e
+
+@app.errorhandler(Exception)
+def handle_exception(e):
+    try:
+        rid = getattr(g, 'request_id', '-')
+        logger.exception(f"ERR id={rid} 500 {request.method} {request.path}: {e}")
+        # Не меняем глобально формат ответов, но добавляем request_id для отладки
+        return jsonify({'success': False, 'message': 'Внутренняя ошибка сервера', 'request_id': rid}), 500
+    except Exception:
+        # На крайний случай
+        return jsonify({'success': False, 'message': 'Критическая ошибка'}), 500
 
 # Настройка для загрузки файлов
 UPLOAD_FOLDER = 'uploads'
@@ -96,22 +216,16 @@ load_site_settings()
 # Генерация секретного ключа при запуске сервера
 CSRF_TOKEN = secrets.token_hex(32)
 
-    # Добавляем поддержку CORS для всех маршрутов
-    @app.after_request
-    def after_request(response):
-        response.headers.add('Access-Control-Allow-Origin', '*')
-        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-Client-Version,X-Platform')
-        response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
-        return response
+# Добавляем поддержку CORS для всех маршрутов
+@app.after_request
+def cors_after_request(response):
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-Client-Version,X-Platform')
+    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+    return response
 
-    # Обработка OPTIONS запросов для CORS
-    @app.route('/api/orders', methods=['OPTIONS'])
-    def handle_options_orders():
-        response = app.make_default_options_response()
-        response.headers.add('Access-Control-Allow-Origin', '*')
-        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
-        response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
-        return response
+# Обработка OPTIONS запросов для CORS
+# Удалено дублирование OPTIONS для /api/orders, так как оно обрабатывается универсальным маршрутом ниже
 
 # Обработка OPTIONS запросов для API настроек
 @app.route('/api/settings', methods=['OPTIONS'])

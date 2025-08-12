@@ -29,6 +29,11 @@
   <!-- SITE_CONFIG должен быть загружен раньше settings.js -->
   <script src="config.js?v=2"></script>
   
+  <!-- ВАЖНО: подключаем офлайн-данные до API-клиента -->
+  <script src="local-data.js"></script>
+  <!-- ВАЖНО: подключаем API-клиент до остальных скриптов -->
+  <script src="api-client.js"></script>
+  
   <style>
     /* Определение CSS-переменных для светлой и темной темы */
     :root {
@@ -771,6 +776,15 @@
   document.addEventListener('DOMContentLoaded', function() {
     if (window.productsApi) {
       window.productsApi.initProductsApi();
+    }
+  });
+</script>
+<script>
+  // Быстрый доступ к редактору каталога: Ctrl+Alt+E
+  document.addEventListener('keydown', function(ev){
+    if (ev.ctrlKey && ev.altKey && (ev.key === 'e' || ev.key === 'E')){
+      ev.preventDefault();
+      window.location.href = 'catalog-editor.html';
     }
   });
 </script>
