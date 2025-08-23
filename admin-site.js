@@ -660,6 +660,217 @@ function filterIcons() {
     });
 }
 
+// Функция для сохранения только настроек футера
+function saveFooterSettings() {
+    const button = document.getElementById('saveFooterSettings');
+    const originalText = button.innerHTML;
+    
+    try {
+        // Показываем загрузку
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Сохранение...';
+        button.disabled = true;
+        
+        console.log('💾 Сохранение настроек футера...');
+        
+        // Собираем только настройки футера
+        const footerSettings = {
+            footerCompany: document.getElementById('footerCompany').value,
+            footerPhone: document.getElementById('footerPhone').value,
+            footerEmail: document.getElementById('footerEmail').value,
+            footerAddress: document.getElementById('footerAddress').value,
+            footerWorkingHours: document.getElementById('footerWorkingHours').value,
+            siteTitle: document.getElementById('siteTitle').value
+        };
+        
+        console.log('📋 Настройки футера для сохранения:', footerSettings);
+        
+        // Получаем существующие настройки
+        const existingSettings = JSON.parse(localStorage.getItem('siteSettings') || '{}');
+        
+        // Объединяем с новыми настройками футера
+        const updatedSettings = { ...existingSettings, ...footerSettings };
+        
+        // Сохраняем в localStorage
+        localStorage.setItem('siteSettings', JSON.stringify(updatedSettings));
+        console.log('✅ Настройки футера сохранены в localStorage');
+        
+        // Отправляем сообщение главной странице для обновления в реальном времени
+        if (window.parent && window.parent !== window) {
+            window.parent.postMessage({
+                type: 'updateSettings',
+                settings: updatedSettings
+            }, '*');
+            console.log('📡 Отправлено сообщение главной странице для обновления футера');
+        }
+        
+        // Также пытаемся обновить футер напрямую, если мы на той же странице
+        if (typeof updateFooterFromSettings === 'function') {
+            setTimeout(() => {
+                updateFooterFromSettings();
+                console.log('🔄 Прямое обновление футера выполнено');
+            }, 100);
+        }
+        
+        // Показываем успешное сохранение
+        button.innerHTML = '<i class="fas fa-check"></i> Сохранено!';
+        button.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+        
+        // Показываем уведомление
+        if (typeof showNotification === 'function') {
+            showNotification('✅ Настройки футера сохранены и применены!', 'success');
+        } else {
+            console.log('✅ Настройки футера сохранены и применены!');
+        }
+        
+        // Возвращаем кнопку в исходное состояние через 2 секунды
+        setTimeout(() => {
+            button.innerHTML = originalText;
+            button.style.background = 'linear-gradient(135deg, #22c55e, #16a34a)';
+            button.disabled = false;
+        }, 2000);
+        
+    } catch (error) {
+        console.error('❌ Ошибка при сохранении настроек футера:', error);
+        
+        // Показываем ошибку
+        button.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Ошибка';
+        button.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+        
+        if (typeof showNotification === 'function') {
+            showNotification('❌ Ошибка при сохранении настроек футера', 'error');
+        }
+        
+        // Возвращаем кнопку в исходное состояние через 2 секунды
+        setTimeout(() => {
+            button.innerHTML = originalText;
+            button.style.background = 'linear-gradient(135deg, #22c55e, #16a34a)';
+            button.disabled = false;
+        }, 2000);
+    }
+}
+
+// Функция для предпросмотра настроек футера
+function testFooterUpdate() {
+    console.log('👀 Предпросмотр настроек футера...');
+    
+    // Собираем текущие значения из полей
+    const footerSettings = {
+        footerCompany: document.getElementById('footerCompany').value || 'Не задано',
+        footerPhone: document.getElementById('footerPhone').value || 'Не задано',
+        footerEmail: document.getElementById('footerEmail').value || 'Не задано',
+        footerAddress: document.getElementById('footerAddress').value || 'Не задано',
+        footerWorkingHours: document.getElementById('footerWorkingHours').value || 'Не задано',
+        siteTitle: document.getElementById('siteTitle').value || 'Не задано'
+    };
+    
+    // Создаем красивое модальное окно для предпросмотра
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+        background: rgba(0,0,0,0.7); z-index: 10000; display: flex; 
+        align-items: center; justify-content: center; backdrop-filter: blur(5px);
+    `;
+    
+    const content = document.createElement('div');
+    content.style.cssText = `
+        background: var(--bg-primary); border-radius: 12px; padding: 30px; 
+        max-width: 600px; width: 90%; box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        max-height: 80vh; overflow-y: auto; position: relative;
+    `;
+    
+    content.innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid var(--border-color);">
+            <h2 style="margin: 0; color: var(--text-primary); display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-eye" style="color: #3b82f6;"></i>
+                Предпросмотр настроек футера
+            </h2>
+            <button onclick="this.closest('.preview-modal').remove()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-secondary); padding: 5px;">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div style="background: var(--bg-secondary); padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+            <h3 style="margin: 0 0 15px 0; color: var(--text-primary); font-size: 18px;">
+                <i class="fas fa-building"></i> Предпросмотр футера:
+            </h3>
+            
+            <div style="display: grid; gap: 15px;">
+                <div style="padding: 12px; background: var(--bg-primary); border-radius: 6px; border-left: 4px solid #22c55e;">
+                    <strong style="color: var(--text-primary);">🏢 Название компании:</strong><br>
+                    <span style="color: var(--text-secondary); font-size: 14px;">${footerSettings.footerCompany}</span>
+                </div>
+                
+                <div style="padding: 12px; background: var(--bg-primary); border-radius: 6px; border-left: 4px solid #3b82f6;">
+                    <strong style="color: var(--text-primary);">📱 Телефон:</strong><br>
+                    <span style="color: var(--text-secondary); font-size: 14px;">${footerSettings.footerPhone}</span>
+                </div>
+                
+                <div style="padding: 12px; background: var(--bg-primary); border-radius: 6px; border-left: 4px solid #f59e0b;">
+                    <strong style="color: var(--text-primary);">📧 Email:</strong><br>
+                    <span style="color: var(--text-secondary); font-size: 14px;">${footerSettings.footerEmail}</span>
+                </div>
+                
+                <div style="padding: 12px; background: var(--bg-primary); border-radius: 6px; border-left: 4px solid #ef4444;">
+                    <strong style="color: var(--text-primary);">📍 Адрес:</strong><br>
+                    <span style="color: var(--text-secondary); font-size: 14px;">${footerSettings.footerAddress}</span>
+                </div>
+                
+                <div style="padding: 12px; background: var(--bg-primary); border-radius: 6px; border-left: 4px solid #8b5cf6;">
+                    <strong style="color: var(--text-primary);">🕐 Режим работы:</strong><br>
+                    <span style="color: var(--text-secondary); font-size: 14px;">${footerSettings.footerWorkingHours}</span>
+                </div>
+                
+                <div style="padding: 12px; background: var(--bg-primary); border-radius: 6px; border-left: 4px solid #06b6d4;">
+                    <strong style="color: var(--text-primary);">📝 Заголовок страницы:</strong><br>
+                    <span style="color: var(--text-secondary); font-size: 14px;">${footerSettings.siteTitle}</span>
+                </div>
+            </div>
+        </div>
+        
+        <div style="display: flex; gap: 15px; justify-content: flex-end;">
+            <button onclick="this.closest('.preview-modal').remove()" class="btn btn-secondary" style="padding: 10px 20px;">
+                <i class="fas fa-times"></i> Закрыть
+            </button>
+            <button onclick="this.closest('.preview-modal').remove(); saveFooterSettings();" class="btn" style="background: linear-gradient(135deg, #22c55e, #16a34a); padding: 10px 20px;">
+                <i class="fas fa-save"></i> Сохранить эти настройки
+            </button>
+        </div>
+    `;
+    
+    modal.className = 'preview-modal';
+    modal.appendChild(content);
+    document.body.appendChild(modal);
+    
+    // Закрытие по клику на фон
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            modal.remove();
+        }
+    });
+    
+    console.log('👀 Предпросмотр настроек футера:', footerSettings);
+}
+
+// Функция для открытия главной страницы
+function openMainPage() {
+    console.log('🌐 Открываем главную страницу...');
+    
+    // Определяем URL главной страницы
+    const currentUrl = window.location.href;
+    const baseUrl = currentUrl.substring(0, currentUrl.lastIndexOf('/'));
+    const mainPageUrl = baseUrl + '/desktop.html';
+    
+    // Открываем в новой вкладке
+    window.open(mainPageUrl, '_blank');
+    
+    // Показываем уведомление
+    if (typeof showNotification === 'function') {
+        showNotification('🌐 Главная страница открыта в новой вкладке', 'info');
+    } else {
+        console.log('🌐 Главная страница открыта в новой вкладке');
+    }
+}
+
 // Глобальная функция для тестирования подключения к Telegram
 async function testTelegramConnection() {
     const botToken = document.getElementById('telegramBotToken').value;
