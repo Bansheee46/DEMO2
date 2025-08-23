@@ -1,1 +1,6 @@
-{"enabled": true, "admin_token": null}
+{
+  "enabled": true,
+  "admin_token": null,
+  "storefront_secret": "721107211.7211",
+  "last_updated": "2025-08-20T00:00:00.000000"
+}

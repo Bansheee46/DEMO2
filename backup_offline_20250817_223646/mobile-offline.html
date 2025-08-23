@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>Мобильная версия на обслуживании — Damax</title>
+  <style>
+    :root {
+      --bg: #0f1220;
+      --card: #151935;
+      --text: #e6e6f0;
+      --muted: #a3a3b5;
+      --accent: #BCB88A;
+      --accent-2: #C9897B;
+    }
+    html, body {
+      height: 100%;
+    }
+    body {
+      margin: 0;
+      display: grid;
+      place-items: center;
+      background: radial-gradient(1200px 600px at 50% -200px, rgba(188,184,138,0.15), transparent 60%),
+                  radial-gradient(1200px 600px at -200px 120%, rgba(201,137,123,0.12), transparent 60%),
+                  var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Inter, 'Helvetica Neue', Arial, 'Noto Sans', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+      padding: 24px;
+    }
+    .card {
+      width: 100%;
+      max-width: 560px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 20px;
+      padding: 28px;
+      position: relative;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+    }
+    .brand {
+      font-family: 'Cinzel', serif;
+      font-weight: 700;
+      font-size: 20px;
+      letter-spacing: 1px;
+      color: var(--text);
+      opacity: 0.9;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 16px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(188,184,138,0.12);
+      color: var(--accent);
+      font-weight: 600;
+      font-size: 13px;
+    }
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(0.9); opacity: .7; }
+      50% { transform: scale(1); opacity: 1; }
+    }
+    h1 {
+      margin: 18px 0 10px;
+      font-size: 24px;
+      line-height: 1.25;
+      letter-spacing: 0.2px;
+    }
+    p {
+      margin: 0 0 18px;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 15px;
+    }
+    .hint {
+      margin-top: 10px;
+      font-size: 14px;
+      color: var(--muted);
+    }
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin-top: 18px;
+    }
+    .btn {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      height: 44px;
+      padding: 0 16px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: linear-gradient(180deg, rgba(188,184,138,0.2), rgba(188,184,138,0.08));
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .btn.secondary {
+      background: transparent;
+      border: 1px dashed rgba(255,255,255,0.15);
+      color: var(--muted);
+    }
+    .footnote {
+      margin-top: 20px;
+      font-size: 12px;
+      color: var(--muted);
+      text-align: center;
+      opacity: 0.8;
+    }
+  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="card">
+    <div class="brand">Damax</div>
+    <div class="badge"><span class="dot"></span> Техническое обслуживание</div>
+    <h1>Мобильная версия временно недоступна</h1>
+    <p>
+      Мы временно закрыли мобильную версию сайта на обслуживание. Сейчас доступна только
+      десктоп-версия для компьютеров.
+    </p>
+    <div class="actions">
+      <a class="btn" href="desktop.html">Перейти в десктоп-версию</a>
+      <a class="btn secondary" href="mailto:info@example.com">Связаться с поддержкой</a>
+    </div>
+    <div class="hint">Если вы используете планшет, попробуйте открыть сайт в режиме «Версия для ПК».</div>
+    <div class="footnote">© 2025 Damax</div>
+  </div>
+  <script>
+    // Попытаться открывать в том же табе
+    (function(){
+      if (window.history && history.replaceState) {
+        history.replaceState(null, document.title, location.pathname);
+      }
+    })();
+  </script>
+</body>
+</html> 

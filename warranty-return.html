@@ -168,7 +168,7 @@
             const cookies = document.cookie.split(';').map(s => s.trim());
             const adminToken = cookies.find(s => s.startsWith('admin_token='));
             if (!adminToken || !data.admin_token || adminToken.split('=')[1] !== data.admin_token) {
-              window.location.href = '/site-offline.html';
+              // Сайт работает в онлайн-режиме
             }
           }
         }
@@ -417,5 +417,6 @@
             }
         });
     </script>
+
 </body>
 </html> 

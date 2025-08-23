@@ -59,6 +59,543 @@
       --radius-medium: 8px;
       --radius-large: 16px;
     }
+
+    /* Стили для панели редактирования */
+    /* Стили для кнопки редактирования перенесены в product-editor.js */
+
+    .edit-panel {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 400px;
+      height: 100vh;
+      background: var(--bg-primary);
+      border-left: 2px solid var(--border-color);
+      box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+      z-index: 1000;
+      overflow-y: auto;
+      transform: translateX(100%);
+      transition: transform var(--transition-normal);
+    }
+
+    .edit-panel.active {
+      transform: translateX(0);
+    }
+
+    .edit-panel__header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px;
+      border-bottom: 1px solid var(--border-color);
+      background: var(--bg-secondary);
+    }
+
+    .edit-panel__header h3 {
+      margin: 0;
+      color: var(--text-primary);
+    }
+
+    .edit-panel__close {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: var(--text-secondary);
+      padding: 5px;
+    }
+
+    .edit-panel__tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .edit-tab {
+      flex: 1;
+      padding: 15px;
+      border: none;
+      background: var(--bg-secondary);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      color: var(--text-secondary);
+    }
+
+    .edit-tab.active {
+      background: var(--accent-primary);
+      color: white;
+    }
+
+    .edit-panel__content {
+      padding: 20px;
+    }
+
+    .edit-content {
+      display: none;
+    }
+
+    .edit-content.active {
+      display: block;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-small);
+      font-size: 14px;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+    }
+
+    .add-btn {
+      background: var(--accent-primary);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: var(--radius-medium);
+      cursor: pointer;
+      font-weight: 600;
+      width: 100%;
+      transition: all var(--transition-normal);
+    }
+
+    .add-btn:hover {
+      background: var(--accent-dark);
+    }
+
+    .edit-item {
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-medium);
+      padding: 15px;
+      margin-bottom: 10px;
+      background: var(--bg-primary);
+    }
+
+    .edit-item__header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 10px;
+    }
+
+    .edit-item__info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
+    }
+
+    .edit-item__image {
+      width: 50px;
+      height: 50px;
+      border-radius: var(--radius-small);
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .edit-item__image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .edit-item__title {
+      font-weight: 600;
+      color: var(--text-primary);
+      font-size: 16px;
+    }
+
+    .edit-item__actions {
+      display: flex;
+      gap: 5px;
+    }
+
+    .edit-btn, .delete-btn {
+      padding: 8px;
+      border: none;
+      border-radius: var(--radius-small);
+      cursor: pointer;
+      font-size: 14px;
+      transition: all var(--transition-fast);
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .edit-btn {
+      background: var(--accent-primary);
+      color: white;
+    }
+
+    .delete-btn {
+      background: var(--accent-secondary);
+      color: white;
+    }
+
+    .edit-btn:hover, .delete-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Стили для новой панели управления */
+    .catalog-tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: 20px;
+    }
+
+    .catalog-tab {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      background: var(--bg-secondary);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+
+    .catalog-tab.active {
+      background: var(--accent-primary);
+      color: white;
+    }
+
+    .catalog-content {
+      position: relative;
+    }
+
+    .catalog-panel {
+      display: none;
+    }
+
+    .catalog-panel.active {
+      display: block;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .panel-header h4 {
+      margin: 0;
+      color: var(--text-primary);
+      font-size: 18px;
+    }
+
+    .panel-header__actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .add-product-btn {
+      background: var(--accent-primary);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: var(--radius-small);
+      cursor: pointer;
+      font-size: 14px;
+      transition: all var(--transition-fast);
+      white-space: nowrap;
+    }
+
+    .add-product-btn:hover {
+      background: var(--accent-dark);
+    }
+
+    .quick-add-info {
+      background: var(--accent-light);
+      border: 1px solid var(--accent-primary);
+      border-radius: var(--radius-medium);
+      padding: 15px;
+      margin-bottom: 20px;
+    }
+
+    .quick-add-info p {
+      margin: 0;
+      color: var(--text-primary);
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .quick-add-info i {
+      color: var(--accent-primary);
+      margin-right: 8px;
+    }
+
+    .search-box {
+      position: relative;
+      width: 200px;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 8px 30px 8px 10px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-small);
+      font-size: 14px;
+    }
+
+    .search-box i {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-secondary);
+    }
+
+    .add-category-btn {
+      background: var(--accent-primary);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: var(--radius-small);
+      cursor: pointer;
+      font-size: 14px;
+      transition: all var(--transition-fast);
+    }
+
+    .add-category-btn:hover {
+      background: var(--accent-dark);
+    }
+
+    .edit-form {
+      max-width: 100%;
+    }
+
+    .save-btn {
+      background: var(--accent-primary);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: var(--radius-medium);
+      cursor: pointer;
+      font-weight: 600;
+      width: 100%;
+      transition: all var(--transition-normal);
+      margin-top: 20px;
+    }
+
+    .save-btn:hover {
+      background: var(--accent-dark);
+    }
+
+    .data-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .action-group {
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-medium);
+      padding: 15px;
+      background: var(--bg-secondary);
+    }
+
+    .action-group h5 {
+      margin: 0 0 15px 0;
+      color: var(--text-primary);
+      font-size: 16px;
+    }
+
+    .action-btn {
+      display: block;
+      width: 100%;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+      padding: 10px 15px;
+      border-radius: var(--radius-small);
+      cursor: pointer;
+      font-size: 14px;
+      transition: all var(--transition-fast);
+      margin-bottom: 8px;
+      text-align: left;
+    }
+
+    .action-btn:hover {
+      background: var(--accent-light);
+      border-color: var(--accent-primary);
+    }
+
+    .action-btn.danger {
+      color: #dc3545;
+      border-color: #dc3545;
+    }
+
+    .action-btn.danger:hover {
+      background: #dc3545;
+      color: white;
+    }
+
+    .stats-info {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .stat-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .stat-item:last-child {
+      border-bottom: none;
+    }
+
+    .stat-label {
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+
+    .stat-value {
+      color: var(--text-primary);
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    /* Модальные окна для редактирования */
+    .edit-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all var(--transition-normal);
+    }
+
+    .edit-modal.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .edit-modal__content {
+      background: var(--bg-primary);
+      border-radius: var(--radius-large);
+      padding: 30px;
+      max-width: 500px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      transform: scale(0.9);
+      transition: transform var(--transition-normal);
+    }
+
+    .edit-modal.active .edit-modal__content {
+      transform: scale(1);
+    }
+
+    .edit-modal__header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .edit-modal__title {
+      margin: 0;
+      color: var(--text-primary);
+      font-size: 20px;
+    }
+
+    .edit-modal__close {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: var(--text-secondary);
+      padding: 5px;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-secondary);
+      font-style: italic;
+    }
+
+    .edit-item__details {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.4;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .edit-item__price,
+    .edit-item__category,
+    .edit-item__sku {
+      display: flex;
+      gap: 5px;
+    }
+
+    .edit-item__description {
+      margin-top: 8px;
+      padding: 8px;
+      background: var(--bg-secondary);
+      border-radius: var(--radius-small);
+      font-style: italic;
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .cancel-btn {
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+      padding: 12px 24px;
+      border-radius: var(--radius-medium);
+      cursor: pointer;
+      font-weight: 600;
+      flex: 1;
+      transition: all var(--transition-normal);
+    }
+
+    .cancel-btn:hover {
+      background: var(--border-color);
+    }
+
+    .form-actions .save-btn {
+      flex: 2;
+      margin-top: 0;
+    }
     
     /* Обёртка для всего содержимого страницы */
     .page-wrapper {
@@ -80,6 +617,8 @@
       background-color: var(--bg-secondary);
       border-top: 1px solid var(--border-color);
     }
+    
+    /* Стили для режима редактирования перенесены в product-editor.js */
   </style>
   
   <!-- Скрипт для быстрой установки темы перед загрузкой страницы, чтобы избежать мигания -->
@@ -115,41 +654,18 @@
   </script>
 
   <script>
+  // Проверяем статус сайта только для информации
   (async function() {
-    async function checkStatus(apiUrl) {
-      try {
-        const res = await fetch(apiUrl);
-        if (res.ok) {
-          const data = await res.json();
-          if (!data.enabled) {
-            // Загружаем offline-страницу
-            try {
-              const offlineRes = await fetch('/site-offline.html');
-              if (offlineRes.ok) {
-                const offlineHtml = await offlineRes.text();
-                document.open();
-                document.write(offlineHtml);
-                document.close();
-              } else {
-                document.body.innerHTML = '<div style="display:flex;justify-content:center;align-items:center;height:100vh;font-family:Arial;"><h1>Сайт временно недоступен</h1></div>';
-              }
-            } catch (err) {
-              console.error('Ошибка загрузки страницы обслуживания:', err);
-            }
-            return true;
-          }
+    try {
+      const res = await fetch('/api/site-status');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.enabled) {
+          console.log('✅ Сайт работает в онлайн-режиме');
         }
-      } catch (e) {
-        // Ошибка сети или CORS
       }
-      return false;
-    }
-
-    // 1. Пробуем локальный API (относительно домена)
-    let found = await checkStatus('/api/site-status');
-    if (!found) {
-      // 2. Пробуем абсолютный адрес Flask-сервера
-      found = await checkStatus(window.location.origin + '/api/site-status');
+    } catch (e) {
+      console.log('ℹ️ Статус сайта недоступен, продолжаем работу');
     }
   })();
   </script>
@@ -192,6 +708,16 @@
         <i class="fas fa-sign-in-alt"></i>
         <span>Войти</span>
       </button>
+      <!-- Кнопка перехода в админ-панель -->
+      <a href="admin-site.html" class="admin-button" title="Администрирование сайта">
+        <i class="fas fa-cog"></i>
+        <span>Админ</span>
+      </a>
+      <!-- Кнопка публикации изменений -->
+      <button class="publish-button" id="publishButton" title="Опубликовать изменения">
+        <i class="fas fa-upload"></i>
+        <span>Опубликовать</span>
+      </button>
     </div>
 
     <main class="main">
@@ -201,6 +727,288 @@
         </div>
       </section>
     </main>
+
+    <!-- Панель редактирования (скрыта по умолчанию) -->
+    <div class="edit-panel" id="editPanel">
+      <div class="edit-panel__header">
+        <h3>Панель управления сайтом</h3>
+        <button class="edit-panel__close" id="closeEditPanel">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <div class="edit-panel__tabs">
+        <button class="edit-tab active" data-tab="catalog">Каталог</button>
+        <button class="edit-tab" data-tab="site">Сайт</button>
+        <button class="edit-tab" data-tab="contacts">Контакты</button>
+        <button class="edit-tab" data-tab="social">Соцсети</button>
+        <button class="edit-tab" data-tab="data">Данные</button>
+      </div>
+      
+      <div class="edit-panel__content">
+        <!-- Вкладка каталога -->
+        <div class="edit-content active" id="catalogTab">
+          <div class="catalog-tabs">
+            <button class="catalog-tab active" data-catalog-tab="products">Товары</button>
+            <button class="catalog-tab" data-catalog-tab="categories">Категории</button>
+            <button class="catalog-tab" data-catalog-tab="add">Добавить товар</button>
+          </div>
+          
+          <div class="catalog-content">
+            <!-- Подвкладка товаров -->
+            <div class="catalog-panel active" id="productsPanel">
+              <div class="panel-header">
+                <h4>Управление товарами</h4>
+                <div class="panel-header__actions">
+                  <div class="search-box">
+                    <input type="text" id="productSearch" placeholder="Поиск товаров...">
+                    <i class="fas fa-search"></i>
+                  </div>
+                  <button class="add-product-btn" onclick="siteManager.showEditProductModal()">
+                    <i class="fas fa-plus"></i> Добавить товар
+                  </button>
+                </div>
+              </div>
+              <div class="edit-products-list" id="editProductsList">
+                <!-- Список товаров для редактирования -->
+              </div>
+            </div>
+            
+            <!-- Подвкладка категорий -->
+            <div class="catalog-panel" id="categoriesPanel">
+              <div class="panel-header">
+                <h4>Управление категориями</h4>
+                <button class="add-category-btn" id="addCategoryBtn">
+                  <i class="fas fa-plus"></i> Добавить категорию
+                </button>
+              </div>
+              <div class="edit-categories-list" id="editCategoriesList">
+                <!-- Список категорий для редактирования -->
+              </div>
+            </div>
+            
+            <!-- Подвкладка добавления товара -->
+            <div class="catalog-panel" id="addProductPanel">
+              <div class="panel-header">
+                <h4>Быстрое добавление товара</h4>
+                <div class="panel-header__actions">
+                  <button class="add-category-btn" onclick="siteManager.showAddCategoryModal()">
+                    <i class="fas fa-plus"></i> Добавить категорию
+                  </button>
+                </div>
+              </div>
+              <div class="quick-add-info">
+                <p><i class="fas fa-info-circle"></i> Используйте эту форму для быстрого добавления товаров. Для редактирования существующих товаров перейдите на вкладку "Товары".</p>
+                <div style="margin-top: 15px;">
+                  <button type="button" class="add-btn" onclick="siteManager.showAddProductModal()" style="
+                    background: #BCB88A;
+                    color: white;
+                    border: none;
+                    padding: 12px 24px;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    font-weight: 600;
+                    font-size: 14px;
+                  ">
+                    <i class="fas fa-plus"></i> Быстро добавить товар
+                  </button>
+                </div>
+              </div>
+              <form id="addProductForm" class="edit-form">
+                <div class="form-group">
+                  <label>Название товара:</label>
+                  <input type="text" id="productName" required>
+                </div>
+                <div class="form-group">
+                  <label>Цена (₽):</label>
+                  <input type="number" id="productPrice" min="0" step="0.01" required>
+                </div>
+                <div class="form-group">
+                  <label>Категория:</label>
+                  <select id="productCategory" required>
+                    <!-- Категории будут загружены динамически -->
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Описание:</label>
+                  <textarea id="productDescription" rows="3" placeholder="Описание товара..."></textarea>
+                </div>
+                <div class="form-group">
+                  <label>URL изображения:</label>
+                  <input type="url" id="productImage" placeholder="https://example.com/image.jpg">
+                </div>
+                <div class="form-group">
+                  <label>Артикул:</label>
+                  <input type="text" id="productSku" placeholder="SKU123456">
+                </div>
+                <button type="submit" class="add-btn">
+                  <i class="fas fa-plus"></i> Добавить товар
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Вкладка настроек сайта -->
+        <div class="edit-content" id="siteTab">
+          <div class="panel-header">
+            <h4>Настройки сайта</h4>
+          </div>
+          <form id="siteSettingsForm" class="edit-form">
+            <div class="form-group">
+              <label>Название сайта:</label>
+              <input type="text" id="siteName" value="Damax" required>
+            </div>
+            <div class="form-group">
+              <label>Логотип (URL):</label>
+              <input type="url" id="siteLogo" placeholder="https://example.com/logo.png">
+            </div>
+            <div class="form-group">
+              <label>Favicon (URL):</label>
+              <input type="url" id="siteFavicon" placeholder="https://example.com/favicon.ico">
+            </div>
+            <div class="form-group">
+              <label>Описание сайта:</label>
+              <textarea id="siteDescription" rows="3" placeholder="Описание сайта для поисковых систем..."></textarea>
+            </div>
+            <div class="form-group">
+              <label>Ключевые слова:</label>
+              <input type="text" id="siteKeywords" placeholder="товары, магазин, покупки">
+            </div>
+            <button type="submit" class="save-btn">
+              <i class="fas fa-save"></i> Сохранить настройки
+            </button>
+          </form>
+        </div>
+        
+        <!-- Вкладка контактов -->
+        <div class="edit-content" id="contactsTab">
+          <div class="panel-header">
+            <h4>Контактная информация</h4>
+          </div>
+          <form id="contactsForm" class="edit-form">
+            <div class="form-group">
+              <label>Телефон:</label>
+              <input type="tel" id="contactPhone" placeholder="+7 (999) 123-45-67">
+            </div>
+            <div class="form-group">
+              <label>Email:</label>
+              <input type="email" id="contactEmail" placeholder="info@example.com">
+            </div>
+            <div class="form-group">
+              <label>Адрес:</label>
+              <input type="text" id="contactAddress" placeholder="ул. Примерная, 123, Москва">
+            </div>
+            <div class="form-group">
+              <label>Режим работы:</label>
+              <input type="text" id="contactHours" placeholder="Пн-Пт 10:00-19:00">
+            </div>
+            <div class="form-group">
+              <label>Дополнительная информация:</label>
+              <textarea id="contactInfo" rows="3" placeholder="Дополнительная контактная информация..."></textarea>
+            </div>
+            <button type="submit" class="save-btn">
+              <i class="fas fa-save"></i> Сохранить контакты
+            </button>
+          </form>
+        </div>
+        
+        <!-- Вкладка социальных сетей -->
+        <div class="edit-content" id="socialTab">
+          <div class="panel-header">
+            <h4>Социальные сети</h4>
+          </div>
+          <form id="socialForm" class="edit-form">
+            <div class="form-group">
+              <label>Instagram:</label>
+              <input type="url" id="socialInstagram" placeholder="https://instagram.com/yourpage">
+            </div>
+            <div class="form-group">
+              <label>Facebook:</label>
+              <input type="url" id="socialFacebook" placeholder="https://facebook.com/yourpage">
+            </div>
+            <div class="form-group">
+              <label>Twitter:</label>
+              <input type="url" id="socialTwitter" placeholder="https://twitter.com/yourpage">
+            </div>
+            <div class="form-group">
+              <label>YouTube:</label>
+              <input type="url" id="socialYoutube" placeholder="https://youtube.com/yourchannel">
+            </div>
+            <div class="form-group">
+              <label>Telegram:</label>
+              <input type="url" id="socialTelegram" placeholder="https://t.me/yourchannel">
+            </div>
+            <div class="form-group">
+              <label>WhatsApp:</label>
+              <input type="url" id="socialWhatsapp" placeholder="https://wa.me/79991234567">
+            </div>
+            <button type="submit" class="save-btn">
+              <i class="fas fa-save"></i> Сохранить соцсети
+            </button>
+          </form>
+        </div>
+        
+        <!-- Вкладка управления данными -->
+        <div class="edit-content" id="dataTab">
+          <div class="panel-header">
+            <h4>Управление данными</h4>
+          </div>
+          <div class="data-actions">
+            <div class="action-group">
+              <h5>Экспорт данных</h5>
+              <button class="action-btn" id="exportCatalogBtn">
+                <i class="fas fa-download"></i> Экспорт каталога (JSON)
+              </button>
+              <button class="action-btn" id="exportAllDataBtn">
+                <i class="fas fa-download"></i> Экспорт всех данных (JSON)
+              </button>
+            </div>
+            
+            <div class="action-group">
+              <h5>Импорт данных</h5>
+              <label for="importCatalogInput" class="action-btn">
+                <i class="fas fa-upload"></i> Импорт каталога
+              </label>
+              <input type="file" id="importCatalogInput" accept=".json" style="display:none;">
+              
+              <label for="importAllDataInput" class="action-btn">
+                <i class="fas fa-upload"></i> Импорт всех данных
+              </label>
+              <input type="file" id="importAllDataInput" accept=".json" style="display:none;">
+            </div>
+            
+            <div class="action-group">
+              <h5>Очистка данных</h5>
+              <button class="action-btn danger" id="clearProductsBtn">
+                <i class="fas fa-trash"></i> Очистить все товары
+              </button>
+              <button class="action-btn danger" id="clearAllDataBtn">
+                <i class="fas fa-trash"></i> Очистить все данные
+              </button>
+            </div>
+            
+            <div class="action-group">
+              <h5>Статистика</h5>
+              <div class="stats-info">
+                <div class="stat-item">
+                  <span class="stat-label">Товаров:</span>
+                  <span class="stat-value" id="productsCount">0</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">Категорий:</span>
+                  <span class="stat-value" id="categoriesCount">0</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">Последнее обновление:</span>
+                  <span class="stat-value" id="lastUpdate">-</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <div class="island">
       <div class="island__categories all-active" id="islandCategories"></div>
@@ -701,6 +1509,7 @@
 <script src="products-api.js"></script>
 <script src="search-animation.js"></script>
 <script src="product-search.js"></script>
+<script src="settings.js"></script>
 <script src="desktop.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
 <script>
@@ -787,6 +1596,940 @@
       window.location.href = 'catalog-editor.html';
     }
   });
+
+// Система управления сайтом
+class SiteManager {
+  constructor() {
+    this.editPanel = document.getElementById('editPanel');
+    this.closeEditPanel = document.getElementById('closeEditPanel');
+
+    // Основные вкладки
+    this.tabs = document.querySelectorAll('.edit-tab');
+    this.contents = document.querySelectorAll('.edit-content');
+
+    // Подвкладки каталога
+    this.catalogTabs = document.querySelectorAll('.catalog-tab');
+    this.catalogPanels = document.querySelectorAll('.catalog-panel');
+
+    this.init();
+  }
+
+  init() {
+    // Основные обработчики
+    this.closeEditPanel.addEventListener('click', () => this.closePanel());
+
+    // Обработчики основных вкладок
+    this.tabs.forEach(tab => {
+      tab.addEventListener('click', () => this.switchTab(tab.dataset.tab));
+    });
+
+    // Обработчики подвкладок каталога
+    this.catalogTabs.forEach(tab => {
+      tab.addEventListener('click', () => this.switchCatalogTab(tab.dataset.catalogTab));
+    });
+
+    // Формы
+    this.initForms();
+
+    // Кнопки действий
+    this.initActionButtons();
+
+    // Загружаем данные
+    this.loadData();
+  }
+
+  initForms() {
+    // Форма добавления товара
+    const addProductForm = document.getElementById('addProductForm');
+    if (addProductForm) {
+      addProductForm.addEventListener('submit', (e) => this.addProduct(e));
+    }
+
+    // Форма настроек сайта
+    const siteSettingsForm = document.getElementById('siteSettingsForm');
+    if (siteSettingsForm) {
+      siteSettingsForm.addEventListener('submit', (e) => this.saveSiteSettings(e));
+    }
+
+    // Форма контактов
+    const contactsForm = document.getElementById('contactsForm');
+    if (contactsForm) {
+      contactsForm.addEventListener('submit', (e) => this.saveContacts(e));
+    }
+
+    // Форма социальных сетей
+    const socialForm = document.getElementById('socialForm');
+    if (socialForm) {
+      socialForm.addEventListener('submit', (e) => this.saveSocial(e));
+    }
+  }
+
+  initActionButtons() {
+    // Экспорт данных
+    const exportCatalogBtn = document.getElementById('exportCatalogBtn');
+    if (exportCatalogBtn) {
+      exportCatalogBtn.addEventListener('click', () => this.exportCatalog());
+    }
+
+    const exportAllDataBtn = document.getElementById('exportAllDataBtn');
+    if (exportAllDataBtn) {
+      exportAllDataBtn.addEventListener('click', () => this.exportAllData());
+    }
+
+    // Импорт данных
+    const importCatalogInput = document.getElementById('importCatalogInput');
+    if (importCatalogInput) {
+      importCatalogInput.addEventListener('change', (e) => this.importCatalog(e));
+    }
+
+    const importAllDataInput = document.getElementById('importAllDataInput');
+    if (importAllDataInput) {
+      importAllDataInput.addEventListener('change', (e) => this.importAllData(e));
+    }
+
+    // Очистка данных
+    const clearProductsBtn = document.getElementById('clearProductsBtn');
+    if (clearProductsBtn) {
+      clearProductsBtn.addEventListener('click', () => this.clearProducts());
+    }
+
+    const clearAllDataBtn = document.getElementById('clearAllDataBtn');
+    if (clearAllDataBtn) {
+      clearAllDataBtn.addEventListener('click', () => this.clearAllData());
+    }
+
+    // Добавление категории
+    const addCategoryBtn = document.getElementById('addCategoryBtn');
+    if (addCategoryBtn) {
+      addCategoryBtn.addEventListener('click', () => this.showAddCategoryModal());
+    }
+
+    // Поиск товаров
+    const productSearch = document.getElementById('productSearch');
+    if (productSearch) {
+      productSearch.addEventListener('input', (e) => this.searchProducts(e.target.value));
+    }
+  }
+
+  toggleEditPanel() {
+    this.editPanel.classList.toggle('active');
+    
+    if (this.editPanel.classList.contains('active')) {
+      this.loadData();
+      this.updateStats();
+    }
+  }
+
+  closePanel() {
+    this.editPanel.classList.remove('active');
+  }
+
+  switchTab(tabName) {
+    this.tabs.forEach(tab => tab.classList.remove('active'));
+    this.contents.forEach(content => content.classList.remove('active'));
+
+    document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+    document.getElementById(`${tabName}Tab`).classList.add('active');
+  }
+
+  switchCatalogTab(tabName) {
+    this.catalogTabs.forEach(tab => tab.classList.remove('active'));
+    this.catalogPanels.forEach(panel => panel.classList.remove('active'));
+
+    document.querySelector(`[data-catalog-tab="${tabName}"]`).classList.add('active');
+    document.getElementById(`${tabName}Panel`).classList.add('active');
+  }
+
+  async loadData() {
+    try {
+      // Загружаем товары и категории
+      const products = await this.getProducts();
+      const categories = await this.getCategories();
+
+      this.renderProducts(products);
+      this.renderCategories(categories);
+      this.populateCategorySelect(categories);
+
+      // Загружаем настройки сайта
+      this.loadSiteSettings();
+      this.loadContacts();
+      this.loadSocial();
+
+      this.updateStats();
+    } catch (error) {
+      console.error('Ошибка загрузки данных:', error);
+      this.showNotification('Ошибка загрузки данных', 'error');
+    }
+  }
+
+  async getProducts() {
+    try {
+      const stored = localStorage.getItem('products');
+      return stored ? JSON.parse(stored) : [];
+    } catch (error) {
+      console.error('Ошибка при получении товаров:', error);
+      return [];
+    }
+  }
+
+  async getCategories() {
+    try {
+      const stored = localStorage.getItem('categories');
+      if (stored) {
+        return JSON.parse(stored);
+      }
+      return [
+        { id: 1, name: 'Электроника', image: 'images/electronics.png' },
+        { id: 2, name: 'Одежда', image: 'images/clothes.png' },
+        { id: 3, name: 'Игрушки', image: 'images/toys.png' },
+        { id: 4, name: 'Бытовая техника', image: 'images/appliances.png' },
+        { id: 5, name: 'Аксессуары', image: 'images/accessories.png' }
+      ];
+    } catch (error) {
+      console.error('Ошибка при получении категорий:', error);
+      return [];
+    }
+  }
+
+  renderProducts(products) {
+    const container = document.getElementById('editProductsList');
+    if (!container) return;
+
+    container.innerHTML = '';
+
+    if (products.length === 0) {
+      container.innerHTML = '<div class="empty-state">Товары не найдены</div>';
+      return;
+    }
+
+    products.forEach(product => {
+      const item = document.createElement('div');
+      item.className = 'edit-item';
+      const imageUrl = product.image || product.image_url || 'images/image.png';
+      item.innerHTML = `
+        <div class="edit-item__header">
+          <div class="edit-item__info">
+            <div class="edit-item__image">
+              <img src="${imageUrl}" alt="${product.name || product.title || 'Товар'}">
+            </div>
+            <div class="edit-item__details">
+              <div class="edit-item__title">${product.name || product.title || 'Без названия'}</div>
+              <div class="edit-item__price">Цена: ${(product.price || 0).toLocaleString('ru-RU')} ₽</div>
+              <div class="edit-item__category">Категория: ${product.category || 'Не указана'}</div>
+              ${product.sku ? `<div class="edit-item__sku">Артикул: ${product.sku}</div>` : ''}
+              ${product.description ? `<div class="edit-item__description">${product.description}</div>` : ''}
+            </div>
+          </div>
+          <div class="edit-item__actions">
+            <button class="edit-btn" data-id="${product.id}" title="Редактировать товар">
+              <i class="fas fa-edit"></i>
+            </button>
+            <button class="delete-btn" data-id="${product.id}" title="Удалить товар">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        </div>
+      `;
+      container.appendChild(item);
+
+      // Привязываем обработчики для кнопок редактирования и удаления
+      item.querySelector('.edit-btn').addEventListener('click', () => this.editProduct(product.id));
+      item.querySelector('.delete-btn').addEventListener('click', () => this.deleteProduct(product.id));
+    });
+    
+    // Обновляем атрибуты data-product-id для всех карточек товаров на странице
+    this.updateProductCardAttributes(products);
+  }
+  
+  // Метод для обновления атрибутов карточек товаров
+  // Этот метод больше не используется, но оставлен для совместимости
+  updateProductCardAttributes(products) {
+    // Пустая реализация для совместимости
+  }
+
+  renderCategories(categories) {
+    const container = document.getElementById('editCategoriesList');
+    if (!container) return;
+
+    container.innerHTML = '';
+
+    if (categories.length === 0) {
+      container.innerHTML = '<div class="empty-state">Категории не найдены</div>';
+      return;
+    }
+
+    categories.forEach(category => {
+      const item = document.createElement('div');
+      item.className = 'edit-item';
+      item.innerHTML = `
+        <div class="edit-item__header">
+          <div class="edit-item__info">
+            <div class="edit-item__image">
+              <img src="${category.image || category.image_url || 'images/category.png'}" alt="${category.name}">
+            </div>
+            <div class="edit-item__details">
+              <div class="edit-item__title">${category.name}</div>
+              ${category.description ? `<div class="edit-item__description">${category.description}</div>` : ''}
+            </div>
+          </div>
+          <div class="edit-item__actions">
+            <button class="edit-btn" data-id="${category.id}" title="Редактировать категорию">
+              <i class="fas fa-edit"></i>
+            </button>
+            <button class="delete-btn" data-id="${category.id}" title="Удалить категорию">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        </div>
+      `;
+      container.appendChild(item);
+
+      // Привязываем обработчики для кнопок редактирования и удаления
+      item.querySelector('.edit-btn').addEventListener('click', () => this.editCategory(category.id));
+      item.querySelector('.delete-btn').addEventListener('click', () => this.deleteCategory(category.id));
+    });
+  }
+
+  populateCategorySelect(categories) {
+    const select = document.getElementById('productCategory');
+    if (!select) return;
+
+    select.innerHTML = '<option value="">Выберите категорию</option>';
+
+    categories.forEach(category => {
+      const option = document.createElement('option');
+      option.value = category.name;
+      option.textContent = category.name;
+      select.appendChild(option);
+    });
+  }
+
+  async addProduct(e) {
+    e.preventDefault();
+
+    try {
+      const nameInput = document.getElementById('productName');
+      const priceInput = document.getElementById('productPrice');
+      const categoryInput = document.getElementById('productCategory');
+      const descriptionInput = document.getElementById('productDescription');
+      const imageInput = document.getElementById('productImage');
+      const skuInput = document.getElementById('productSku');
+
+      if (!nameInput || !priceInput || !categoryInput) {
+        this.showNotification('Ошибка: не все поля найдены', 'error');
+        return;
+      }
+
+      const formData = {
+        id: Date.now(),
+        name: nameInput.value.trim(),
+        title: nameInput.value.trim(),
+        price: parseFloat(priceInput.value) || 0,
+        category: categoryInput.value,
+        description: descriptionInput ? descriptionInput.value.trim() : '',
+        image: imageInput ? (imageInput.value.trim() || 'images/image.png') : 'images/image.png',
+        image_url: imageInput ? (imageInput.value.trim() || 'images/image.png') : 'images/image.png',
+        sku: skuInput ? skuInput.value.trim() : ''
+      };
+
+      if (!formData.name || !formData.category) {
+        this.showNotification('Заполните обязательные поля: название и категория', 'error');
+        return;
+      }
+
+      const products = await this.getProducts();
+      products.push(formData);
+
+      localStorage.setItem('products', JSON.stringify(products));
+
+      this.renderProducts(products);
+      e.target.reset();
+      this.updateMainCatalog();
+      this.updateStats();
+
+      this.showNotification('Товар успешно добавлен!', 'success');
+    } catch (error) {
+      console.error('Ошибка добавления товара:', error);
+      this.showNotification('Ошибка при добавлении товара', 'error');
+    }
+  }
+
+  async deleteProduct(id) {
+    if (confirm('Вы уверены, что хотите удалить этот товар?')) {
+      const products = await this.getProducts();
+      const filtered = products.filter(p => p.id !== id);
+      localStorage.setItem('products', JSON.stringify(filtered));
+      this.renderProducts(filtered);
+      this.updateMainCatalog();
+      this.updateStats();
+      this.showNotification('Товар удален', 'success');
+    }
+  }
+
+  async deleteCategory(id) {
+    if (confirm('Вы уверены, что хотите удалить эту категорию?')) {
+      const categories = await this.getCategories();
+      const filtered = categories.filter(c => c.id !== id);
+      localStorage.setItem('categories', JSON.stringify(filtered));
+      this.renderCategories(filtered);
+      this.populateCategorySelect(filtered);
+      this.updateStats();
+      this.showNotification('Категория удалена', 'success');
+    }
+  }
+
+  loadSiteSettings() {
+    const settings = JSON.parse(localStorage.getItem('siteSettings') || '{}');
+
+    const siteName = document.getElementById('siteName');
+    if (siteName) siteName.value = settings.siteName || 'Damax';
+
+    const siteLogo = document.getElementById('siteLogo');
+    if (siteLogo) siteLogo.value = settings.siteLogo || '';
+
+    const siteFavicon = document.getElementById('siteFavicon');
+    if (siteFavicon) siteFavicon.value = settings.siteFavicon || '';
+
+    const siteDescription = document.getElementById('siteDescription');
+    if (siteDescription) siteDescription.value = settings.siteDescription || '';
+
+    const siteKeywords = document.getElementById('siteKeywords');
+    if (siteKeywords) siteKeywords.value = settings.siteKeywords || '';
+  }
+
+  saveSiteSettings(e) {
+    e.preventDefault();
+
+    const settings = {
+      siteName: document.getElementById('siteName').value,
+      siteLogo: document.getElementById('siteLogo').value,
+      siteFavicon: document.getElementById('siteFavicon').value,
+      siteDescription: document.getElementById('siteDescription').value,
+      siteKeywords: document.getElementById('siteKeywords').value
+    };
+
+    localStorage.setItem('siteSettings', JSON.stringify(settings));
+    this.showNotification('Настройки сайта сохранены', 'success');
+  }
+
+  loadContacts() {
+    const contacts = JSON.parse(localStorage.getItem('contacts') || '{}');
+
+    const contactPhone = document.getElementById('contactPhone');
+    if (contactPhone) contactPhone.value = contacts.phone || '';
+
+    const contactEmail = document.getElementById('contactEmail');
+    if (contactEmail) contactEmail.value = contacts.email || '';
+
+    const contactAddress = document.getElementById('contactAddress');
+    if (contactAddress) contactAddress.value = contacts.address || '';
+
+    const contactHours = document.getElementById('contactHours');
+    if (contactHours) contactHours.value = contacts.hours || '';
+
+    const contactInfo = document.getElementById('contactInfo');
+    if (contactInfo) contactInfo.value = contacts.info || '';
+  }
+
+  saveContacts(e) {
+    e.preventDefault();
+
+    const contacts = {
+      phone: document.getElementById('contactPhone').value,
+      email: document.getElementById('contactEmail').value,
+      address: document.getElementById('contactAddress').value,
+      hours: document.getElementById('contactHours').value,
+      info: document.getElementById('contactInfo').value
+    };
+
+    localStorage.setItem('contacts', JSON.stringify(contacts));
+    this.showNotification('Контакты сохранены', 'success');
+  }
+
+  loadSocial() {
+    const social = JSON.parse(localStorage.getItem('social') || '{}');
+
+    const socialInstagram = document.getElementById('socialInstagram');
+    if (socialInstagram) socialInstagram.value = social.instagram || '';
+
+    const socialFacebook = document.getElementById('socialFacebook');
+    if (socialFacebook) socialFacebook.value = social.facebook || '';
+
+    const socialTwitter = document.getElementById('socialTwitter');
+    if (socialTwitter) socialTwitter.value = social.twitter || '';
+
+    const socialYoutube = document.getElementById('socialYoutube');
+    if (socialYoutube) socialYoutube.value = social.youtube || '';
+
+    const socialTelegram = document.getElementById('socialTelegram');
+    if (socialTelegram) socialTelegram.value = social.telegram || '';
+
+    const socialWhatsapp = document.getElementById('socialWhatsapp');
+    if (socialWhatsapp) socialWhatsapp.value = social.whatsapp || '';
+  }
+
+  saveSocial(e) {
+    e.preventDefault();
+
+    const social = {
+      instagram: document.getElementById('socialInstagram').value,
+      facebook: document.getElementById('socialFacebook').value,
+      twitter: document.getElementById('socialTwitter').value,
+      youtube: document.getElementById('socialYoutube').value,
+      telegram: document.getElementById('socialTelegram').value,
+      whatsapp: document.getElementById('socialWhatsapp').value
+    };
+
+    localStorage.setItem('social', JSON.stringify(social));
+    this.showNotification('Социальные сети сохранены', 'success');
+  }
+
+  exportCatalog() {
+    try {
+      const data = {
+        products: JSON.parse(localStorage.getItem('products') || '[]'),
+        categories: JSON.parse(localStorage.getItem('categories') || '[]')
+      };
+      this.downloadJson(data, 'catalog.json');
+      this.showNotification('Каталог экспортирован', 'success');
+    } catch (error) {
+      this.showNotification('Ошибка экспорта', 'error');
+    }
+  }
+
+  exportAllData() {
+    try {
+      const data = {
+        products: JSON.parse(localStorage.getItem('products') || '[]'),
+        categories: JSON.parse(localStorage.getItem('categories') || '[]'),
+        siteSettings: JSON.parse(localStorage.getItem('siteSettings') || '{}'),
+        contacts: JSON.parse(localStorage.getItem('contacts') || '{}'),
+        social: JSON.parse(localStorage.getItem('social') || '{}')
+      };
+      this.downloadJson(data, 'site-data.json');
+      this.showNotification('Все данные экспортированы', 'success');
+    } catch (error) {
+      this.showNotification('Ошибка экспорта', 'error');
+    }
+  }
+
+  importCatalog(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const data = JSON.parse(event.target.result);
+        if (data.products) localStorage.setItem('products', JSON.stringify(data.products));
+        if (data.categories) localStorage.setItem('categories', JSON.stringify(data.categories));
+
+        this.loadData();
+        this.showNotification('Каталог импортирован', 'success');
+      } catch (error) {
+        this.showNotification('Ошибка импорта', 'error');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  }
+
+  importAllData(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const data = JSON.parse(event.target.result);
+        if (data.products) localStorage.setItem('products', JSON.stringify(data.products));
+        if (data.categories) localStorage.setItem('categories', JSON.stringify(data.categories));
+        if (data.siteSettings) localStorage.setItem('siteSettings', JSON.stringify(data.siteSettings));
+        if (data.contacts) localStorage.setItem('contacts', JSON.stringify(data.contacts));
+        if (data.social) localStorage.setItem('social', JSON.stringify(data.social));
+
+        this.loadData();
+        this.showNotification('Все данные импортированы', 'success');
+      } catch (error) {
+        this.showNotification('Ошибка импорта', 'error');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  }
+
+  clearProducts() {
+    if (confirm('Вы уверены, что хотите удалить все товары?')) {
+      localStorage.removeItem('products');
+      this.renderProducts([]);
+      this.updateMainCatalog();
+      this.updateStats();
+      this.showNotification('Все товары удалены', 'success');
+    }
+  }
+
+  clearAllData() {
+    if (confirm('Вы уверены, что хотите удалить ВСЕ данные сайта? Это действие нельзя отменить!')) {
+      localStorage.clear();
+      this.loadData();
+      this.showNotification('Все данные удалены', 'success');
+    }
+  }
+
+  searchProducts(query) {
+    this.getProducts().then(products => {
+      const filtered = products.filter(product =>
+        (product.name || product.title || '').toLowerCase().includes(query.toLowerCase()) ||
+        (product.category || '').toLowerCase().includes(query.toLowerCase())
+      );
+      this.renderProducts(filtered);
+    });
+  }
+
+  updateStats() {
+    this.getProducts().then(products => {
+      const productsCount = document.getElementById('productsCount');
+      if (productsCount) productsCount.textContent = products.length;
+    });
+
+    this.getCategories().then(categories => {
+      const categoriesCount = document.getElementById('categoriesCount');
+      if (categoriesCount) categoriesCount.textContent = categories.length;
+    });
+
+    const lastUpdate = document.getElementById('lastUpdate');
+    if (lastUpdate) lastUpdate.textContent = new Date().toLocaleString('ru-RU');
+  }
+
+  updateMainCatalog() {
+    if (window.productsApi && window.productsApi.loadAndRenderProducts) {
+      window.productsApi.loadAndRenderProducts();
+    }
+  }
+  
+  // Метод для открытия модального окна добавления товара
+  showAddProductModal() {
+    if (window.productEditor) {
+      window.productEditor.showModal();
+    } else {
+      this.showNotification('Редактор товаров не загружен', 'error');
+    }
+  }
+
+  downloadJson(data, filename) {
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    URL.revokeObjectURL(url);
+    a.remove();
+  }
+
+  showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: ${type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : '#17a2b8'};
+      color: white;
+      padding: 15px 30px 15px 20px;
+      border-radius: 6px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 3000;
+      font-size: 14px;
+      max-width: 300px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    `;
+    notification.innerHTML = `
+      <span>${message}</span>
+      <button style="background: none; border: none; color: white; cursor: pointer; font-size: 16px;">×</button>
+    `;
+    document.body.appendChild(notification);
+
+    notification.querySelector('button').addEventListener('click', () => notification.remove());
+
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.remove();
+      }
+    }, 5000);
+  }
+
+  editProduct(id) {
+    this.getProducts().then(products => {
+      const product = products.find(p => p.id === id);
+      if (product) {
+        this.showEditProductModal(product);
+      } else {
+        this.showNotification('Товар не найден', 'error');
+      }
+    });
+  }
+
+  editCategory(id) {
+    this.getCategories().then(categories => {
+      const category = categories.find(c => c.id === id);
+      if (category) {
+        this.showEditCategoryModal(category);
+      } else {
+        this.showNotification('Категория не найдена', 'error');
+      }
+    });
+  }
+
+  showAddCategoryModal() {
+    this.showEditCategoryModal(null);
+  }
+
+  showAddProductModal() {
+    this.showEditProductModal(null);
+  }
+
+  showEditProductModal(product = null) {
+    const isEdit = product !== null;
+
+    // Удаляем существующие модальные окна
+    const existingModals = document.querySelectorAll('.edit-modal');
+    existingModals.forEach(modal => modal.remove());
+
+    const modal = document.createElement('div');
+    modal.className = 'edit-modal';
+    modal.innerHTML = `
+      <div class="edit-modal__content">
+        <div class="edit-modal__header">
+          <h3 class="edit-modal__title">${isEdit ? 'Редактировать товар' : 'Добавить товар'}</h3>
+          <button class="edit-modal__close">×</button>
+        </div>
+        <form id="editProductForm" class="edit-form">
+          <div class="form-group">
+            <label for="editProductName">Название товара:</label>
+            <input type="text" id="editProductName" value="${product ? (product.name || product.title || '') : ''}" required>
+          </div>
+          <div class="form-group">
+            <label for="editProductPrice">Цена (₽):</label>
+            <input type="number" id="editProductPrice" value="${product ? (product.price || 0) : ''}" min="0" step="0.01" required>
+          </div>
+          <div class="form-group">
+            <label for="editProductCategory">Категория:</label>
+            <select id="editProductCategory" required>
+              <option value="">Выберите категорию</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="editProductDescription">Описание:</label>
+            <textarea id="editProductDescription">${product ? (product.description || '') : ''}</textarea>
+          </div>
+          <div class="form-group">
+            <label for="editProductImage">URL изображения:</label>
+            <input type="url" id="editProductImage" value="${product ? (product.image || product.image_url || '') : ''}">
+          </div>
+          <div class="form-group">
+            <label for="editProductSku">Артикул:</label>
+            <input type="text" id="editProductSku" value="${product ? (product.sku || '') : ''}">
+          </div>
+          <div class="form-actions">
+            <button type="button" class="cancel-btn">Отмена</button>
+            <button type="submit" class="save-btn">${isEdit ? 'Сохранить' : 'Добавить'}</button>
+          </div>
+        </form>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+    setTimeout(() => modal.classList.add('active'), 10);
+
+    // Загружаем категории в селект
+    this.getCategories().then(categories => {
+      const select = modal.querySelector('#editProductCategory');
+      if (select) {
+        categories.forEach(category => {
+          const option = document.createElement('option');
+          option.value = category.name;
+          option.textContent = category.name;
+          if (product && product.category === category.name) {
+            option.selected = true;
+          }
+          select.appendChild(option);
+        });
+      }
+    });
+
+    // Обработчики
+    modal.querySelector('.edit-modal__close').addEventListener('click', () => modal.remove());
+    modal.querySelector('.cancel-btn').addEventListener('click', () => modal.remove());
+    modal.querySelector('#editProductForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      this.saveProduct(product, modal);
+    });
+  }
+
+  showEditCategoryModal(category = null) {
+    const isEdit = category !== null;
+
+    // Удаляем существующие модальные окна
+    const existingModals = document.querySelectorAll('.edit-modal');
+    existingModals.forEach(modal => modal.remove());
+
+    const modal = document.createElement('div');
+    modal.className = 'edit-modal';
+    modal.innerHTML = `
+      <div class="edit-modal__content">
+        <div class="edit-modal__header">
+          <h3 class="edit-modal__title">${isEdit ? 'Редактировать категорию' : 'Добавить категорию'}</h3>
+          <button class="edit-modal__close">×</button>
+        </div>
+        <form id="editCategoryForm" class="edit-form">
+          <div class="form-group">
+            <label for="editCategoryName">Название категории:</label>
+            <input type="text" id="editCategoryName" value="${category ? category.name : ''}" required>
+          </div>
+          <div class="form-group">
+            <label for="editCategoryImage">URL изображения:</label>
+            <input type="url" id="editCategoryImage" value="${category ? (category.image || category.image_url || '') : ''}">
+          </div>
+          <div class="form-group">
+            <label for="editCategoryDescription">Описание:</label>
+            <textarea id="editCategoryDescription">${category ? (category.description || '') : ''}</textarea>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="cancel-btn">Отмена</button>
+            <button type="submit" class="save-btn">${isEdit ? 'Сохранить' : 'Добавить'}</button>
+          </div>
+        </form>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+    setTimeout(() => modal.classList.add('active'), 10);
+
+    // Обработчики
+    modal.querySelector('.edit-modal__close').addEventListener('click', () => modal.remove());
+    modal.querySelector('.cancel-btn').addEventListener('click', () => modal.remove());
+    modal.querySelector('#editCategoryForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      this.saveCategory(category, modal);
+    });
+  }
+
+  async saveProduct(product, modal) {
+    try {
+      const nameInput = modal.querySelector('#editProductName');
+      const priceInput = modal.querySelector('#editProductPrice');
+      const categoryInput = modal.querySelector('#editProductCategory');
+      const descriptionInput = modal.querySelector('#editProductDescription');
+      const imageInput = modal.querySelector('#editProductImage');
+      const skuInput = modal.querySelector('#editProductSku');
+
+      if (!nameInput || !priceInput || !categoryInput) {
+        this.showNotification('Ошибка: не все поля найдены', 'error');
+        return;
+      }
+
+      const formData = {
+        id: product ? product.id : Date.now(),
+        name: nameInput.value.trim(),
+        title: nameInput.value.trim(),
+        price: parseFloat(priceInput.value) || 0,
+        category: categoryInput.value,
+        description: descriptionInput ? descriptionInput.value.trim() : '',
+        image: imageInput ? (imageInput.value.trim() || 'images/image.png') : 'images/image.png',
+        image_url: imageInput ? (imageInput.value.trim() || 'images/image.png') : 'images/image.png',
+        sku: skuInput ? skuInput.value.trim() : ''
+      };
+
+      if (!formData.name || !formData.category) {
+        this.showNotification('Заполните обязательные поля: название и категория', 'error');
+        return;
+      }
+
+      const products = await this.getProducts();
+
+      if (product) {
+        const index = products.findIndex(p => p.id === product.id);
+        if (index !== -1) {
+          products[index] = formData;
+        }
+      } else {
+        products.push(formData);
+      }
+
+      localStorage.setItem('products', JSON.stringify(products));
+
+      this.renderProducts(products);
+      this.updateMainCatalog();
+      this.updateStats();
+
+      modal.remove();
+      this.showNotification(product ? 'Товар обновлен' : 'Товар добавлен', 'success');
+    } catch (error) {
+      console.error('Ошибка сохранения товара:', error);
+      this.showNotification('Ошибка при сохранении товара', 'error');
+    }
+  }
+
+  async saveCategory(category, modal) {
+    try {
+      const nameInput = modal.querySelector('#editCategoryName');
+      const imageInput = modal.querySelector('#editCategoryImage');
+      const descriptionInput = modal.querySelector('#editCategoryDescription');
+
+      if (!nameInput) {
+        this.showNotification('Ошибка: поле названия не найдено', 'error');
+        return;
+      }
+
+      const formData = {
+        id: category ? category.id : Date.now(),
+        name: nameInput.value.trim(),
+        image: imageInput ? (imageInput.value.trim() || 'images/category.png') : 'images/category.png',
+        image_url: imageInput ? (imageInput.value.trim() || 'images/category.png') : 'images/category.png',
+        description: descriptionInput ? descriptionInput.value.trim() : ''
+      };
+
+      if (!formData.name) {
+        this.showNotification('Заполните обязательное поле: название категории', 'error');
+        return;
+      }
+
+      const categories = await this.getCategories();
+
+      if (category) {
+        const index = categories.findIndex(c => c.id === category.id);
+        if (index !== -1) {
+          categories[index] = formData;
+        }
+      } else {
+        categories.push(formData);
+      }
+
+      localStorage.setItem('categories', JSON.stringify(categories));
+
+      this.renderCategories(categories);
+      this.populateCategorySelect(categories);
+      this.updateStats();
+
+      modal.remove();
+      this.showNotification(category ? 'Категория обновлена' : 'Категория добавлена', 'success');
+    } catch (error) {
+      console.error('Ошибка сохранения категории:', error);
+      this.showNotification('Ошибка при сохранении категории', 'error');
+    }
+  }
+}
+
+// Инициализация системы управления сайтом
+let siteManager;
+document.addEventListener('DOMContentLoaded', function() {
+  siteManager = new SiteManager();
+});
 </script>
+</body>
+</html>
 </body>
 </html>

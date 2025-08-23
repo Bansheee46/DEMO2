@@ -94,6 +94,11 @@
     } catch { return null; }
   }
 
+  // Читаем флаг локального режима из localStorage (удобство для редактора витрины)
+  const LOCAL_USE_FLAG = (() => {
+    try { return localStorage.getItem('USE_LOCAL_DATA') === '1' || window.USE_LOCAL_DATA === true; } catch { return !!window.USE_LOCAL_DATA; }
+  })();
+
   // Патчим глобальный fetch для путей, начинающихся с /api/
   window.fetch = async function(input, init={}){
     try {
@@ -110,7 +115,7 @@
       const isApi = urlObj ? urlObj.pathname.startsWith('/api/') : (typeof input === 'string' && input.startsWith('/api/'));
 
       // Офлайн-режим: обслуживаем некоторые GET эндпоинты локально
-      if (isApi && window.USE_LOCAL_DATA === true && method === 'GET') {
+      if (isApi && LOCAL_USE_FLAG && method === 'GET') {
         const pathname = urlObj.pathname;
         const query = parseQuery(urlObj);
         const custom = getCustomCatalog();

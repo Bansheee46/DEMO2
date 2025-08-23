@@ -9,20 +9,19 @@
   <link rel="stylesheet" href="mobile-styles.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <script>
-  // Устанавливаем глобальные URL для API
-  window.API_BASE_URL = '/api';
-  window.API_BACKUP_URL = '/api';
-  
+  // Проверяем статус сайта только для информации
   (async function() {
     try {
       const res = await fetch('/api/site-status');
       if (res.ok) {
         const data = await res.json();
-        if (!data.enabled) {
-          window.location.href = '/site-offline.html';
+        if (data.enabled) {
+          console.log('✅ Сайт работает в онлайн-режиме');
         }
       }
-    } catch (e) {}
+    } catch (e) {
+      console.log('ℹ️ Статус сайта недоступен, продолжаем работу');
+    }
   })();
   </script>
 </head>
@@ -854,5 +853,7 @@
     }
   });
   </script>
+
 </body>
+</html>
 </html>

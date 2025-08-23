@@ -27,23 +27,27 @@ const API_BASE_URL = '';
  */
 async function getProducts(category = '') {
   try {
-    const url = new URL('/api/products', window.location.origin);
+    // 1) читаем из localStorage если есть
+    const stored = localStorage.getItem('products');
+    let products = [];
+    if (stored) {
+      products = JSON.parse(stored);
+    } else if (Array.isArray(window.LOCAL_PRODUCTS)) {
+      // 2) иначе берем из локальных офлайн-данных
+      products = window.LOCAL_PRODUCTS;
+    }
+
     if (category) {
-      url.searchParams.append('category', category);
+      const categoryLower = String(category).toLowerCase();
+      products = products.filter(p => (p.category || '').toLowerCase() === categoryLower);
     }
-    
-    const response = await fetch(url);
-    const data = await response.json();
-    
-    if (!data.success) {
-      throw new Error(data.message || 'Ошибка при получении товаров');
-    }
-    
-    return data.products;
+
+    return products;
   } catch (error) {
-    showNotification('Не удалось загрузить товары. Попробуйте позже.', 'error');
-    
-    // В случае ошибки возвращаем пустой массив
+    console.error('Ошибка при загрузке локальных товаров:', error);
+    if (typeof window.showNotification === 'function') {
+      window.showNotification('Не удалось загрузить товары из локального источника', 'error');
+    }
     return [];
   }
 }
@@ -54,19 +58,8 @@ async function getProducts(category = '') {
  * @returns {Promise<Object|null>} - Информация о товаре или null в случае ошибки
  */
 async function getProductById(productId) {
-  try {
-    const response = await fetch(`/api/products/${productId}`);
-    const data = await response.json();
-    
-    if (!data.success) {
-      throw new Error(data.message || 'Товар не найден');
-    }
-    
-    return data.product;
-  } catch (error) {
-    showNotification('Не удалось загрузить информацию о товаре', 'error');
-    return null;
-  }
+  const products = await getProducts();
+  return products.find(p => String(p.id) === String(productId)) || null;
 }
 
 /**
@@ -113,19 +106,21 @@ function renderProducts(products, activeCategory = '') {
     }
     
     // Формируем URL изображения
-    let imageUrl = product.image_url;
+    let imageUrl = product.image_url || product.image;
     if (imageUrl && !imageUrl.startsWith('http') && !imageUrl.startsWith('/')) {
       imageUrl = `${window.location.origin}/${imageUrl}`;
     }
     
     // Создаем HTML для карточки товара
-    const imageHtml = imageUrl ? `<img src="${imageUrl}" alt="${product.title || 'Товар'}" class="product-card__image">` : '';
-    const priceHtml = `<div class="product-card__price">${(product.price || 0).toLocaleString('ru-RU', { style: 'currency', currency: 'RUB' })}</div>`;
+    const title = product.title || product.name || '';
+    const imageHtml = imageUrl ? `<img src="${imageUrl}" alt="${title || 'Товар'}" class="product-card__image">` : '';
+    const priceValue = Number(product.price || 0);
+    const priceHtml = `<div class="product-card__price">${priceValue.toLocaleString('ru-RU', { style: 'currency', currency: 'RUB' })}</div>`;
     
     productCard.innerHTML = `
       <div class="product-card__content">
         ${imageHtml}
-        <h3 class="product-card__title">${product.title || ''}</h3>
+        <h3 class="product-card__title">${title}</h3>
         ${priceHtml}
         <div class="product-card__actions">
           <button class="btn btn-primary" data-action="add-to-cart">Добавить в корзину</button>
@@ -138,8 +133,25 @@ function renderProducts(products, activeCategory = '') {
     const addBtn = productCard.querySelector('[data-action="add-to-cart"]');
     if (addBtn) {
       addBtn.addEventListener('click', () => {
-        if (typeof addToCart === 'function') {
-          addToCart(product.id);
+        const fn = window.addToCart;
+        if (typeof fn === 'function') {
+          // Поддержка обеих сигнатур: desktop (4 аргумента) и mobile (объект)
+          if (fn.length >= 2) {
+            fn(product.id, title, priceValue, imageUrl);
+          } else {
+            fn({
+              id: product.id,
+              title,
+              price: priceValue,
+              image: imageUrl,
+              quantity: 1
+            });
+          }
+        } else {
+          console.error('addToCart не инициализирован');
+          if (typeof window.showNotification === 'function') {
+            window.showNotification('Не удалось добавить товар в корзину', 'error');
+          }
         }
       });
     }
@@ -147,8 +159,9 @@ function renderProducts(products, activeCategory = '') {
     const detailsBtn = productCard.querySelector('[data-action="details"]');
     if (detailsBtn) {
       detailsBtn.addEventListener('click', () => {
-        if (typeof openProductModal === 'function') {
-          openProductModal(product.id);
+        const fn = window.openProductModal;
+        if (typeof fn === 'function') {
+          fn(product.id);
         }
       });
     }
@@ -169,14 +182,16 @@ async function loadAndRenderProducts(category = '') {
       productsGrid.innerHTML = '<div class="loading-indicator">Загрузка товаров...</div>';
     }
     
-    // Получаем товары с сервера
+    // Получаем товары из локальных источников
     const products = await getProducts(category);
     
     // Отображаем товары на странице с учетом выбранной категории
     renderProducts(products, category);
     
   } catch (error) {
-    showNotification('Не удалось загрузить товары', 'error');
+    if (typeof window.showNotification === 'function') {
+      window.showNotification('Не удалось загрузить товары', 'error');
+    }
   }
 }
 

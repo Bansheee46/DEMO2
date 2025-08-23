@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Damax - Редактор</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='80' font-size='80' font-family='Cinzel'>D</text></svg>" type="image/svg+xml">
+  <script src="notification.js"></script>
+  <link rel="stylesheet" href="desktop-styles.css">
+  <link rel="stylesheet" href="desktop-styles-fixed.css">
+  <link rel="stylesheet" href="counterparty-styles.css">
+  <link rel="stylesheet" href="dark-theme-improved.css">
+  <link rel="stylesheet" href="island-interactions.css">
+  <link rel="stylesheet" href="decorative-styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lato:wght@400;700&family=Dancing+Script:wght@400&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/parse/dist/parse.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css" />
+  <link rel="stylesheet" href="settings-styles.css">
+  <link rel="stylesheet" href="notifications.css">
+  <script src="config.js?v=2"></script>
+  <script src="local-data.js"></script>
+  <script src="api-client.js"></script>
+  
+  <style>
+    /* Редактор стили */
+    .editor-mode {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1000;
+      background: linear-gradient(135deg, #6366f1 0%, #22c55e 100%);
+      color: white;
+      padding: 12px 20px;
+      border-radius: 25px;
+      box-shadow: 0 8px 25px rgba(99,102,241,0.3);
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .edit-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(99,102,241,0.1);
+      border: 2px dashed #6366f1;
+      border-radius: 8px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .edit-overlay:hover {
+      background: rgba(99,102,241,0.2);
+      border-color: #22c55e;
+    }
+
+    .edit-overlay::before {
+      content: "✏️ Редактировать";
+      background: rgba(0,0,0,0.8);
+      color: white;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .editable {
+      position: relative;
+      cursor: pointer;
+    }
+
+    .editable:hover .edit-overlay {
+      display: flex;
+    }
+
+    /* Модальное окно редактирования */
+    .edit-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.7);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+    }
+
+    .edit-modal.active {
+      display: flex;
+    }
+
+    .edit-modal-content {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      max-width: 500px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    }
+
+    .edit-modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .edit-modal-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #111827;
+    }
+
+    .edit-modal-close {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: #6b7280;
+      padding: 4px;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+
+    .edit-modal-close:hover {
+      background: #f3f4f6;
+      color: #374151;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+      color: #374151;
+      font-size: 14px;
+    }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: all 0.2s;
+      box-sizing: border-box;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: #6366f1;
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
+    }
+
+    .form-group textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+      padding-top: 16px;
+      border-top: 1px solid #e5e7eb;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 14px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #6366f1 0%, #22c55e 100%);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(99,102,241,0.3);
+    }
+
+    .btn-secondary {
+      background: #f3f4f6;
+      color: #374151;
+    }
+
+    .btn-secondary:hover {
+      background: #e5e7eb;
+    }
+
+    .btn-danger {
+      background: #ef4444;
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #dc2626;
+    }
+
+    /* Кнопки быстрых действий */
+    .quick-actions {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      z-index: 1000;
+    }
+
+    .quick-action-btn {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      border: none;
+      background: linear-gradient(135deg, #6366f1 0%, #22c55e 100%);
+      color: white;
+      font-size: 18px;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(99,102,241,0.3);
+      transition: all 0.3s;
+    }
+
+    .quick-action-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 20px rgba(99,102,241,0.4);
+    }
+
+    /* Уведомления */
+    .notification {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #22c55e;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      z-index: 3000;
+      opacity: 0;
+      transition: all 0.3s;
+    }
+
+    .notification.show {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+<div class="page-wrapper">
+  <div class="content-wrapper">
+    <!-- Индикатор режима редактирования -->
+    <div class="editor-mode">
+      <i class="fas fa-edit"></i>
+      Режим редактирования
+    </div>
+
+    <!-- Логотип в шапке сайта -->
+    <div class="top-cloud" id="site-logo">
+      <div class="top-cloud__logo editable" data-type="text" data-field="site_name">Damax</div>
+      <div class="top-cloud__accent" aria-label="Открыть меню">
+        <div class="accent-menu" inert>
+          <button class="accent-menu__item" data-action="toggle-theme" data-tooltip="Сменить тему">
+            <i class="fas fa-sun"></i>
+            <i class="fas fa-moon"></i>
+            <span class="accent-menu__tooltip">Сменить тему</span>
+          </button>
+          <button class="accent-menu__item" data-action="toggle-sound" data-tooltip="Вкл/выкл звук">
+            <i class="fas fa-volume-up"></i>
+            <i class="fas fa-volume-mute" style="display: none;"></i>
+            <span class="accent-menu__tooltip">Вкл/выкл звук</span>
+          </button>
+          <button class="accent-menu__item" data-action="settings" data-tooltip="Настройки">
+            <i class="fas fa-cog"></i>
+            <span class="accent-menu__tooltip">Настройки</span>
+          </button>
+          <button class="accent-menu__item" data-action="scroll-top" data-tooltip="Наверх">
+            <i class="fas fa-arrow-up"></i>
+            <span class="accent-menu__tooltip">Наверх</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Кнопка авторизации -->
+    <div class="auth-button-container">
+      <button class="login-button" id="loginButton">
+        <i class="fas fa-sign-in-alt"></i>
+        <span>Войти</span>
+      </button>
+    </div>
+
+    <main class="main">
+      <section class="products">
+        <div class="products__grid" id="productsGrid">
+          <!-- Товары будут загружены динамически -->
+        </div>
+      </section>
+    </main>
+
+    <div class="island">
+      <div class="island__categories all-active" id="islandCategories"></div>
+      <div class="island__actions">
+        <div class="search-bar">
+          <input type="text" class="search-bar__input" placeholder="Поиск товаров...">
+          <i class="fas fa-search search-bar__icon"></i>
+        </div>
+        <a href="#" class="cart-icon"><i class="fas fa-shopping-cart"></i><span class="cart-count">0</span></a>
+      </div>
+    </div>
+
+    <!-- Горизонтальная лента подкатегорий -->
+    <div class="subcategories-bar" id="subcategoriesBar" style="display:none;"></div>
+
+    <div class="cart-panel" aria-hidden="true">
+      <div class="cart-panel__header">
+        <h2 class="cart-panel__title">Корзина</h2>
+        <button class="cart-panel__close">&times;</button>
+      </div>
+      <ul class="cart-panel__items"></ul>
+      <div class="cart-panel__footer">
+        <div class="cart-panel__total">Итого: <span>0 ₽</span></div>
+        <button class="cart-panel__checkout">Оформить заказ</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Футер -->
+  <footer class="footer" data-aos="fade-in" data-aos-duration="500">
+    <div class="footer__container">
+      <div class="footer__section">
+        <h4>Контакты</h4>
+        <p class="footer__contact footer__phone editable" data-type="contact" data-field="phone">Телефон: <a href="tel:+79991234567">+7 (999) 123-45-67</a></p>
+        <p class="footer__contact footer__email editable" data-type="contact" data-field="email">Email: <a href="mailto:info@example.com">info@example.com</a></p>
+        <p class="footer__contact footer__address editable" data-type="contact" data-field="address">Адрес: <a href="https://maps.google.com" target="_blank">ул. Примерная, 123</a></p>
+        <p class="footer__contact footer__hours editable" data-type="contact" data-field="hours">Режим работы: Пн-Пт 10:00-19:00</p>
+      </div>
+      
+      <div class="footer__section">
+        <h4>Информация</h4>
+        <a href="delivery-payment.html">Доставка и оплата</a>
+        <a href="warranty-return.html">Гарантии и возврат</a>
+        <a href="privacy-policy.html">Политика конфиденциальности</a>
+        <a href="licenses.html">Лицензии</a>
+      </div>
+      
+      <div class="footer__section">
+        <h4>Соцсети</h4>
+        <div class="footer__social-icons">
+          <a href="#" aria-label="Instagram" class="footer__social-link footer__social-instagram"><i class="fab fa-instagram"></i></a>
+          <a href="#" aria-label="Facebook" class="footer__social-link footer__social-facebook"><i class="fab fa-facebook-f"></i></a>
+          <a href="#" aria-label="Twitter" class="footer__social-link footer__social-twitter"><i class="fab fa-twitter"></i></a>
+          <a href="#" aria-label="YouTube" class="footer__social-link footer__social-youtube"><i class="fab fa-youtube"></i></a>
+          <a href="#" aria-label="Telegram" class="footer__social-link footer__social-telegram"><i class="fab fa-telegram"></i></a>
+          <a href="#" aria-label="WhatsApp" class="footer__social-link footer__social-whatsapp"><i class="fab fa-whatsapp"></i></a>
+        </div>
+        <p class="footer__follow-text">Подписывайтесь на наши обновления</p>
+      </div>
+    </div>
+    <p class="footer__copyright">© 2025 <span class="footer__company-name editable" data-type="text" data-field="company_name">Damax</span>. Все права защищены.<span class="footer__made-by">Создано с <i class="fas fa-heart pulse-heart"></i> веб-студией Bansheebbyy</span></p>
+  </footer>
+</div>
+
+<!-- Модальное окно редактирования -->
+<div class="edit-modal" id="editModal">
+  <div class="edit-modal-content">
+    <div class="edit-modal-header">
+      <div class="edit-modal-title" id="editModalTitle">Редактирование</div>
+      <button class="edit-modal-close" id="editModalClose">&times;</button>
+    </div>
+    <div id="editModalBody">
+      <!-- Содержимое будет добавлено динамически -->
+    </div>
+  </div>
+</div>
+
+<!-- Уведомления -->
+<div class="notification" id="notification"></div>
+
+<!-- Кнопки быстрых действий -->
+<div class="quick-actions">
+  <button class="quick-action-btn" id="addProductBtn" title="Добавить товар">
+    <i class="fas fa-plus"></i>
+  </button>
+  <button class="quick-action-btn" id="addCategoryBtn" title="Добавить категорию">
+    <i class="fas fa-layer-group"></i>
+  </button>
+  <button class="quick-action-btn" id="saveAllBtn" title="Сохранить все изменения">
+    <i class="fas fa-save"></i>
+  </button>
+</div>
+
+<!-- Подключение скриптов -->
+<script src="config.js"></script>
+<script src="script-coordinator.js"></script>  
+<script src="products-api.js"></script>
+<script src="search-animation.js"></script>
+<script src="product-search.js"></script>
+<script src="settings.js"></script>
+<script src="desktop.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+<script src="island-interactions.js"></script>
+<script src="admin-login.js"></script>
+
+<script>
+  AOS.init({
+    duration: 800,
+    once: true
+  });
+
+  // Данные редактора
+  let editorData = {
+    texts: [],
+    categories: [],
+    subcategories: [],
+    products: [],
+    settings: {}
+  };
+
+  // Загрузка данных
+  async function loadEditorData() {
+    try {
+      const response = await fetch('/api/storefront/data');
+      if (response.ok) {
+        editorData = await response.json();
+      } else {
+        const localData = localStorage.getItem('STOREFRONT_DATA_DRAFT');
+        if (localData) {
+          editorData = JSON.parse(localData);
+        }
+      }
+      renderProducts();
+      renderCategories();
+    } catch (error) {
+      console.log('Загружаем данные из localStorage');
+      const localData = localStorage.getItem('STOREFRONT_DATA_DRAFT');
+      if (localData) {
+        editorData = JSON.parse(localData);
+        renderProducts();
+        renderCategories();
+      }
+    }
+  }
+
+  // Сохранение данных
+  async function saveEditorData() {
+    try {
+      const response = await fetch('/api/storefront/data', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editorData)
+      });
+      if (response.ok) {
+        showNotification('Данные сохранены!', 'success');
+      }
+    } catch (error) {
+      localStorage.setItem('STOREFRONT_DATA_DRAFT', JSON.stringify(editorData));
+      showNotification('Данные сохранены локально', 'info');
+    }
+  }
+
+  // Рендеринг товаров
+  function renderProducts() {
+    const grid = document.getElementById('productsGrid');
+    if (!grid) return;
+
+    grid.innerHTML = '';
+    
+    (editorData.products || []).forEach((product, index) => {
+      const productCard = document.createElement('div');
+      productCard.className = 'product-card editable';
+      productCard.dataset.type = 'product';
+      productCard.dataset.index = index;
+      
+      const price = Number(product.price || 0).toLocaleString('ru-RU', { 
+        style: 'currency', 
+        currency: 'RUB' 
+      });
+
+      productCard.innerHTML = `
+        <div class="edit-overlay"></div>
+        <div class="product-card__image">
+          <img src="${product.image_url || 'images/image.png'}" alt="${product.name || 'Товар'}">
+        </div>
+        <div class="product-card__content">
+          <h3 class="product-card__title">${product.name || 'Название товара'}</h3>
+          <p class="product-card__price">${price}</p>
+          <p class="product-card__description">${product.description || 'Описание товара'}</p>
+          <div class="product-card__actions">
+            <button class="product-card__btn product-card__btn-cart">
+              <i class="fas fa-shopping-cart"></i> В корзину
+            </button>
+            <button class="product-card__btn product-card__btn-details">
+              <i class="fas fa-eye"></i> Подробнее
+            </button>
+          </div>
+        </div>
+      `;
+
+      grid.appendChild(productCard);
+    });
+  }
+
+  // Рендеринг категорий
+  function renderCategories() {
+    const categoriesContainer = document.getElementById('islandCategories');
+    if (!categoriesContainer) return;
+
+    categoriesContainer.innerHTML = '';
+    
+    (editorData.categories || []).forEach((category, index) => {
+      const categoryBtn = document.createElement('button');
+      categoryBtn.className = 'island__category editable';
+      categoryBtn.dataset.type = 'category';
+      categoryBtn.dataset.index = index;
+      
+      categoryBtn.innerHTML = `
+        <div class="edit-overlay"></div>
+        <span>${category.name || 'Категория'}</span>
+      `;
+
+      categoriesContainer.appendChild(categoryBtn);
+    });
+  }
+
+  // Открытие модального окна редактирования
+  function openEditModal(type, index = null, element = null) {
+    const modal = document.getElementById('editModal');
+    const title = document.getElementById('editModalTitle');
+    const body = document.getElementById('editModalBody');
+
+    let modalContent = '';
+
+    switch (type) {
+      case 'product':
+        const product = index !== null ? editorData.products[index] : {};
+        title.textContent = index !== null ? 'Редактировать товар' : 'Добавить товар';
+        
+        modalContent = `
+          <div class="form-group">
+            <label>Название товара</label>
+            <input type="text" id="productName" value="${product.name || ''}" placeholder="Введите название товара">
+          </div>
+          <div class="form-group">
+            <label>Цена (₽)</label>
+            <input type="number" id="productPrice" value="${product.price || ''}" placeholder="0">
+          </div>
+          <div class="form-group">
+            <label>Описание</label>
+            <textarea id="productDescription" placeholder="Описание товара">${product.description || ''}</textarea>
+          </div>
+          <div class="form-group">
+            <label>URL изображения</label>
+            <input type="url" id="productImage" value="${product.image_url || ''}" placeholder="https://example.com/image.jpg">
+          </div>
+          <div class="form-group">
+            <label>Категория</label>
+            <select id="productCategory">
+              <option value="">Выберите категорию</option>
+              ${(editorData.categories || []).map(cat => 
+                `<option value="${cat.code}" ${product.category === cat.code ? 'selected' : ''}>${cat.name}</option>`
+              ).join('')}
+            </select>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" id="saveProductBtn">Сохранить</button>
+            ${index !== null ? '<button class="btn btn-danger" id="deleteProductBtn">Удалить</button>' : ''}
+            <button class="btn btn-secondary" id="cancelEditBtn">Отмена</button>
+          </div>
+        `;
+        break;
+
+      case 'category':
+        const category = index !== null ? editorData.categories[index] : {};
+        title.textContent = index !== null ? 'Редактировать категорию' : 'Добавить категорию';
+        
+        modalContent = `
+          <div class="form-group">
+            <label>Название категории</label>
+            <input type="text" id="categoryName" value="${category.name || ''}" placeholder="Введите название категории">
+          </div>
+          <div class="form-group">
+            <label>Код категории</label>
+            <input type="text" id="categoryCode" value="${category.code || ''}" placeholder="electronics">
+          </div>
+          <div class="form-group">
+            <label>URL изображения</label>
+            <input type="url" id="categoryImage" value="${category.image_url || ''}" placeholder="https://example.com/category.jpg">
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" id="saveCategoryBtn">Сохранить</button>
+            ${index !== null ? '<button class="btn btn-danger" id="deleteCategoryBtn">Удалить</button>' : ''}
+            <button class="btn btn-secondary" id="cancelEditBtn">Отмена</button>
+          </div>
+        `;
+        break;
+    }
+
+    body.innerHTML = modalContent;
+    modal.classList.add('active');
+
+    // Обработчики событий
+    setupModalHandlers(type, index);
+  }
+
+  // Настройка обработчиков модального окна
+  function setupModalHandlers(type, index) {
+    const modal = document.getElementById('editModal');
+    const closeBtn = document.getElementById('editModalClose');
+    const cancelBtn = document.getElementById('cancelEditBtn');
+
+    closeBtn.onclick = () => modal.classList.remove('active');
+    cancelBtn.onclick = () => modal.classList.remove('active');
+    
+    modal.onclick = (e) => {
+      if (e.target === modal) modal.classList.remove('active');
+    };
+
+    switch (type) {
+      case 'product':
+        setupProductHandlers(index);
+        break;
+      case 'category':
+        setupCategoryHandlers(index);
+        break;
+    }
+  }
+
+  // Обработчики для товаров
+  function setupProductHandlers(index) {
+    const saveBtn = document.getElementById('saveProductBtn');
+    const deleteBtn = document.getElementById('deleteProductBtn');
+
+    saveBtn.onclick = () => {
+      const product = {
+        name: document.getElementById('productName').value,
+        price: Number(document.getElementById('productPrice').value),
+        description: document.getElementById('productDescription').value,
+        image_url: document.getElementById('productImage').value,
+        category: document.getElementById('productCategory').value,
+        available: true
+      };
+
+      if (index !== null) {
+        editorData.products[index] = product;
+      } else {
+        editorData.products.push(product);
+      }
+
+      renderProducts();
+      document.getElementById('editModal').classList.remove('active');
+      showNotification('Товар сохранен!', 'success');
+    };
+
+    if (deleteBtn) {
+      deleteBtn.onclick = () => {
+        if (confirm('Удалить этот товар?')) {
+          editorData.products.splice(index, 1);
+          renderProducts();
+          document.getElementById('editModal').classList.remove('active');
+          showNotification('Товар удален!', 'success');
+        }
+      };
+    }
+  }
+
+  // Обработчики для категорий
+  function setupCategoryHandlers(index) {
+    const saveBtn = document.getElementById('saveCategoryBtn');
+    const deleteBtn = document.getElementById('deleteCategoryBtn');
+
+    saveBtn.onclick = () => {
+      const category = {
+        name: document.getElementById('categoryName').value,
+        code: document.getElementById('categoryCode').value,
+        image_url: document.getElementById('categoryImage').value
+      };
+
+      if (index !== null) {
+        editorData.categories[index] = category;
+      } else {
+        editorData.categories.push(category);
+      }
+
+      renderCategories();
+      document.getElementById('editModal').classList.remove('active');
+      showNotification('Категория сохранена!', 'success');
+    };
+
+    if (deleteBtn) {
+      deleteBtn.onclick = () => {
+        if (confirm('Удалить эту категорию?')) {
+          editorData.categories.splice(index, 1);
+          renderCategories();
+          document.getElementById('editModal').classList.remove('active');
+          showNotification('Категория удалена!', 'success');
+        }
+      };
+    }
+  }
+
+  // Показ уведомлений
+  function showNotification(message, type = 'success') {
+    const notification = document.getElementById('notification');
+    notification.textContent = message;
+    notification.className = `notification show ${type}`;
+    
+    setTimeout(() => {
+      notification.classList.remove('show');
+    }, 3000);
+  }
+
+  // Обработчики кликов по редактируемым элементам
+  document.addEventListener('click', (e) => {
+    const editable = e.target.closest('.editable');
+    if (editable && !e.target.closest('.edit-overlay')) {
+      const type = editable.dataset.type;
+      const index = editable.dataset.index !== undefined ? parseInt(editable.dataset.index) : null;
+      
+      if (type) {
+        openEditModal(type, index, editable);
+      }
+    }
+  });
+
+  // Быстрые кнопки действий
+  document.getElementById('addProductBtn').onclick = () => openEditModal('product');
+  document.getElementById('addCategoryBtn').onclick = () => openEditModal('category');
+  document.getElementById('saveAllBtn').onclick = saveEditorData;
+
+  // Загрузка данных при старте
+  document.addEventListener('DOMContentLoaded', loadEditorData);
+</script>
+</body>
+</html>

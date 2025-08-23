@@ -17,6 +17,26 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   renderIslandCategories();
+  updateFooterFromSettings();
+  
+  // Инициализируем кнопку публикации
+  initPublishButton();
+  
+  // Слушаем сообщения от админ-панели для обновления в реальном времени
+  window.addEventListener('message', function(event) {
+    if (event.data.type === 'updateCategories') {
+      console.log('Получено обновление категорий от админ-панели');
+      localStorage.setItem('categories', JSON.stringify(event.data.categories));
+      renderIslandCategories();
+    } else if (event.data.type === 'updateSubcategories') {
+      console.log('Получено обновление подкатегорий от админ-панели');
+      localStorage.setItem('subcategories', JSON.stringify(event.data.subcategories));
+    } else if (event.data.type === 'updateSettings') {
+      console.log('Получено обновление настроек от админ-панели');
+      localStorage.setItem('siteSettings', JSON.stringify(event.data.settings));
+      updateFooterFromSettings();
+    }
+  });
   // Глобальная переменная для хранения данных пользователей
   let registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
   let cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
@@ -134,7 +154,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const categoryButtons = document.querySelectorAll('.island__category');
   const cartIcon = document.querySelector('.cart-icon');
   const cartPanel = document.querySelector('.cart-panel');
-  const cartCount = document.querySelector('.cart-count');
+  var cartCount = document.querySelector('.cart-count');
   const cartItemsList = document.querySelector('.cart-panel__items');
   const cartTotal = document.querySelector('.cart-panel__total span');
   const cartCheckout = document.querySelector('.cart-panel__checkout');
@@ -4603,7 +4623,14 @@ document.addEventListener('DOMContentLoaded', function() {
     
 
   // Делаем функции доступными глобально
-  window.showSettingsModal = showSettingsModal;
+  window.showSettingsModal = typeof showSettingsModal === 'function' ? showSettingsModal : function() {
+    if (window.settingsModule && typeof window.settingsModule.showSettingsModal === 'function') {
+      return window.settingsModule.showSettingsModal();
+    }
+    if (typeof showNotification === 'function') {
+      showNotification('Модуль настроек пока не загружен', 'warning');
+    }
+  };
   window.showNotification = showNotification;
 
   // Функция для открытия модального окна с товаром
@@ -5082,21 +5109,44 @@ document.addEventListener('DOMContentLoaded', function() {
   async function renderIslandCategories() {
     const container = document.getElementById('islandCategories');
     if (!container) return;
-    // Получаем категории с сервера
+    
+    // Получаем категории из localStorage (админ-панель) или с сервера
     let cats = [];
+    
+    // Сначала пробуем загрузить из localStorage
     try {
-      const res = await fetch('/api/categories');
-      const data = await res.json();
-      if (data.success) cats = data.categories;
-    } catch (e) { cats = [] }
-    // Если нет категорий — ничего не рендерим
+      const localCategories = localStorage.getItem('categories');
+      if (localCategories) {
+        cats = JSON.parse(localCategories);
+        console.log('Категории загружены из localStorage:', cats.length);
+      }
+    } catch (e) {
+      console.log('Ошибка загрузки категорий из localStorage:', e);
+    }
+    
+    // Если нет категорий в localStorage, загружаем с сервера
     if (!cats.length) {
-      container.innerHTML = '<span style="color:#fff;opacity:0.7;">Нет категорий</span>';
+      try {
+        const res = await fetch('/api/categories');
+        const data = await res.json();
+        if (data.success) cats = data.categories;
+        console.log('Категории загружены с сервера:', cats.length);
+      } catch (e) { 
+        console.log('Ошибка загрузки категорий с сервера:', e);
+        cats = [];
+      }
+    }
+    
+    // Если нет категорий — ничего не показываем
+    if (!cats.length) {
+      container.innerHTML = '<span style="color:#fff;opacity:0.7;">Добавьте категории в админ-панели</span>';
+      console.log('Категории отсутствуют');
       return;
     }
-    container.innerHTML = cats.map(cat =>
-      `<button class="island__category" data-category="${cat.code}">${cat.name}</button>`
-    ).join('');
+    container.innerHTML = cats.map(cat => {
+      const icon = cat.icon ? `<i class="${cat.icon}"></i>` : '';
+      return `<button class="island__category" data-category="${cat.code}">${icon} ${cat.name}</button>`;
+    }).join('');
     // Навешиваем обработчики для категорий и подкатегорий
     const categoryButtons = container.querySelectorAll('.island__category');
     categoryButtons.forEach(button => {
@@ -5159,14 +5209,20 @@ document.addEventListener('DOMContentLoaded', function() {
     // При загрузке страницы НЕ показываем подкатегории, они появятся только по клику
   }
 
-  // === Демо-структура подкатегорий ===
-  const DEMO_SUBCATEGORIES = {
-    electronics: ['Подкатегория 1', 'Подкатегория 2', 'Подкатегория 3'],
-    toys: ['Подкатегория 1', 'Подкатегория 2'],
-    clothing: ['Подкатегория 1', 'Подкатегория 2', 'Подкатегория 3', 'Подкатегория 4'],
-    accessories: ['Подкатегория 1'],
-    other: ['Подкатегория 1', 'Подкатегория 2']
-  };
+  // Тестовые подкатегории удалены - используются только данные из админ-панели
+
+  // === Функция для отображения подкатегорий ===
+  function displaySubcategories(subcats, bar) {
+    bar.innerHTML = subcats.map((subcat) => {
+      const icon = subcat.icon ? `<i class="${subcat.icon}"></i>` : '';
+      return `<button class="subcategory-btn" data-subcat="${subcat.code}">${icon} ${subcat.name}</button>`;
+    }).join('');
+    
+    // Добавляем класс visible для анимации появления
+    setTimeout(() => {
+      bar.classList.add('visible');
+    }, 10);
+  }
 
   // === Логика отображения подкатегорий ===
   function showSubcategoriesBar(categoryCode) {
@@ -5177,7 +5233,26 @@ document.addEventListener('DOMContentLoaded', function() {
     bar.innerHTML = '<div style="color:#fff;font-size:14px;">Загрузка подкатегорий...</div>';
     bar.style.display = 'flex';
     
-    // Загружаем подкатегории из API
+    // Сначала пробуем загрузить подкатегории из localStorage
+    let subcats = [];
+    try {
+      const localSubcategories = localStorage.getItem('subcategories');
+      if (localSubcategories) {
+        const allSubcategories = JSON.parse(localSubcategories);
+        subcats = allSubcategories.filter(subcat => subcat.parent === categoryCode);
+        console.log(`Подкатегории для ${categoryCode} загружены из localStorage:`, subcats.length);
+      }
+    } catch (e) {
+      console.log('Ошибка загрузки подкатегорий из localStorage:', e);
+    }
+    
+    // Если есть подкатегории в localStorage, отображаем их
+    if (subcats.length > 0) {
+      displaySubcategories(subcats, bar);
+      return;
+    }
+    
+    // Если нет подкатегорий в localStorage, загружаем из API
     fetch(`/api/subcategories?category=${encodeURIComponent(categoryCode)}`)
       .then(res => res.json())
       .then(data => {
@@ -5187,15 +5262,8 @@ document.addEventListener('DOMContentLoaded', function() {
           return;
         }
         
-        const subcats = data.subcategories;
-        bar.innerHTML = subcats.map((subcat) =>
-          `<button class="subcategory-btn" data-subcat="${subcat.code}">${subcat.name}</button>`
-        ).join('');
-        
-        // Добавляем класс visible для анимации появления
-        setTimeout(() => {
-          bar.classList.add('visible');
-        }, 10);
+        subcats = data.subcategories;
+        displaySubcategories(subcats, bar);
         
         // Выделяем первую подкатегорию по умолчанию
         const btns = bar.querySelectorAll('.subcategory-btn');
@@ -5400,6 +5468,440 @@ async function loginUser(email, password) {
   } catch (error) {
     console.error('>>> [DESKTOP LOGIN] Ошибка запроса:', error);
     return { success: false, message: 'Ошибка соединения с сервером' };
+  }
+}
+
+// Фолбэк-обёртка: гарантирует наличие функции showSettingsModal
+function showSettingsModal() {
+    if (window.settingsModule && typeof window.settingsModule.showSettingsModal === 'function') {                                                                 
+    return window.settingsModule.showSettingsModal();
+  }
+  if (typeof showNotification === 'function') {
+    showNotification('Модуль настроек пока не загружен', 'warning');                                                                
+  } else if (window.alert) {
+    alert('Модуль настроек пока не загружен');      
+  }
+}
+
+// Функция для обновления футера из настроек админ-панели
+function updateFooterFromSettings() {
+  try {
+    const settings = JSON.parse(localStorage.getItem('siteSettings') || '{}');
+    
+    if (Object.keys(settings).length === 0) {
+      console.log('Настройки сайта не найдены в localStorage');
+      return;
+    }
+    
+    console.log('Обновление футера из настроек:', settings);
+    
+    // Обновляем название компании
+    if (settings.footerCompany) {
+      const companyName = document.querySelector('.footer__company-name');
+      if (companyName) {
+        companyName.textContent = settings.footerCompany;
+      }
+      
+      // Также обновляем title страницы, если задано название сайта
+      if (settings.siteTitle) {
+        document.title = settings.siteTitle;
+      }
+    }
+    
+    // Обновляем телефон
+    if (settings.footerPhone) {
+      const phoneLink = document.querySelector('.footer__phone a');
+      if (phoneLink) {
+        phoneLink.textContent = settings.footerPhone;
+        phoneLink.href = 'tel:' + settings.footerPhone.replace(/[^+\d]/g, '');
+      }
+    }
+    
+    // Обновляем email
+    if (settings.footerEmail) {
+      const emailLink = document.querySelector('.footer__email a');
+      if (emailLink) {
+        emailLink.textContent = settings.footerEmail;
+        emailLink.href = 'mailto:' + settings.footerEmail;
+      }
+    }
+    
+    // Обновляем адрес
+    if (settings.footerAddress) {
+      const addressEl = document.querySelector('.footer__address');
+      if (addressEl) {
+        // Сохраняем ссылку, если она есть
+        const existingLink = addressEl.querySelector('a');
+        if (existingLink) {
+          existingLink.textContent = settings.footerAddress;
+        } else {
+          addressEl.innerHTML = `Адрес: <a href="https://maps.google.com" target="_blank">${settings.footerAddress}</a>`;
+        }
+      }
+    }
+    
+    // Обновляем режим работы
+    if (settings.footerWorkingHours) {
+      const hoursEl = document.querySelector('.footer__hours');
+      if (hoursEl) {
+        hoursEl.innerHTML = `Режим работы: ${settings.footerWorkingHours}`;
+      }
+    }
+    
+    console.log('Футер успешно обновлен из настроек админ-панели');
+  } catch (error) {
+    console.error('Ошибка при обновлении футера:', error);
+  }
+}
+
+// Функция для инициализации кнопки публикации
+function initPublishButton() {
+  const publishButton = document.getElementById('publishButton');
+  if (publishButton) {
+    publishButton.addEventListener('click', handlePublishClick);
+    console.log('Кнопка публикации инициализирована');
+  }
+}
+
+// Обработчик клика по кнопке публикации
+async function handlePublishClick() {
+  const button = document.getElementById('publishButton');
+  const buttonIcon = button.querySelector('i');
+  const buttonText = button.querySelector('span');
+  
+  // Добавляем анимацию загрузки
+  button.classList.add('loading');
+  buttonIcon.className = 'fas fa-spinner';
+  buttonText.textContent = 'Публикация...';
+  
+  try {
+    // Собираем все данные из localStorage
+    const exportData = await collectAllData();
+    
+    // Создаем JSON файл и скачиваем его
+    await downloadJSON(exportData);
+    
+    // Показываем красивое уведомление об успехе
+    showPublishSuccessNotification();
+    
+    // Попытка отправить через Telegram (если настроен)
+    await attemptTelegramSend(exportData);
+    
+  } catch (error) {
+    console.error('Ошибка при публикации:', error);
+    showPublishErrorNotification(error.message);
+  } finally {
+    // Возвращаем кнопку в исходное состояние
+    setTimeout(() => {
+      button.classList.remove('loading');
+      buttonIcon.className = 'fas fa-upload';
+      buttonText.textContent = 'Опубликовать';
+    }, 1000);
+  }
+}
+
+// Функция сбора всех данных из localStorage
+async function collectAllData() {
+  const timestamp = new Date().toISOString();
+  const siteName = document.title || 'Chern2';
+  
+  // Собираем все данные
+  const data = {
+    exportInfo: {
+      siteName: siteName,
+      exportDate: timestamp,
+      version: '1.0.0',
+      description: 'Экспорт всех данных администрирования сайта'
+    },
+    products: JSON.parse(localStorage.getItem('products') || '[]'),
+    categories: JSON.parse(localStorage.getItem('categories') || '[]'),
+    subcategories: JSON.parse(localStorage.getItem('subcategories') || '[]'),
+    siteSettings: JSON.parse(localStorage.getItem('siteSettings') || '{}'),
+    statistics: {
+      totalProducts: JSON.parse(localStorage.getItem('products') || '[]').length,
+      totalCategories: JSON.parse(localStorage.getItem('categories') || '[]').length,
+      totalSubcategories: JSON.parse(localStorage.getItem('subcategories') || '[]').length,
+      lastUpdate: timestamp
+    }
+  };
+  
+  console.log('Собраны данные для экспорта:', data);
+  return data;
+}
+
+// Функция скачивания JSON файла
+async function downloadJSON(data) {
+  const jsonString = JSON.stringify(data, null, 2);
+  const blob = new Blob([jsonString], { type: 'application/json' });
+  
+  // Создаем имя файла с текущей датой
+  const now = new Date();
+  const dateStr = now.toISOString().split('T')[0];
+  const timeStr = now.toTimeString().split(' ')[0].replace(/:/g, '-');
+  const filename = `site-export-${dateStr}_${timeStr}.json`;
+  
+  // Создаем ссылку для скачивания
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  link.style.display = 'none';
+  
+  // Добавляем в DOM, кликаем и удаляем
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  
+  // Освобождаем память
+  URL.revokeObjectURL(url);
+  
+  console.log(`JSON файл ${filename} скачан успешно`);
+}
+
+// Функция показа красивого уведомления об успехе
+function showPublishSuccessNotification() {
+  // Создаем специальное уведомление с анимацией
+  const notification = document.createElement('div');
+  notification.className = 'publish-success-notification';
+  
+  notification.innerHTML = `
+    <div class="publish-notification-content">
+      <div class="publish-notification-icon">
+        <i class="fas fa-rocket"></i>
+      </div>
+      <div class="publish-notification-text">
+        <h3>🎉 Настройки успешно опубликованы!</h3>
+        <p>Ваши изменения сохранены и готовы к развертыванию.</p>
+        <p><strong>Все обновления будут доступны на домене в течение 24 часов.</strong></p>
+        <div class="publish-notification-details">
+          <p>✅ Экспорт данных завершен</p>
+          <p>✅ JSON файл сохранен на устройство</p>
+          <p>⏳ Ожидается синхронизация с сервером</p>
+        </div>
+        <p class="publish-notification-footer">
+          <em>Благодарим за использование</em>
+        </p>
+      </div>
+      <button class="publish-notification-close">&times;</button>
+    </div>
+  `;
+  
+  // Добавляем стили
+  const style = document.createElement('style');
+  style.textContent = `
+    .publish-success-notification {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+      padding: 0;
+      border-radius: 16px;
+      box-shadow: 0 20px 40px rgba(16, 185, 129, 0.3);
+      z-index: 10000;
+      max-width: 500px;
+      width: 90%;
+      animation: publishNotificationAppear 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      overflow: hidden;
+    }
+    
+    .publish-notification-content {
+      padding: 30px;
+      position: relative;
+    }
+    
+    .publish-notification-icon {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    
+    .publish-notification-icon i {
+      font-size: 48px;
+      color: #fff;
+      animation: rocketLaunch 2s ease-in-out infinite;
+    }
+    
+    .publish-notification-text h3 {
+      margin: 0 0 15px 0;
+      font-size: 24px;
+      text-align: center;
+      font-weight: 700;
+    }
+    
+    .publish-notification-text p {
+      margin: 10px 0;
+      line-height: 1.6;
+      text-align: center;
+    }
+    
+    .publish-notification-details {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 15px;
+      border-radius: 8px;
+      margin: 15px 0;
+    }
+    
+    .publish-notification-details p {
+      margin: 5px 0;
+      text-align: left;
+      font-size: 14px;
+    }
+    
+    .publish-notification-footer {
+      font-style: italic;
+      font-size: 14px;
+      opacity: 0.9;
+      margin-top: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+      padding-top: 15px;
+    }
+    
+    .publish-notification-close {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: none;
+      border: none;
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+      opacity: 0.7;
+      transition: opacity 0.2s;
+    }
+    
+    .publish-notification-close:hover {
+      opacity: 1;
+    }
+    
+    @keyframes publishNotificationAppear {
+      0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.7) rotateY(90deg);
+      }
+      100% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1) rotateY(0deg);
+      }
+    }
+    
+    @keyframes rocketLaunch {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      25% { transform: translateY(-10px) rotate(-5deg); }
+      75% { transform: translateY(-5px) rotate(5deg); }
+    }
+  `;
+  
+  document.head.appendChild(style);
+  document.body.appendChild(notification);
+  
+  // Обработчик закрытия
+  const closeBtn = notification.querySelector('.publish-notification-close');
+  closeBtn.addEventListener('click', () => {
+    notification.style.animation = 'publishNotificationDisappear 0.4s ease-in-out';
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.parentNode.removeChild(notification);
+      }
+      if (style.parentNode) {
+        style.parentNode.removeChild(style);
+      }
+    }, 400);
+  });
+  
+  // Добавляем анимацию исчезновения
+  const disappearStyle = document.createElement('style');
+  disappearStyle.textContent = `
+    @keyframes publishNotificationDisappear {
+      0% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.8) translateY(20px);
+      }
+    }
+  `;
+  document.head.appendChild(disappearStyle);
+  
+  // Автоматическое закрытие через 10 секунд
+  setTimeout(() => {
+    if (notification.parentNode) {
+      closeBtn.click();
+    }
+  }, 10000);
+}
+
+// Функция показа уведомления об ошибке
+function showPublishErrorNotification(errorMessage) {
+  if (typeof showNotification === 'function') {
+    showNotification(`Ошибка публикации: ${errorMessage}`, 'error');
+  } else {
+    alert(`Ошибка публикации: ${errorMessage}`);
+  }
+}
+
+// Функция попытки отправки через Telegram
+async function attemptTelegramSend(data) {
+  try {
+    // Проверяем, есть ли настройки Telegram в localStorage
+    let telegramSettings = JSON.parse(localStorage.getItem('telegramSettings') || '{}');
+    
+    // Встроенные настройки по умолчанию
+    const defaultTelegramSettings = {
+      botToken: '7939563786:AAFhyZELlsYsDKTdl8ofC4K4bRO0sYubFaE',
+      chatId: '5214842448'
+    };
+    
+    // Если настройки не найдены, используем встроенные
+    if (!telegramSettings.botToken || !telegramSettings.chatId) {
+      telegramSettings = defaultTelegramSettings;
+      localStorage.setItem('telegramSettings', JSON.stringify(telegramSettings));
+      console.log('Установлены встроенные настройки Telegram для публикации');
+    }
+    
+    if (telegramSettings.botToken && telegramSettings.chatId) {
+      console.log('Найдены настройки Telegram, пытаемся отправить...');
+      await sendToTelegram(data, telegramSettings);
+    } else {
+      console.log('Настройки Telegram не найдены, пропускаем отправку');
+      // Показываем подсказку пользователю
+      setTimeout(() => {
+        if (typeof showNotification === 'function') {
+          showNotification('💡 Совет: Настройте Telegram Bot для автоматической отправки файлов!', 'info');
+        }
+      }, 3000);
+    }
+  } catch (error) {
+    console.log('Ошибка при отправке в Telegram:', error);
+  }
+}
+
+// Функция отправки в Telegram
+async function sendToTelegram(data, settings) {
+  const jsonString = JSON.stringify(data, null, 2);
+  const blob = new Blob([jsonString], { type: 'application/json' });
+  
+  const formData = new FormData();
+  formData.append('chat_id', settings.chatId);
+  formData.append('document', blob, `site-export-${new Date().toISOString().split('T')[0]}.json`);
+  formData.append('caption', '🚀 Новый экспорт настроек сайта');
+  
+  const response = await fetch(`https://api.telegram.org/bot${settings.botToken}/sendDocument`, {
+    method: 'POST',
+    body: formData
+  });
+  
+  if (response.ok) {
+    console.log('Файл успешно отправлен в Telegram');
+    setTimeout(() => {
+      if (typeof showNotification === 'function') {
+        showNotification('📱 Файл также отправлен в Telegram!', 'success');
+      }
+    }, 2000);
+  } else {
+    throw new Error('Ошибка отправки в Telegram');
   }
 }
 

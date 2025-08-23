@@ -98,6 +98,32 @@ def init_db():
     )
     ''')
     
+    # Создаем таблицу сообщений, если она не существует
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS messages (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        sender_id INTEGER,
+        receiver_id INTEGER NOT NULL,
+        subject TEXT,
+        message TEXT NOT NULL,
+        is_read INTEGER DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (sender_id) REFERENCES users (id),
+        FOREIGN KEY (receiver_id) REFERENCES users (id)
+    )
+    ''')
+    
+    # Создаем таблицу подкатегорий, если она не существует
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS subcategories (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        category_code TEXT NOT NULL,
+        subcategory_code TEXT NOT NULL,
+        subcategory_name TEXT NOT NULL,
+        UNIQUE(category_code, subcategory_code)
+    )
+    ''')
+    
     # Создаем учетную запись администратора, если таблица пользователей пуста
     cursor.execute('SELECT COUNT(*) FROM users')
     user_count = cursor.fetchone()[0]

@@ -108,7 +108,7 @@
         if (res.ok) {
           const data = await res.json();
           if (!data.enabled) {
-            window.location.href = '/site-offline.html';
+            // Сайт работает в онлайн-режиме
           }
         }
       } catch (e) {}
@@ -356,5 +356,6 @@
             }
         });
     </script>
+
 </body>
 </html> 

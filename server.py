@@ -15,6 +15,7 @@ import re
 import threading
 import logging
 from logging.handlers import RotatingFileHandler
+from typing import Any, Dict, List, Optional, Tuple
 
 app = Flask(__name__)
 # Настройка CORS для всех маршрутов
@@ -153,6 +154,11 @@ SITE_LOGO = None
 SITE_STATUS_LOCK = threading.Lock()
 SITE_STATUS_FILE = 'site_status.json'
 
+# --- Параметры витрины (визуальный редактор) ---
+STOREFRONT_DATA_DIR = 'data'
+STOREFRONT_DATA_FILE = os.path.join(STOREFRONT_DATA_DIR, 'storefront-data.json')
+STOREFRONT_LOCK = threading.Lock()
+
 # Функция для загрузки настроек сайта, включая favicon и логотип
 def load_site_settings():
     global SITE_FAVICON, SITE_LOGO
@@ -172,6 +178,164 @@ def load_site_settings():
         print(f"Загружены настройки сайта: favicon={SITE_FAVICON}, logo={SITE_LOGO}")
     except Exception as e:
         print(f"Ошибка при загрузке настроек сайта: {e}")
+
+# --- Витрина: утилиты хранения и авторизации ---
+def ensure_storefront_data_dir_exists():
+    try:
+        if not os.path.exists(STOREFRONT_DATA_DIR):
+            os.makedirs(STOREFRONT_DATA_DIR, exist_ok=True)
+    except Exception as e:
+        print(f"Не удалось создать директорию данных витрины: {e}")
+
+def get_site_status_raw() -> Dict[str, Any]:
+    try:
+        with SITE_STATUS_LOCK:
+            if not os.path.exists(SITE_STATUS_FILE):
+                return {'enabled': True, 'admin_token': None}
+            with open(SITE_STATUS_FILE, 'r', encoding='utf-8') as f:
+                return json.load(f)
+    except Exception as e:
+        print('Ошибка чтения site_status.json:', e)
+        return {'enabled': True, 'admin_token': None}
+
+def get_storefront_secret() -> Optional[str]:
+    status = get_site_status_raw()
+    secret = status.get('storefront_secret')
+    if isinstance(secret, str) and secret.strip():
+        return secret.strip()
+    # Фолбэк на переменную окружения для простоты ручной настройки
+    env_secret = os.environ.get('STOREFRONT_SECRET')
+    return env_secret.strip() if env_secret else None
+
+def set_storefront_secret(new_secret: str) -> None:
+    try:
+        with SITE_STATUS_LOCK:
+            status = get_site_status_raw()
+            status['storefront_secret'] = new_secret
+            status['last_updated'] = datetime.now().isoformat()
+            with open(SITE_STATUS_FILE, 'w', encoding='utf-8') as f:
+                json.dump(status, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        print('Ошибка записи storefront_secret:', e)
+
+def _hash_secret(value: str) -> str:
+    try:
+        return hashlib.sha256(value.encode('utf-8')).hexdigest()
+    except Exception:
+        return value
+
+def _is_storefront_authorized() -> bool:
+    secret = get_storefront_secret()
+    if not secret:
+        return False
+    expected = _hash_secret(secret)
+    # 1) Через cookie
+    cookie_hash = request.cookies.get('sf_auth')
+    if cookie_hash and cookie_hash == expected:
+        return True
+    # 2) Через заголовок X-Storefront-Secret
+    header_secret = request.headers.get('X-Storefront-Secret')
+    if header_secret and _hash_secret(header_secret) == expected:
+        return True
+    # 3) Через тело (на POST) — как мягкий фолбэк
+    try:
+        if request.is_json and isinstance(request.json, dict):
+            body_secret = request.json.get('secret')
+            if body_secret and _hash_secret(body_secret) == expected:
+                return True
+    except Exception:
+        pass
+    return False
+
+def _default_storefront_payload() -> Dict[str, Any]:
+    return {
+        'version': '1.0',
+        'texts': [
+            { 'id': 'about_us', 'content': 'Текст о компании' }
+        ],
+        'categories': [],
+        'products': [
+            {
+                'id': '001',
+                'name': 'Товар 1',
+                'price': 1000,
+                'description': 'Описание товара',
+                'available': True
+            }
+        ],
+        'settings': {}
+    }
+
+def load_storefront_data() -> Dict[str, Any]:
+    ensure_storefront_data_dir_exists()
+    try:
+        with STOREFRONT_LOCK:
+            if not os.path.exists(STOREFRONT_DATA_FILE):
+                return _default_storefront_payload()
+            with open(STOREFRONT_DATA_FILE, 'r', encoding='utf-8') as f:
+                return json.load(f)
+    except Exception as e:
+        print(f"Ошибка чтения данных витрины: {e}")
+        return _default_storefront_payload()
+
+def _validate_storefront_payload(payload: Dict[str, Any]) -> Tuple[bool, str]:
+    if not isinstance(payload, dict):
+        return False, 'Корневой объект должен быть JSON-объектом'
+    if 'version' not in payload or not isinstance(payload['version'], str):
+        return False, 'Поле version обязательно и должно быть строкой'
+    # texts
+    texts = payload.get('texts', [])
+    if not isinstance(texts, list):
+        return False, 'Поле texts должно быть массивом'
+    for t in texts:
+        if not isinstance(t, dict) or 'id' not in t or 'content' not in t:
+            return False, 'Каждый элемент texts должен содержать id и content'
+        if not isinstance(t['id'], str) or not isinstance(t['content'], str):
+            return False, 'Поля id и content в texts должны быть строками'
+    # products
+    products = payload.get('products', [])
+    if not isinstance(products, list):
+        return False, 'Поле products должно быть массивом'
+    for p in products:
+        if not isinstance(p, dict):
+            return False, 'Элементы products должны быть объектами'
+        required = ['id', 'name', 'price', 'available']
+        for key in required:
+            if key not in p:
+                return False, f"В продукте отсутствует обязательное поле: {key}"
+        if not isinstance(p['id'], str) or not isinstance(p['name'], str):
+            return False, 'Поля id и name в products должны быть строками'
+        try:
+            float(p['price'])
+        except Exception:
+            return False, 'Поле price должно быть числом'
+        if not isinstance(p['available'], bool):
+            return False, 'Поле available должно быть булевым'
+    # settings
+    settings = payload.get('settings', {})
+    if not isinstance(settings, dict):
+        return False, 'Поле settings должно быть объектом'
+    # categories (опционально)
+    categories = payload.get('categories', [])
+    if categories is not None:
+        if not isinstance(categories, list):
+            return False, 'Поле categories должно быть массивом'
+        for c in categories:
+            if not isinstance(c, dict):
+                return False, 'Элементы categories должны быть объектами'
+            if 'id' not in c or 'name' not in c:
+                return False, 'Каждая категория должна содержать id и name'
+            if not isinstance(c['id'], str) or not isinstance(c['name'], str):
+                return False, 'Поля id и name в categories должны быть строками'
+    return True, 'OK'
+
+def save_storefront_data(payload: Dict[str, Any]) -> None:
+    ensure_storefront_data_dir_exists()
+    tmp_path = STOREFRONT_DATA_FILE + '.tmp'
+    with STOREFRONT_LOCK:
+        with open(tmp_path, 'w', encoding='utf-8') as f:
+            json.dump(payload, f, ensure_ascii=False, indent=2)
+        os.replace(tmp_path, STOREFRONT_DATA_FILE)
 
 # Инициализация базы данных store.db
 def init_store_db():
@@ -919,27 +1083,35 @@ def get_stats():
         cursor.execute('SELECT COUNT(DISTINCT customer_email) FROM orders WHERE customer_email IS NOT NULL AND customer_email != "" AND status != "error"')
         unique_buyers = cursor.fetchone()[0]
         # Топ-5 самых продаваемых товаров (по количеству) — только из заказов без error
-        cursor.execute('''
-            SELECT p.title, SUM(oi.quantity) as total_sold
-            FROM order_items oi
-            JOIN products p ON oi.product_id = p.id
-            JOIN orders o ON oi.order_id = o.id
-            WHERE o.status != "error"
-            GROUP BY oi.product_id
-            ORDER BY total_sold DESC
-            LIMIT 5
-        ''')
-        top_products = [{'title': row[0], 'sold': row[1]} for row in cursor.fetchall()]
+        try:
+            cursor.execute('''
+                SELECT p.title, SUM(oi.quantity) as total_sold
+                FROM order_items oi
+                JOIN products p ON oi.product_id = p.id
+                JOIN orders o ON oi.order_id = o.id
+                WHERE o.status != "error"
+                GROUP BY oi.product_id
+                ORDER BY total_sold DESC
+                LIMIT 5
+            ''')
+            top_products = [{'title': row[0], 'sold': row[1]} for row in cursor.fetchall()]
+        except Exception as e:
+            print(f"Ошибка при получении топ-товаров: {e}")
+            top_products = []
         # Топ-5 самых активных покупателей (по количеству заказов, без error)
-        cursor.execute('''
-            SELECT customer_email, customer_name, COUNT(*) as orders_count
-            FROM orders
-            WHERE customer_email IS NOT NULL AND customer_email != "" AND status != "error"
-            GROUP BY customer_email
-            ORDER BY orders_count DESC
-            LIMIT 5
-        ''')
-        top_customers = [{'email': row[0], 'name': row[1], 'orders': row[2]} for row in cursor.fetchall()]
+        try:
+            cursor.execute('''
+                SELECT customer_email, customer_name, COUNT(*) as orders_count
+                FROM orders
+                WHERE customer_email IS NOT NULL AND customer_email != "" AND status != "error"
+                GROUP BY customer_email
+                ORDER BY orders_count DESC
+                LIMIT 5
+            ''')
+            top_customers = [{'email': row[0], 'name': row[1], 'orders': row[2]} for row in cursor.fetchall()]
+        except Exception as e:
+            print(f"Ошибка при получении топ-покупателей: {e}")
+            top_customers = []
         # Количество товаров без категории
         cursor.execute('SELECT COUNT(*) FROM products WHERE category IS NULL OR category = ""')
         products_without_category = cursor.fetchone()[0]
@@ -950,37 +1122,59 @@ def get_stats():
             products_in_stock = cursor.fetchone()[0]
             cursor.execute('SELECT COUNT(*) FROM products WHERE in_stock = 0')
             products_out_of_stock = cursor.fetchone()[0]
-        except Exception:
+        except sqlite3.OperationalError:
+            # Если поле in_stock не существует, устанавливаем None
+            products_in_stock = None
+            products_out_of_stock = None
+        except Exception as e:
+            print(f"Ошибка при получении статистики наличия товаров: {e}")
             products_in_stock = None
             products_out_of_stock = None
         # Динамика продаж по дням (за последние 30 дней, без error)
-        cursor.execute('''
-            SELECT DATE(created_at), SUM(total_amount) FROM orders
-            WHERE status IN ("completed", "delivered") AND status != "error"
-            AND created_at >= DATE('now', '-30 day')
-            GROUP BY DATE(created_at)
-            ORDER BY DATE(created_at)
-        ''')
-        sales_by_day = [{'date': row[0], 'total': row[1] or 0} for row in cursor.fetchall()]
+        try:
+            cursor.execute('''
+                SELECT DATE(created_at), SUM(total_amount) FROM orders
+                WHERE status IN ("completed", "delivered") AND status != "error"
+                AND created_at >= DATE('now', '-30 day')
+                GROUP BY DATE(created_at)
+                ORDER BY DATE(created_at)
+            ''')
+            sales_by_day = [{'date': row[0], 'total': row[1] or 0} for row in cursor.fetchall()]
+        except Exception as e:
+            print(f"Ошибка при получении динамики продаж: {e}")
+            sales_by_day = []
+            
         # Динамика новых заказов по дням (за последние 30 дней, без error)
-        cursor.execute('''
-            SELECT DATE(created_at), COUNT(*) FROM orders
-            WHERE created_at >= DATE('now', '-30 day') AND status != "error"
-            GROUP BY DATE(created_at)
-            ORDER BY DATE(created_at)
-        ''')
-        orders_by_day = [{'date': row[0], 'count': row[1]} for row in cursor.fetchall()]
+        try:
+            cursor.execute('''
+                SELECT DATE(created_at), COUNT(*) FROM orders
+                WHERE created_at >= DATE('now', '-30 day') AND status != "error"
+                GROUP BY DATE(created_at)
+                ORDER BY DATE(created_at)
+            ''')
+            orders_by_day = [{'date': row[0], 'count': row[1]} for row in cursor.fetchall()]
+        except Exception as e:
+            print(f"Ошибка при получении динамики заказов: {e}")
+            orders_by_day = []
         # Количество непрочитанных сообщений (для админа с ID=1)
-        cursor.execute('SELECT COUNT(*) FROM messages WHERE receiver_id = 1 AND is_read = 0')
-        unread_messages_count = cursor.fetchone()[0]
+        try:
+            cursor.execute('SELECT COUNT(*) FROM messages WHERE receiver_id = 1 AND is_read = 0')
+            unread_messages_count = cursor.fetchone()[0]
+        except Exception:
+            # Если таблица messages не существует, устанавливаем 0
+            unread_messages_count = 0
         # Статистика по категориям товаров
-        cursor.execute('''
-            SELECT category, COUNT(*) as count
-            FROM products
-            WHERE category IS NOT NULL AND category != ''
-            GROUP BY category
-        ''')
-        categories_stats = [{'category': row[0], 'count': row[1]} for row in cursor.fetchall()]
+        try:
+            cursor.execute('''
+                SELECT category, COUNT(*) as count
+                FROM products
+                WHERE category IS NOT NULL AND category != ''
+                GROUP BY category
+            ''')
+            categories_stats = [{'category': row[0], 'count': row[1]} for row in cursor.fetchall()]
+        except Exception as e:
+            print(f"Ошибка при получении статистики категорий: {e}")
+            categories_stats = []
         conn.close()
         return jsonify({
             'success': True,
@@ -1695,8 +1889,20 @@ def get_site_status():
 def set_site_status(enabled, admin_token=None):
     try:
         with SITE_STATUS_LOCK:
+            current = {}
+            if os.path.exists(SITE_STATUS_FILE):
+                try:
+                    with open(SITE_STATUS_FILE, 'r', encoding='utf-8') as rf:
+                        current = json.load(rf) or {}
+                except Exception:
+                    current = {}
+            current['enabled'] = enabled
+            # Обновляем admin_token только если передан, чтобы не затирать существующий
+            if admin_token is not None:
+                current['admin_token'] = admin_token
+            current['last_updated'] = datetime.now().isoformat()
             with open(SITE_STATUS_FILE, 'w', encoding='utf-8') as f:
-                json.dump({'enabled': enabled, 'admin_token': admin_token}, f)
+                json.dump(current, f, ensure_ascii=False, indent=2)
     except Exception as e:
         print('Ошибка записи site_status.json:', e)
 
@@ -1714,7 +1920,7 @@ def api_site_status():
 # Мидлвар для проверки статуса сайта (кроме админки)
 @app.before_request
 def check_site_status():
-    admin_paths = ['/admin', '/admin/', '/admin/dashboard', '/admin-dashboard.html', '/admin/panel', '/admin/orders', '/admin/support', '/admin/profile', '/admin/settings', '/api/site-status', '/site-offline.html']
+    admin_paths = ['/admin', '/admin/', '/admin/dashboard', '/admin-dashboard.html', '/admin/panel', '/admin/orders', '/admin/support', '/admin/profile', '/admin/settings', '/api/site-status', '/site-offline.html', '/admin/editor', '/api/storefront']
     if any(request.path.startswith(p) for p in admin_paths):
         return  # Не блокируем админку и доступ к странице обслуживания
     status = get_site_status()
@@ -1730,6 +1936,11 @@ def check_site_status():
 @app.route('/site-offline.html')
 def site_offline():
     return send_file('site-offline.html')
+
+# Блокируем прямой доступ к директории с данными витрины
+@app.route('/data/<path:subpath>')
+def _deny_storefront_data(subpath):
+    return ('', 404)
 
 # API для работы с настройками сайта
 @app.route('/api/settings', methods=['GET'])
@@ -1811,6 +2022,73 @@ def upload_favicon():
     save_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
     file.save(save_path)
     return jsonify({'success': True, 'url': f'uploads/{filename}'}), 200
+
+# --- Витрина: API и страница редактора ---
+@app.route('/admin/editor', methods=['GET'])
+def storefront_editor_page():
+    return send_file('storefront-editor.html')
+
+@app.route('/api/storefront/auth', methods=['POST'])
+def storefront_auth():
+    try:
+        data = request.get_json(silent=True) or {}
+        secret = (data.get('secret') or '').strip()
+        if not secret:
+            return jsonify({'success': False, 'message': 'Секрет обязателен'}), 400
+        current = get_storefront_secret()
+        # Если секрета нет — инициализируем им переданный
+        if not current:
+            set_storefront_secret(secret)
+        else:
+            if _hash_secret(secret) != _hash_secret(current):
+                return jsonify({'success': False, 'message': 'Неверная секретная комбинация'}), 401
+        resp = jsonify({'success': True})
+        # Ставим cookie с хешем для удобства повторного доступа
+        resp.set_cookie('sf_auth', _hash_secret(secret), max_age=30*24*3600, httponly=False, samesite='Lax')
+        return resp
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/storefront/data', methods=['GET', 'PUT'])
+def storefront_data():
+    if not _is_storefront_authorized():
+        return jsonify({'success': False, 'message': 'Требуется авторизация'}), 401
+    if request.method == 'GET':
+        data = load_storefront_data()
+        return jsonify({'success': True, 'data': data})
+    # PUT — полная замена
+    payload = request.get_json(silent=True) or {}
+    if 'data' in payload:
+        payload = payload['data']
+    ok, msg = _validate_storefront_payload(payload)
+    if not ok:
+        return jsonify({'success': False, 'message': msg}), 400
+    try:
+        save_storefront_data(payload)
+        return jsonify({'success': True, 'message': 'Сохранено'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/storefront/secret', methods=['POST'])
+def storefront_set_secret():
+    # Разрешаем смену секрета при наличии текущей авторизации, либо при знании current_secret
+    data = request.get_json(silent=True) or {}
+    new_secret = (data.get('new_secret') or '').strip()
+    if not new_secret:
+        return jsonify({'success': False, 'message': 'new_secret обязателен'}), 400
+    current = get_storefront_secret()
+    if _is_storefront_authorized():
+        set_storefront_secret(new_secret)
+    else:
+        # альтернативный путь: указать текущий секрет явно
+        current_secret = (data.get('current_secret') or '').strip()
+        if not current or (_hash_secret(current_secret) == _hash_secret(current)):
+            set_storefront_secret(new_secret)
+        else:
+            return jsonify({'success': False, 'message': 'Неверный текущий секрет'}), 401
+    resp = jsonify({'success': True})
+    resp.set_cookie('sf_auth', _hash_secret(new_secret), max_age=30*24*3600, httponly=False, samesite='Lax')
+    return resp
 
 # API для сохранения номера счета
 @app.route('/api/orders/<int:order_id>/invoice', methods=['PUT'])

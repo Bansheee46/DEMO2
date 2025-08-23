@@ -6,21 +6,82 @@
   <title>Админ-панель — Damax</title>
   <script src="local-data.js"></script>
   <script src="api-client.js"></script>
-  <link rel="stylesheet" href="mobile-styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="admin-styles.css">
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <h1><i class="fas fa-store"></i> Админ-панель управления товарами</h1>
-      <div>
-        <button class="btn" id="manageCategoriesBtn"><i class="fas fa-tags"></i> Категории</button>
-        <button class="btn" id="addProductBtn"><i class="fas fa-plus"></i> Добавить товар</button>
+  <!-- Боковое меню -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <h2>Админ-панель</h2>
+      <p>Управление магазином</p>
+    </div>
+    
+    <div class="user-info">
+      <div class="user-avatar">
+        <i class="fas fa-user"></i>
+      </div>
+      <div class="user-details">
+        <div class="user-name">Администратор</div>
+        <div class="user-role">Полный доступ</div>
       </div>
     </div>
     
+    <ul class="nav-menu">
+      <li class="nav-item">
+        <a href="admin-dashboard.html" class="nav-link">
+          <i class="fas fa-tachometer-alt nav-icon"></i>
+          <span class="nav-text">Дашборд</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="admin-panel.html" class="nav-link active">
+          <i class="fas fa-box nav-icon"></i>
+          <span class="nav-text">Товары</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="admin-orders.html" class="nav-link">
+          <i class="fas fa-shopping-cart nav-icon"></i>
+          <span class="nav-text">Заказы</span>
+          <span class="nav-badge">12</span>
+        </a>
+      </li>
+      
+      <div class="nav-section">Система</div>
+      
+      <li class="nav-item">
+        <a href="admin-settings.html" class="nav-link">
+          <i class="fas fa-cog nav-icon"></i>
+          <span class="nav-text">Настройки</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="#" class="nav-link">
+          <i class="fas fa-sign-out-alt nav-icon"></i>
+          <span class="nav-text">Выйти</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Основной контент -->
+  <div class="main-content">
+    <div class="page-header">
+      <h1 class="page-title">
+        <i class="fas fa-box"></i>
+        Управление товарами
+      </h1>
+      <p class="page-subtitle">Добавление, редактирование и управление товарами в каталоге</p>
+    </div>
+
     <div class="card">
       <div class="card-header">
         <h2>Список товаров</h2>
+        <div>
+          <button class="btn btn-outline" id="manageCategoriesBtn"><i class="fas fa-tags"></i> Категории</button>
+          <button class="btn btn-primary" id="addProductBtn"><i class="fas fa-plus"></i> Добавить товар</button>
+        </div>
       </div>
       <div class="card-body">
         <div style="margin-bottom: 18px; display: flex; align-items: center; gap: 12px;">
@@ -352,11 +413,10 @@
               <img src="${imageUrl}" alt="${product.title}">
             </div>
             <div class="product-info">
-              <input type="text" class="product-title-input form-control" value="${product.title}" style="font-weight:600; font-size:16px; margin-bottom:4px;">
-              <input type="number" class="product-price-input form-control" value="${product.price}" style="width:100px; display:inline-block; margin-bottom:4px;"> ₽
-              ${product.category ? `<select class="product-category-input form-control" style="width:140px; display:inline-block; margin-bottom:4px;"></select>` : ''}
-              ${product.sku ? `<input type="text" class="product-sku-input form-control" value="${product.sku}" placeholder="Артикул" style="width:120px; display:inline-block; margin-bottom:4px;">` : '<input type="text" class="product-sku-input form-control" value="" placeholder="Артикул" style="width:120px; display:inline-block; margin-bottom:4px;">'}
-              <button class="btn btn-success btn-sm save-inline-btn" style="display:none; margin-top:4px;"><i class="fas fa-save"></i> Сохранить</button>
+              <div class="product-title">${product.title}</div>
+              <div class="product-price">${product.price} ₽</div>
+              <div class="product-category">${product.category ? getCategoryName(product.category) : 'Без категории'}</div>
+              ${product.sku ? `<div class="product-sku">Артикул: ${product.sku}</div>` : ''}
             </div>
             <div class="product-actions">
               <button class="btn btn-warning btn-sm edit-btn" data-id="${product.id}">
@@ -372,60 +432,7 @@
       html += '</div>';
       productsContainer.innerHTML = html;
       document.getElementById('productSearchCount').textContent = `Показано: ${products.length}`;
-      // После отрисовки — подгружаем категории в select
-      document.querySelectorAll('.product-category-input').forEach(select => {
-        select.innerHTML = window.categoriesCache.map(cat => `<option value="${cat.code}">${cat.name}</option>`).join('');
-        const card = select.closest('.product-card');
-        if (card && card.dataset.id) {
-          const prod = products.find(p => p.id == card.dataset.id);
-          if (prod && prod.category) select.value = prod.category;
-        }
-      });
-      // Инлайн-редактирование: показываем кнопку сохранить при изменении
-      document.querySelectorAll('.product-card').forEach(card => {
-        const titleInput = card.querySelector('.product-title-input');
-        const priceInput = card.querySelector('.product-price-input');
-        const skuInput = card.querySelector('.product-sku-input');
-        const catInput = card.querySelector('.product-category-input');
-        const saveBtn = card.querySelector('.save-inline-btn');
-        [titleInput, priceInput, skuInput, catInput].forEach(input => {
-          if (input) input.addEventListener('input', () => { saveBtn.style.display = 'inline-block'; });
-        });
-        if (saveBtn) {
-          saveBtn.addEventListener('click', async () => {
-            const id = card.dataset.id;
-            const newTitle = titleInput.value.trim();
-            const newPrice = priceInput.value.trim();
-            const newSku = skuInput.value.trim();
-            const newCat = catInput ? catInput.value : '';
-            if (!newTitle || !newPrice) {
-              showNotification('Название и цена обязательны', 'error');
-              return;
-            }
-            saveBtn.disabled = true;
-            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-            try {
-              const res = await fetchWithCsrf(`${API_BASE_URL}/products/${id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title: newTitle, price: newPrice, sku: newSku, category: newCat })
-              });
-              const data = await res.json();
-              if (data.success) {
-                showNotification('Товар обновлён', 'success');
-                saveBtn.style.display = 'none';
-                loadProducts();
-              } else {
-                showNotification(data.message || 'Ошибка', 'error');
-              }
-            } catch (e) {
-              showNotification('Ошибка при сохранении', 'error');
-            }
-            saveBtn.disabled = false;
-            saveBtn.innerHTML = '<i class="fas fa-save"></i> Сохранить';
-          });
-        }
-      });
+      // Удаляем неиспользуемый код для инлайн-редактирования
       makeProductsDraggable();
       
       // Добавляем обработчики для кнопок редактирования и удаления
@@ -1457,12 +1464,14 @@
         const cookies = document.cookie.split(';').map(s => s.trim());
         const adminToken = cookies.find(s => s.startsWith('admin_token='));
         if (!adminToken || !data.admin_token || adminToken.split('=')[1] !== data.admin_token) {
-          window.location.href = '/site-offline.html';
+          // Сайт работает в онлайн-режиме
         }
       }
     }
   } catch (e) {}
 })();
   </script>
+  </div> <!-- Закрытие main-content -->
+
 </body>
 </html> 
