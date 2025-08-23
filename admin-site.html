@@ -692,17 +692,17 @@
                 <!-- Кнопки для работы с настройками футера -->
                 <div class="form-group" style="margin-top: 30px; border-top: 2px solid var(--border-color); padding-top: 20px;">
                     <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: center;">
-                        <button type="button" class="btn" id="saveFooterSettings" onclick="saveFooterSettings()" style="background: linear-gradient(135deg, #22c55e, #16a34a); font-weight: 600; font-size: 16px; padding: 12px 30px; transition: all 0.3s ease;">
+                        <button type="button" class="btn" id="saveFooterSettings" onclick="if(typeof window.saveFooterSettings === 'function') { window.saveFooterSettings(); } else { console.error('Функция saveFooterSettings не найдена'); }" style="background: linear-gradient(135deg, #22c55e, #16a34a); font-weight: 600; font-size: 16px; padding: 12px 30px; transition: all 0.3s ease;">
                             <i class="fas fa-save"></i>
                             Сохранить настройки футера
                         </button>
                         
-                        <button type="button" class="btn btn-secondary" onclick="testFooterUpdate()" style="padding: 12px 20px; font-size: 14px;">
+                        <button type="button" class="btn btn-secondary" onclick="if(typeof window.testFooterUpdate === 'function') { window.testFooterUpdate(); } else { console.error('Функция testFooterUpdate не найдена'); }" style="padding: 12px 20px; font-size: 14px;">
                             <i class="fas fa-eye"></i>
                             Предпросмотр
                         </button>
                         
-                        <button type="button" class="btn" onclick="openMainPage()" style="background: linear-gradient(135deg, #3b82f6, #2563eb); padding: 12px 20px; font-size: 14px;">
+                        <button type="button" class="btn" onclick="if(typeof window.openMainPage === 'function') { window.openMainPage(); } else { console.error('Функция openMainPage не найдена'); }" style="background: linear-gradient(135deg, #3b82f6, #2563eb); padding: 12px 20px; font-size: 14px;">
                             <i class="fas fa-external-link-alt"></i>
                             Открыть главную
                         </button>

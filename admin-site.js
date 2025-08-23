@@ -573,6 +573,30 @@ class SiteAdmin {
 
 // Глобальные переменные для селектора иконок
 let currentIconInput = null;
+
+// Проверяем доступность функций сразу после загрузки скрипта
+console.log('📜 Скрипт admin-site.js загружен');
+console.log('🔍 Проверка функций в глобальной области:');
+console.log('   window.saveFooterSettings:', typeof window.saveFooterSettings);
+console.log('   window.testFooterUpdate:', typeof window.testFooterUpdate);
+console.log('   window.openMainPage:', typeof window.openMainPage);
+
+// Добавляем функции в глобальную область для отладки
+if (typeof window !== 'undefined') {
+    console.log('🌐 Добавляем функции в глобальную область...');
+    
+    // Проверяем, что функции действительно добавлены
+    setTimeout(() => {
+        console.log('⏰ Проверка через 100ms:');
+        console.log('   window.saveFooterSettings:', typeof window.saveFooterSettings);
+        console.log('   window.testFooterUpdate:', typeof window.testFooterUpdate);
+        console.log('   window.openMainPage:', typeof window.openMainPage);
+        
+        if (typeof window.saveFooterSettings !== 'function') {
+            console.error('❌ Функция saveFooterSettings не найдена в глобальной области!');
+        }
+    }, 100);
+}
 const POPULAR_ICONS = [
     'fas fa-laptop', 'fas fa-mobile-alt', 'fas fa-tablet-alt', 'fas fa-desktop',
     'fas fa-tshirt', 'fas fa-shoe-prints', 'fas fa-hat-cowboy', 'fas fa-glasses',
@@ -661,8 +685,15 @@ function filterIcons() {
 }
 
 // Функция для сохранения только настроек футера
-function saveFooterSettings() {
+window.saveFooterSettings = function() {
+    console.log('💾 Вызов функции saveFooterSettings...');
+    
     const button = document.getElementById('saveFooterSettings');
+    if (!button) {
+        console.error('❌ Кнопка saveFooterSettings не найдена');
+        return;
+    }
+    
     const originalText = button.innerHTML;
     
     try {
@@ -673,14 +704,19 @@ function saveFooterSettings() {
         console.log('💾 Сохранение настроек футера...');
         
         // Собираем только настройки футера
-        const footerSettings = {
-            footerCompany: document.getElementById('footerCompany').value,
-            footerPhone: document.getElementById('footerPhone').value,
-            footerEmail: document.getElementById('footerEmail').value,
-            footerAddress: document.getElementById('footerAddress').value,
-            footerWorkingHours: document.getElementById('footerWorkingHours').value,
-            siteTitle: document.getElementById('siteTitle').value
-        };
+        const footerSettings = {};
+        
+        // Безопасно получаем значения полей
+        const fields = ['footerCompany', 'footerPhone', 'footerEmail', 'footerAddress', 'footerWorkingHours', 'siteTitle'];
+        fields.forEach(field => {
+            const element = document.getElementById(field);
+            if (element) {
+                footerSettings[field] = element.value;
+            } else {
+                console.warn(`⚠️ Поле ${field} не найдено`);
+                footerSettings[field] = '';
+            }
+        });
         
         console.log('📋 Настройки футера для сохранения:', footerSettings);
         
@@ -750,18 +786,23 @@ function saveFooterSettings() {
 }
 
 // Функция для предпросмотра настроек футера
-function testFooterUpdate() {
+window.testFooterUpdate = function() {
     console.log('👀 Предпросмотр настроек футера...');
     
     // Собираем текущие значения из полей
-    const footerSettings = {
-        footerCompany: document.getElementById('footerCompany').value || 'Не задано',
-        footerPhone: document.getElementById('footerPhone').value || 'Не задано',
-        footerEmail: document.getElementById('footerEmail').value || 'Не задано',
-        footerAddress: document.getElementById('footerAddress').value || 'Не задано',
-        footerWorkingHours: document.getElementById('footerWorkingHours').value || 'Не задано',
-        siteTitle: document.getElementById('siteTitle').value || 'Не задано'
-    };
+    const footerSettings = {};
+    
+    // Безопасно получаем значения полей
+    const fields = ['footerCompany', 'footerPhone', 'footerEmail', 'footerAddress', 'footerWorkingHours', 'siteTitle'];
+    fields.forEach(field => {
+        const element = document.getElementById(field);
+        if (element) {
+            footerSettings[field] = element.value || 'Не задано';
+        } else {
+            console.warn(`⚠️ Поле ${field} не найдено для предпросмотра`);
+            footerSettings[field] = 'Поле не найдено';
+        }
+    });
     
     // Создаем красивое модальное окно для предпросмотра
     const modal = document.createElement('div');
@@ -852,7 +893,7 @@ function testFooterUpdate() {
 }
 
 // Функция для открытия главной страницы
-function openMainPage() {
+window.openMainPage = function() {
     console.log('🌐 Открываем главную страницу...');
     
     // Определяем URL главной страницы
@@ -939,6 +980,14 @@ async function testTelegramConnection() {
 let siteAdmin;
 
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('🚀 Админ-панель загружена, инициализируем функции...');
+    
+    // Проверяем, что функции доступны глобально
+    console.log('🔍 Проверка доступности функций:');
+    console.log('   saveFooterSettings:', typeof window.saveFooterSettings);
+    console.log('   testFooterUpdate:', typeof window.testFooterUpdate);
+    console.log('   openMainPage:', typeof window.openMainPage);
+    
     siteAdmin = new SiteAdmin();
 });
 
@@ -946,6 +995,7 @@ document.addEventListener('DOMContentLoaded', () => {
 if (document.readyState === 'complete' || document.readyState === 'interactive') {
     setTimeout(() => {
         if (!siteAdmin) {
+            console.log('🔄 Альтернативная инициализация админ-панели...');
             siteAdmin = new SiteAdmin();
         }
     }, 100);
